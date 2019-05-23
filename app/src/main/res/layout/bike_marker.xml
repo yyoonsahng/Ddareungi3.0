@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content">
+
+    <TextView android:id="@+id/bike_marker_num_textView"
+              android:layout_width="match_parent" android:layout_height="match_parent"
+              android:background="@drawable/ic_marker_high"
+              android:gravity="center"
+              android:fontFamily="@font/spoqahansansbold"
+              android:textSize="14sp"
+              android:paddingTop="4dp"
+              android:textColor="@color/quantum_white_text"/>
+
+</FrameLayout>
