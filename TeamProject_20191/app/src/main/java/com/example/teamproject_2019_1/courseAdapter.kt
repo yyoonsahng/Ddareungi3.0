@@ -31,6 +31,12 @@ val v=LayoutInflater.from(p0.context).inflate(R.layout.crscard,p0,false)
             1->{
                 p0.crsImage.setImageResource(R.drawable.cyclist)
             }
+            2->{
+            p0.crsImage.setImageResource(R.drawable.course2)
+        }
+            3->{
+                p0.crsImage.setImageResource(R.drawable.course)
+            }
         }
 
     }
