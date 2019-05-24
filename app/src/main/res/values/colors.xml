@@ -7,4 +7,5 @@
     <color name="grey">#737474</color>
     <color name="white">#FFFFFF</color>
     <color name="border_color">#C3C5C5</color>
+    <color name="colorPrimaryRipple">#4231E292</color>
 </resources>

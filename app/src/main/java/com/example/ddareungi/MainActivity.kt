@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -9,6 +10,8 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.example.a190306app.*
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -18,6 +21,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var mapFragment: MapFragment
     lateinit var timerFragment: TimerFragment
     lateinit var courseFragment: CourseFragment
+    lateinit var myLocation: Location
+    lateinit var fusedLocationClient: FusedLocationProviderClient
+
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/1/1000/", //대여소 1525개 있음 , 1000씩 나눠서 호출해야함
         "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/15/",
@@ -59,7 +65,6 @@ class MainActivity : AppCompatActivity() {
 
         //바텀 메뉴 클릭했을 때 메뉴 별 fragment 생성
         bottom_navigation.setOnNavigationItemSelectedListener {
-            var fragment: Fragment? = null
             when (it.itemId) {
                 R.id.bookmark -> {
                     loadFragment(bookmarkFragment)
@@ -94,6 +99,9 @@ class MainActivity : AppCompatActivity() {
             if (!requestResult[i]) {
                 return false
             }
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                myLocation = it
+            }
             locationPermissionGranted = true
         }
         return true
@@ -109,6 +117,9 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
                 if (checkAppPermission(permissions)) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        myLocation = it
+                    }
                     locationPermissionGranted = true
                 } else {
                     finish()
@@ -118,6 +129,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun initPermission() {
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
@@ -150,7 +162,6 @@ class MainActivity : AppCompatActivity() {
             dParse.parse(type, result!!)
             if (mActivity != null) {
                 Toast.makeText(mActivity.applicationContext, "Data parsing done", Toast.LENGTH_SHORT).show()
-                dParse.bList.removeAt(999)
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(mActivity.locationPermissionGranted, dParse.bList)
 
