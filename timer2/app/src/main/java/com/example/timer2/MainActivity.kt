@@ -10,9 +10,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 class MainActivity : AppCompatActivity() {
 
     var hour=1
-    var btnState=true
+    var btnState=true //시작 버튼
     enum class TimerState{
-        Stopped,Running
+        Stopped,Paused,Running
     }
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds=0L
@@ -23,18 +23,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         timerSpinner.onItemSelectedListener=SpinnerSelectedListener()
         timerBtn.setOnClickListener {
-            if(btnState) {
+            if(btnState) { //시작버튼 클릭
+
                 startTimer()
                 timerState = TimerState.Running
                 btnState=false
-                timerBtn.setBackgroundResource(R.drawable.btn22)
+                timerBtn.text="반납 완료"
+            //    timerBtn.setBackgroundResource(R.drawable.btn22)
+                timerPrgbar.visibility=View.VISIBLE
             }else{
                 timer.cancel()
                 finishTimer()
                 btnState=true
-                timerBtn.setBackgroundResource(R.drawable.btn11)
+                timerBtn.text="대여 시작"
+               // timerBtn.setBackgroundResource(R.drawable.btn11)
+                timerPrgbar.visibility=View.INVISIBLE
             }
         }
 
