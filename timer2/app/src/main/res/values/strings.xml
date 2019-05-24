@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">timer2</string>
+    <string-array name="spin_arr">
+        <item>대여 시간을 선택하세요</item>
+        <item>1시간</item>
+        <item>2시간</item>
+    </string-array>
+</resources>
