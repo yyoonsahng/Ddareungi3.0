@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import com.example.teamproject_2019_1.Course
 import com.example.teamproject_2019_1.CourseAdapter
 
-
 class CourseFragment : Fragment() {
 
     var data: ArrayList<Course> = ArrayList()
