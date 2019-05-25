@@ -41,7 +41,6 @@
                 app:itemTextColor="@color/menu_item_selector"
                 android:theme="@style/Widget.BottomNavigationView"
                 android:background="@color/white"
-                app:itemTextAppearanceActive="@style/TextAppearance.BottomNavigationView.Active"
                 android:paddingStart="16dp" android:paddingEnd="16dp"/>
 
     </FrameLayout>

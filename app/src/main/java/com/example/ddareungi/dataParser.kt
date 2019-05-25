@@ -67,8 +67,9 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
                 var pm25: Double = jObject.optDouble("PM25")
                 var idex_nm: String = jObject.optString("IDEX_NM")
                 var idex_mvl: Double = jObject.optDouble("IDEX_MVL")
+                var localty:String=jObject.optString("MSRSTE_NM")
                 dList.add(
-                    MyDust(pm10,pm25,idex_nm,idex_mvl)
+                    MyDust(pm10,pm25,idex_nm,idex_mvl,localty)
                 )
             }
         } catch (e: JSONException) {
