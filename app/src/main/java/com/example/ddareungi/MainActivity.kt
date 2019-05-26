@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -17,6 +18,7 @@ import android.widget.Toast
 import com.example.a190306app.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.internal.it
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.util.*
@@ -30,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var timerFragment: TimerFragment
     lateinit var courseFragment: CourseFragment
 
-    lateinit var myLocation: Location
+    lateinit var mLocation: Location
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
 
@@ -39,8 +41,8 @@ class MainActivity : AppCompatActivity() {
     var rList = mutableListOf<MyRestroom>()
     var pList = mutableListOf<MyPark>()
     var dParse= dataParser(bList, dList, rList, pList)
-    lateinit var mLocation:String
-
+    lateinit var localty:String
+    var enabledGPS=false
 
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
@@ -117,9 +119,12 @@ class MainActivity : AppCompatActivity() {
             if (!requestResult[i]) {
                 return false
             }
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                myLocation = it
+            if(enabledGPS){
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    mLocation = it
+                }
             }
+
             locationPermissionGranted = true
         }
         return true
@@ -136,9 +141,6 @@ class MainActivity : AppCompatActivity() {
 
             MY_LOCATION_REQUEST -> {
                 if (checkAppPermission(permissions)) {
-                    fusedLocationClient.lastLocation.addOnSuccessListener {
-                        myLocation = it
-                    }
                     locationPermissionGranted = true
                 } else {
                     finish()
@@ -148,7 +150,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun initPermission() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val lm=getSystemService(LOCATION_SERVICE) as LocationManager
+        if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
+            enabledGPS=true
+        if (enabledGPS)
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        else
+            localty="광진구"
+
         if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
@@ -218,7 +227,7 @@ class MainActivity : AppCompatActivity() {
                 dParse.parse(type,i)
             if (mActivity != null) {
                 initLocation()
-                Toast.makeText(mActivity.applicationContext, "Data parsing done", Toast.LENGTH_SHORT).show()
+                Toast.makeText(mActivity.applicationContext, "Data parsing done"+mActivity!!.localty, Toast.LENGTH_SHORT).show()
                 mActivity.imageView.visibility= View.GONE
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(mActivity.locationPermissionGranted, dParse.bList)
@@ -226,21 +235,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun initLocation(){
-            if (mActivity!!.checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))){
-                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(mActivity)
-                fusedLocationClient.lastLocation.addOnSuccessListener {
-                    var geocoder= Geocoder(mActivity, Locale.KOREA)
-                    var addrList=geocoder.getFromLocation(it!!.latitude,it!!.longitude,1)
-                    var addr=addrList.first().getAddressLine(0).split(" ")
-                    mActivity.mLocation=addr[2]
-                    for(i in dParse.dList){
-                        if(i.localty==mActivity.mLocation){
-                            Log.i("location",i.localty)
-                            break
-                        }
-                    }
-                }
+            if(mActivity!!.enabledGPS){
+                var geocoder= Geocoder(mActivity, Locale.KOREA)
+                var addrList=geocoder.getFromLocation(mActivity!!.mLocation.latitude,mActivity!!.mLocation.longitude,1)
+                var addr=addrList.first().getAddressLine(0).split(" ")
+                mActivity.localty=addr[2]
             }
+//            if (mActivity!!.checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))){
+//                val lm=mActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//                if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+//                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(mActivity)
+//                    fusedLocationClient.lastLocation.addOnSuccessListener {
+//
+//                    }
+//                }
+//            }
         }
     }
 }
