@@ -16,13 +16,9 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.bike_marker.view.*
 
-class Markers(context: Context, googleMap: GoogleMap, bike: MyBike) {
+class Markers(context: Context, googleMap: GoogleMap) {
     private val mContext = context
     private val mMap = googleMap
-    private val mBike = bike
-//    private val mBikeList = bikeList
-//    val bikeMarkerList = mutableListOf<Marker>()
-//    val visibleMarkers = mutableMapOf<Int, Marker>()
 
     fun setMarker(bikeStop: MyBike): Marker {
         val markerOptions = setMarkerOption(bikeStop)

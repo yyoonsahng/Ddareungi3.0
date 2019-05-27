@@ -19,6 +19,7 @@ import android.widget.Toast
 import com.example.a190306app.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.libraries.places.internal.it
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
@@ -35,7 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var mLocation: Location
     lateinit var fusedLocationClient: FusedLocationProviderClient
-
 
     var bList = mutableListOf<MyBike>()
     var dList = mutableListOf<MyDust>()
@@ -98,6 +98,11 @@ class MainActivity : AppCompatActivity() {
         mapFragment = MapFragment()
         timerFragment = TimerFragment()
         courseFragment = CourseFragment()
+
+        val dummyMapsInitializer = SupportMapFragment()
+        supportFragmentManager.beginTransaction().attach(dummyMapsInitializer).commit()
+        dummyMapsInitializer.getMapAsync {
+        }
 
         //바텀 메뉴 클릭했을 때 메뉴 별 fragment 생성
         bottom_navigation.setOnNavigationItemSelectedListener {

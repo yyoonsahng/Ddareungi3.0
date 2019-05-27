@@ -21,4 +21,17 @@
     <style name="TextAppearance.BottomNavigationView.Active">
         <item name="android:textSize">12sp</item>
     </style>
+    
+    <style name="MapCardTitleStyle">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:fontFamily">@font/spoqahansansbold</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="MapCardRegularStyle">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:fontFamily">@font/spoqahansansregular</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>
