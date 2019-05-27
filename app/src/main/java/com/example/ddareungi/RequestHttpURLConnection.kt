@@ -37,7 +37,6 @@ class RequestHttpURLConnection {
             var reader = BufferedReader(InputStreamReader(urlConn.getInputStream(), "UTF-8"))
 
             // 출력물의 라인과 그 합에 대한 변수.
-            lateinit var line: String;
             var page = ""
 
             // 라인을 받아와 합친다.

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -55,11 +56,26 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initPermission()
-        initData()
+        checkNetwork()
         init()
     }
 
+    fun checkNetwork(){
+        var connectvityManager=getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo=connectvityManager.activeNetworkInfo
+        if(networkInfo!=null && networkInfo.isConnected){
 
+            Toast.makeText(this,"네트워크연결됨",Toast.LENGTH_SHORT).show()
+            initData()
+        }
+        else{
+            //네트워크에연결안되어있으면 일단그냥종료
+            //어떻게처리할지 고민해봐야겠음
+            Toast.makeText(this,"네트워크연결안됨",Toast.LENGTH_SHORT).show()
+            mainTextView.visibility= View.GONE
+
+        }
+    }
     fun  initData() {
         val networkTask0 = NetworkTask(0, urlStr[0],dParse,null)
         networkTask0.execute()
@@ -199,14 +215,13 @@ class MainActivity : AppCompatActivity() {
             }
             else if(type==Data.RESTROOM.type){
                 val rStr=url+"1/1000"
-                val result=RequestHttpURLConnection().request(rStr )
+                val result=RequestHttpURLConnection().request(rStr)
                 var rNum=JSONObject(result).getJSONObject("SearchPublicToiletPOIService").optInt("list_total_count")-1000
                 rList.add(result)
                 var count=2
                 while(true){
                     val rStr=url+(1+1000*(count-1)).toString()+"/"+(1000*count).toString()
                     val result=RequestHttpURLConnection().request(rStr) // 해당 URL로 부터 결과물을 얻어온다.
-                    val jObject=JSONObject(result).getJSONObject("SearchPublicToiletPOIService")
                     rList.add(result)
                     rNum-=1000
                     if(rNum<1)
@@ -227,8 +242,8 @@ class MainActivity : AppCompatActivity() {
                 dParse.parse(type,i)
             if (mActivity != null) {
                 initLocation()
-                Toast.makeText(mActivity.applicationContext, "Data parsing done"+mActivity!!.localty, Toast.LENGTH_SHORT).show()
-                mActivity.imageView.visibility= View.GONE
+                Toast.makeText(mActivity.applicationContext, "Data parsing done"+mActivity.localty, Toast.LENGTH_SHORT).show()
+                mActivity.mainTextView.visibility= View.GONE
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(mActivity.locationPermissionGranted, dParse.bList)
             }
@@ -237,7 +252,7 @@ class MainActivity : AppCompatActivity() {
         fun initLocation(){
             if(mActivity!!.enabledGPS){
                 var geocoder= Geocoder(mActivity, Locale.KOREA)
-                var addrList=geocoder.getFromLocation(mActivity!!.mLocation.latitude,mActivity!!.mLocation.longitude,1)
+                var addrList=geocoder.getFromLocation(mActivity.mLocation.latitude,mActivity!!.mLocation.longitude,1)
                 var addr=addrList.first().getAddressLine(0).split(" ")
                 mActivity.localty=addr[2]
             }
