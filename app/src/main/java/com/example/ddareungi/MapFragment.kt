@@ -4,12 +4,11 @@ package com.example.ddareungi
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.example.a190306app.MyBike
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -19,11 +18,11 @@ import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
-
+import kotlinx.android.synthetic.main.fragment_map.*
 
 const val DEFAULT_ZOOM = 16f
 
-class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListener {
+class MapFragment : Fragment(), OnMapReadyCallback {
 
     lateinit var mMap: GoogleMap
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
@@ -34,6 +33,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListen
     val visibleMarkers = mutableMapOf<String, Marker>()
     lateinit var markers: Markers
     lateinit var myLocation: Location
+    var hasMyLocation = false
 
 
     fun setData(locationPermissionGranted: Boolean, bikeList: MutableList<MyBike>) {
@@ -57,20 +57,32 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListen
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
-        markers = Markers(context!!, mMap, mBikeList[0])
+        markers = Markers(context!!, mMap)
+        visibleMarkers.clear()
 
-        mMap.setOnCameraMoveListener(this)
+        mMap.setMinZoomPreference(14f)
+        mMap.setOnCameraMoveListener {
+            addMarker()
+        }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
         if (mLocationPermissionGranted) {
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                myLocation = it
-                mMap.animateCamera(
+            if (hasMyLocation) {
+                mMap.moveCamera(
                     CameraUpdateFactory.newLatLngZoom(
-                        LatLng(it.latitude, it.longitude),
+                        LatLng(myLocation.latitude, myLocation.longitude),
                         DEFAULT_ZOOM
-                    ), 500, null
+                    )
                 )
+            } else {
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    myLocation = it
+                    mMap.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(it.latitude, it.longitude),
+                            DEFAULT_ZOOM
+                        )
+                    )
+                }
             }
             mMap.isMyLocationEnabled = true
             mMap.setOnMyLocationButtonClickListener {
@@ -92,54 +104,69 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListen
             mMap.isMyLocationEnabled = false
             mMap.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
         }
-        val bounds = mMap.projection.visibleRegion.latLngBounds
-        for (bikeStop in mBikeList) {
-            if (bounds.contains(LatLng(bikeStop.stationLatitude, bikeStop.stationLongitude))) {
-                if (!visibleMarkers.containsKey(bikeStop.stationId)) {
-                    visibleMarkers[bikeStop.stationId] = markers.setMarker(bikeStop)
-                    visibleMarkers[bikeStop.stationId]!!.tag = bikeStop
-                }
-            }
+        mMap.setOnCameraIdleListener {
+            addMarker()
         }
 
         mMap.setOnMarkerClickListener {
+            map_refresh_fab.hide()
             val clickedMarkerTag = it.tag as MyBike
-            Toast.makeText(
-                context!!,
-                "${clickedMarkerTag.stationName} ${clickedMarkerTag.parkingBikeTotCnt}",
-                Toast.LENGTH_SHORT
-            ).show()
-            false
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(it.position), 500, null)
+            map_card_view.visibility = View.VISIBLE
+            map_card_title_text.text = clickedMarkerTag.stationName
+            map_card_regular_text.text = "${clickedMarkerTag.parkingBikeTotCnt}대 사용 가능"
+            true
+        }
+
+        mMap.setOnMapClickListener {
+            map_card_view.visibility = View.GONE
+            map_refresh_fab.show()
         }
 
     }
 
-    override fun onCameraMove() {
+    fun addMarker() {
         val bounds = mMap.projection.visibleRegion.latLngBounds
-        Log.v("Camera Zoom", mMap.cameraPosition.zoom.toString())
+
         for (bikeStop in mBikeList) {
             if (bounds.contains(LatLng(bikeStop.stationLatitude, bikeStop.stationLongitude))) {
                 if (!visibleMarkers.containsKey(bikeStop.stationId)) {
-                    visibleMarkers[bikeStop.stationId] = markers.setMarker(bikeStop)
-                    visibleMarkers[bikeStop.stationId]!!.tag = bikeStop
+                    if (mMap.cameraPosition.zoom >= 15f) {
+                        visibleMarkers[bikeStop.stationId] = markers.setMarker(bikeStop)
+                        visibleMarkers[bikeStop.stationId]!!.tag = bikeStop
+                    } else {
+                        if (bikeStop.parkingBikeTotCnt > 0) {
+                            visibleMarkers[bikeStop.stationId] = markers.setMarker(bikeStop)
+                            visibleMarkers[bikeStop.stationId]!!.tag = bikeStop
+                        }
+                    }
+                } else {
+                    if(mMap.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0){
+                        visibleMarkers[bikeStop.stationId]!!.remove()
+                        visibleMarkers.remove(bikeStop.stationId)
+                    }
                 }
             }
-//            else {
-//                if (visibleMarkers.containsKey(bikeStop.stationId)) {
-//                    visibleMarkers[bikeStop.stationId]!!.remove()
-//                    visibleMarkers.remove(bikeStop.stationId)
-//                }
-//            }
         }
     }
 
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         if (arguments != null) {
             mLocationPermissionGranted = arguments!!.getBoolean("mLocationPermissionGranted")
         }
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
+        val refreshFab = view!!.findViewById<FloatingActionButton>(R.id.map_refresh_fab)
+        refreshFab.setOnClickListener {
+
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+
     }
 
     override fun onStart() {
@@ -171,6 +198,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnCameraMoveListen
         super.onSaveInstanceState(outState)
         mapView!!.onSaveInstanceState(outState)
     }
+
 
     override fun onLowMemory() {
         super.onLowMemory()

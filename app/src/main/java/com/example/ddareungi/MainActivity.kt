@@ -12,6 +12,7 @@ import android.widget.Toast
 import com.example.a190306app.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -25,10 +26,11 @@ class MainActivity : AppCompatActivity() {
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
     var urlStr = arrayOf(
-        "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/1/1000/", //대여소 1525개 있음 , 1000씩 나눠서 호출해야함
+        "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/1/1000", //대여소 1525개 있음 , 1000씩 나눠서 호출해야함
         "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/15/",
         "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/1/5/",
-        "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/15/"
+        "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/15/",
+        "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/1001/2000"
     )
     var bList = mutableListOf<MyBike>()
     var dList = mutableListOf<MyDust>()
@@ -48,6 +50,8 @@ class MainActivity : AppCompatActivity() {
         //api url 연결해서 데이터 받아와서 파싱하여 리스트로 저장
         val networkTask0 = NetworkTask(0, urlStr[0], dParse, null)
         networkTask0.execute()
+        val networkTask4 = NetworkTask(0, urlStr[4], dParse, null)
+        networkTask4.execute()
         val networkTask1 = NetworkTask(1, urlStr[1], dParse, null)
         networkTask1.execute()
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, null)
@@ -62,6 +66,11 @@ class MainActivity : AppCompatActivity() {
         mapFragment = MapFragment()
         timerFragment = TimerFragment()
         courseFragment = CourseFragment()
+
+        val dummyMapsInitializer = SupportMapFragment()
+        supportFragmentManager.beginTransaction().attach(dummyMapsInitializer).commit()
+        dummyMapsInitializer.getMapAsync {
+        }
 
         //바텀 메뉴 클릭했을 때 메뉴 별 fragment 생성
         bottom_navigation.setOnNavigationItemSelectedListener {
@@ -164,7 +173,6 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(mActivity.applicationContext, "Data parsing done", Toast.LENGTH_SHORT).show()
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(mActivity.locationPermissionGranted, dParse.bList)
-
             }
 
 //
