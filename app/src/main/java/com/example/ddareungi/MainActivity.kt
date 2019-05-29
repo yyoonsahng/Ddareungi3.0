@@ -1,6 +1,5 @@
 package com.example.ddareungi
 
-import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -20,7 +19,6 @@ import com.example.a190306app.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.libraries.places.internal.it
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.util.*
@@ -56,8 +54,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initPermission()
-        checkNetwork()
-        init()
+         checkNetwork()
+         init()
     }
 
     fun checkNetwork(){
