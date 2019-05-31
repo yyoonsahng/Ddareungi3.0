@@ -14,7 +14,7 @@ import com.google.maps.android.clustering.ClusterItem
 * */
 
 data class MyBike(val stationId:String, val stationName:String, val rackTotCnt:Int, val parkingBikeTotCnt:Int,
-                  val shared:Int, val stationLatitude:Double, val stationLongitude:Double ): ClusterItem {
+                  val shared:Int, val stationLatitude:Double, val stationLongitude:Double, var bookmarked:Int ): ClusterItem {
     override fun getSnippet(): String {
         return ""
     }

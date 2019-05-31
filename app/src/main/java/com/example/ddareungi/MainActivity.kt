@@ -24,7 +24,13 @@ import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
+    override fun changeBookmarkToMap(rentalOffice:String) {
+        loadFragment(mapFragment)
+
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     lateinit var bookmarkFragment: BookmarkFragment
@@ -49,6 +55,8 @@ class MainActivity : AppCompatActivity() {
         "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/", //4938개나 있음
         "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/132/"
     )
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -249,6 +257,7 @@ class MainActivity : AppCompatActivity() {
                 mActivity.mainTextView.visibility= View.GONE
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(mActivity.locationPermissionGranted, dParse.bList)
+                mActivity.bookmarkFragment.getData(dParse.bList, dParse.dList)
             }
         }
 

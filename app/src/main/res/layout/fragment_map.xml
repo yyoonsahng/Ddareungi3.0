@@ -64,7 +64,7 @@
                     app:layout_constraintTop_toBottomOf="@id/map_card_regular_text"
                     android:background="@drawable/map_card_bookmark_button"
                     android:layout_marginTop="4dp" android:layout_marginStart="8dp"
-                    android:drawableStart="@drawable/ic_star_border_black_18dp"
+                    android:drawableLeft="@drawable/ic_star_border_black_18dp"
                     android:text="@string/map_card_bookmark_text"
                     android:drawablePadding="8dp" android:gravity="center_vertical"/>
 

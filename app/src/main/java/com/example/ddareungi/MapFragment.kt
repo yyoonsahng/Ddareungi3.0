@@ -9,7 +9,9 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.a190306app.MyBike
+import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -23,7 +25,8 @@ import kotlinx.android.synthetic.main.fragment_map.*
 const val DEFAULT_ZOOM = 16f
 
 class MapFragment : Fragment(), OnMapReadyCallback {
-
+    var dbHandler: MyDB? = null
+    var bookmarked:Boolean = false
     lateinit var mMap: GoogleMap
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
     var mLocationPermissionGranted = false  //GPS 권환 획득 유무를 확인하는 flag 값
@@ -34,7 +37,6 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     lateinit var markers: Markers
     lateinit var myLocation: Location
     var hasMyLocation = false
-
 
     fun setData(locationPermissionGranted: Boolean, bikeList: MutableList<MyBike>) {
         mLocationPermissionGranted = locationPermissionGranted
@@ -107,7 +109,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mMap.setOnCameraIdleListener {
             addMarker()
         }
-
+        dbHandler = MyDB(context!!)
         mMap.setOnMarkerClickListener {
             map_refresh_fab.hide()
             val clickedMarkerTag = it.tag as MyBike
@@ -115,6 +117,50 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             map_card_view.visibility = View.VISIBLE
             map_card_title_text.text = clickedMarkerTag.stationName
             map_card_regular_text.text = "${clickedMarkerTag.parkingBikeTotCnt}대 사용 가능"
+
+            if(dbHandler!!.findOffice(clickedMarkerTag.stationName) == 0){
+                bookmark_button.text = "즐겨찾기 추가"
+                bookmark_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_star_border_black_18dp, 0, 0, 0)
+            }
+            else{
+                bookmark_button.text = "즐겨찾기 삭제"
+                bookmark_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_star_black_24dp, 0, 0, 0)
+            }
+
+            bookmark_button.setOnClickListener {
+                if(dbHandler!!.findOffice(clickedMarkerTag.stationName) == 0){
+                    val rental: Rental = Rental("", "", 0)
+                    var success: Boolean = false
+                    rental.rental_office = clickedMarkerTag.stationName
+                    rental.bookmarked = 1
+                    success = dbHandler!!.addUser(rental)
+                    if(success){
+                        Toast.makeText(context, "성공 ${clickedMarkerTag.stationName}", Toast.LENGTH_SHORT).show()
+                        bookmark_button.text = "즐겨찾기 삭제"
+                        bookmark_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_star_black_24dp, 0, 0, 0)
+                        clickedMarkerTag.bookmarked = 1
+                    }
+
+                    else
+                        Toast.makeText(context, "실패", Toast.LENGTH_SHORT).show()
+                }
+                else{
+                    val rental: Rental = Rental("", "", 1)
+
+                    var success: Boolean = false
+                    rental.delete = clickedMarkerTag.stationName
+                    rental.bookmarked = 0
+                    success = dbHandler!!.deleteUser(rental)
+                    if (success)
+                        Toast.makeText(context, "delete 성공${clickedMarkerTag.stationName}", Toast.LENGTH_LONG).show()
+                    else
+                        Toast.makeText(context, "delete 실패", Toast.LENGTH_SHORT).show()
+                    bookmark_button.text = "즐겨찾기 추가"
+                    bookmark_button.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_star_border_black_18dp, 0, 0, 0)
+
+                    clickedMarkerTag.bookmarked = 1
+                }
+            }
             true
         }
 
@@ -122,6 +168,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             map_card_view.visibility = View.GONE
             map_refresh_fab.show()
         }
+
 
     }
 
@@ -141,7 +188,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                         }
                     }
                 } else {
-                    if(mMap.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0){
+                    if (mMap.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0) {
                         visibleMarkers[bikeStop.stationId]!!.remove()
                         visibleMarkers.remove(bikeStop.stationId)
                     }
