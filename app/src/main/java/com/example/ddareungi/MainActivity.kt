@@ -70,8 +70,7 @@ class MainActivity : AppCompatActivity() {
             //네트워크에연결안되어있으면 일단그냥종료
             //어떻게처리할지 고민해봐야겠음
             Toast.makeText(this,"네트워크연결안됨",Toast.LENGTH_SHORT).show()
-            mainTextView.visibility= View.GONE
-
+            logo_layout.visibility = View.GONE
         }
     }
     fun  initData() {
@@ -263,7 +262,6 @@ class MainActivity : AppCompatActivity() {
                 mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
                 mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 Toast.makeText(mActivity.applicationContext, "Data parsing done"+mActivity.localty, Toast.LENGTH_SHORT).show()
-                mActivity.mainTextView.visibility= View.GONE
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.mapFragment.setData(
                     mActivity.locationPermissionGranted,
