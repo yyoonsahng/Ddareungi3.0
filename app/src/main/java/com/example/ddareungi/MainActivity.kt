@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.example.a190306app.*
@@ -24,7 +25,7 @@ import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, BookmarkFragment.BookmarkToMapListener {
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     lateinit var bookmarkFragment: BookmarkFragment
@@ -56,6 +57,11 @@ class MainActivity : AppCompatActivity() {
         initPermission()
          checkNetwork()
          init()
+    }
+
+    override fun changeBookmarkToMap(rentalOffice: String) {
+        mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
+        loadFragment(mapFragment)
     }
 
     fun checkNetwork(){
@@ -96,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         timerFragment = TimerFragment()
         courseFragment = CourseFragment()
         setSupportActionBar(toolbar)
-
+        supportActionBar!!.setDisplayShowTitleEnabled(false)
         val dummyMapsInitializer = SupportMapFragment()
         supportFragmentManager.beginTransaction().attach(dummyMapsInitializer).commit()
         dummyMapsInitializer.getMapAsync {
@@ -119,6 +125,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             true
+        }
+    }
+
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when(item!!.itemId) {
+            R.id.action_homepage -> {
+                Toast.makeText(this, "action button clicked", Toast.LENGTH_SHORT).show()
+                return true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+                return false
+            }
         }
     }
 
@@ -268,7 +287,8 @@ class MainActivity : AppCompatActivity() {
                     mActivity.enabledGPS,
                     dParse.bList,
                     dParse.rList,
-                    dParse.pList
+                    dParse.pList,
+                    null
                 )
             }
         }

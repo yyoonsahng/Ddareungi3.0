@@ -57,6 +57,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:id="@+id/logo_layout"
+            android:visibility="gone"
             android:background="@color/colorLoadingBackground">
         <ImageView
                 android:layout_width="wrap_content" android:background="@color/colorLoadingBackground"

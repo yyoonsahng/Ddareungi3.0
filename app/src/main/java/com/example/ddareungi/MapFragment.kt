@@ -53,6 +53,8 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     var currentMarkerType = PlaceType.BIKE
     var clickedMarker: Marker? = null
     var myLocation: Location? = null
+    var fromBookmarkFragment = false
+    var mSentBikeName: String? = null
 
     enum class PlaceType {
         BIKE, TOILET, PARK, SEARCH
@@ -63,13 +65,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         enableGPS: Boolean,
         bikeList: MutableList<MyBike>,
         toiletList: MutableList<MyRestroom>,
-        parkList: MutableList<MyPark>
+        parkList: MutableList<MyPark>,
+        sentBikeName: String?
     ) {
         mLocationPermissionGranted = locationPermissionGranted
         mEnableGPS = enableGPS
         mBikeList = bikeList
         mToiletList = toiletList
         mParkList = parkList
+        mSentBikeName = sentBikeName
     }
 
     override fun onCreateView(
@@ -138,6 +142,16 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 is Place -> adjustMapWidget(it, clickedMarkerTag, PlaceType.SEARCH)
             }
             true
+        }
+
+        if(fromBookmarkFragment) {
+            for(bike in mBikeList) {
+                if(bike.stationName == mSentBikeName) {
+                    clickedMarker = markerController.addBikeMarker(bike)
+                    clickedMarker!!.tag == bike
+                    adjustMapWidget(clickedMarker!!, bike, PlaceType.BIKE)
+                }
+            }
         }
 
         mMap.setOnMapClickListener {
@@ -213,6 +227,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             mMap.clear()
             visibleMarkers.clear()
         }
+
         val bounds = mMap.projection.visibleRegion.latLngBounds
 
         when (markerType) {
