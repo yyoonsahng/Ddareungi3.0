@@ -27,5 +27,4 @@ class BookmarkFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-
 }

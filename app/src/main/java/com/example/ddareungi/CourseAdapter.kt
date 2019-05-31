@@ -26,11 +26,11 @@ class CourseAdapter(var items: ArrayList<Course>, val activity: FragmentActivity
         p0.length.text = items.get(p1).length
         when (p1) {
             0 -> {
-                p0.crsImage.setImageResource(R.drawable.bicycle)
+                //p0.crsImage.setImageResource(R.drawable.bicycle)
 
             }
             1 -> {
-                p0.crsImage.setImageResource(R.drawable.cyclist)
+                //p0.crsImage.setImageResource(R.drawable.cyclist)
             }
         }
 

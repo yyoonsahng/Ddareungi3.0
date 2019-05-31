@@ -34,10 +34,4 @@ class CourseFragment : Fragment() {
         adapter.notifyDataSetChanged()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        data.add(0, Course("추천 코스 2: 양재 시민의 숲 코스", "거리: 7.83 km", "예상 소요 시간 : 30-40 분"))
-        data.add(0, Course("추천 코스 1 : 여의도 ~ 반포 코스", "거리: 11.05 km", "예상 소요 시간 : 44 분"))
-    }
-
 }
