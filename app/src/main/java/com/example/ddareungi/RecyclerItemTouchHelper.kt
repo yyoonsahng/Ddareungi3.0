@@ -1,6 +1,5 @@
 package com.example.ddareungi
 
-import android.content.Context
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -12,15 +11,9 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
     }
 
     val listener: RecyclerItemTouchHelperListener
-    var dbHandler: MyDB?
-    val context: Context?
-    val adapter: BookmarkAdapter
 
-    constructor(dragDirs: Int, swipeDirs: Int, listener: RecyclerItemTouchHelperListener, dbHandler: MyDB?, adapter: BookmarkAdapter, context: Context?) : super(dragDirs, swipeDirs) {
-        this.dbHandler = dbHandler
+    constructor(dragDirs: Int, swipeDirs: Int, listener: RecyclerItemTouchHelperListener) : super(dragDirs, swipeDirs) {
         this.listener = listener
-        this.adapter = adapter
-        this.context = context
     }
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
@@ -56,7 +49,6 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
         getDefaultUIUtil().onDrawOver(c, recyclerView, foregroundView, dX, dY,
             actionState, isCurrentlyActive)
@@ -70,7 +62,6 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
         val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
         getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY,
             actionState, isCurrentlyActive)

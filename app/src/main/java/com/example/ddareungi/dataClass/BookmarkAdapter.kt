@@ -4,7 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.example.ddareungi.R
 
@@ -40,8 +40,8 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var rentalName: TextView
         var leftBike: TextView
-        var viewForeground:LinearLayout
-        var viewBackground:LinearLayout
+        var viewForeground:RelativeLayout
+        var viewBackground:RelativeLayout
 
         init {
             rentalName = itemView.findViewById(R.id.rental_name)

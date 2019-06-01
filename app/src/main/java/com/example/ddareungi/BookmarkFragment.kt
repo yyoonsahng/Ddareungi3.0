@@ -44,83 +44,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         mDust = dustList
     }
 
-//    fun initSwipe() {//swipe 기능을 넣는다
-//        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(0, LEFT) {
-//            val listener: RecyclerItemTouchHelperListener
-//
-//            fun RecyclerItemTouchHelper(dragDirs: Int, swipeDirs: Int, listener: RecyclerItemTouchHelperListener) {
-//                super(dragDirs, swipeDirs)
-//                this.listener = listener
-//            }
-//
-//            override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
-//                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//                 return true
-//            }
-//            override fun onSwiped(p0: RecyclerView.ViewHolder, p1: Int) {
-//                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-//                dbHandler = MyDB(context!!)
-//                val rental: Rental = Rental("", "", 1)
-//                var delete_name = dbHandler!!.findOfficeWithRow(p0.adapterPosition)
-//                rental.delete = delete_name
-//                dbHandler!!.deleteUser(rental)
-//                adapter.removeItem(p0.adapterPosition)
-//
-//            }
-//            override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-//                super.onSelectedChanged(viewHolder, actionState)
-//                if(viewHolder != null){
-//                    val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
-//                    getDefaultUIUtil().onSelected(foregroundView)
-//                }
-//
-//            }
-//
-//
-//            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-//                super.clearView(recyclerView, viewHolder)
-//                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
-//                getDefaultUIUtil().clearView(foregroundView)
-//            }
-//            override fun onChildDrawOver(
-//                c: Canvas,
-//                recyclerView: RecyclerView,
-//                viewHolder: RecyclerView.ViewHolder?,
-//                dX: Float,
-//                dY: Float,
-//                actionState: Int,
-//                isCurrentlyActive: Boolean
-//            ) {
-//                super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-//                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
-//                getDefaultUIUtil().onDrawOver(c, recyclerView, foregroundView, dX, dY,
-//                    actionState, isCurrentlyActive)
-//            }
-//            override fun onChildDraw(
-//                c: Canvas,
-//                recyclerView: RecyclerView,
-//                viewHolder: RecyclerView.ViewHolder,
-//                dX: Float,
-//                dY: Float,
-//                actionState: Int,
-//                isCurrentlyActive: Boolean
-//            ) {
-//                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-//                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
-//                getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY,
-//                    actionState, isCurrentlyActive)
-//            }
-//
-//            override fun convertToAbsoluteDirection(flags: Int, layoutDirection: Int): Int {
-//                return super.convertToAbsoluteDirection(flags, layoutDirection)
-//            }
-//
-//        }//여기까지가 객체 생성
-//        //helper 객체를 하나 만든다
-//        var itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
-//        itemTouchHelper.attachToRecyclerView(bookmark)
-//    }
-
 
     fun showRentalOffice() {
         dbHandler = MyDB(context!!)
@@ -171,16 +94,16 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initLayout()
-        val itemTouchHelperCallback: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this, dbHandler, adapter, context!!)
-        val item = ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(bookmark)
-        //initSwipe()
+        val itemTouchHelperCallback: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this)
+        //val item = ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(bookmark)
+        object: ItemTouchHelper(itemTouchHelperCallback){}.attachToRecyclerView(bookmark)
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
         if(viewHolder is BookmarkAdapter.ViewHolder) {
             dbHandler = MyDB(context!!)
             val rental: Rental = Rental("", "", 1)
-            var delete_name = dbHandler!!.findOfficeWithRow(viewHolder.adapterPosition)
+            val delete_name = dbHandler!!.findOfficeWithRow(viewHolder.adapterPosition)
             rental.delete = delete_name
             dbHandler!!.deleteUser(rental)
             adapter.removeItem(viewHolder.adapterPosition)
