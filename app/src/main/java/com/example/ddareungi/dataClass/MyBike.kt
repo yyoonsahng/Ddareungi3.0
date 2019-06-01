@@ -13,7 +13,7 @@ import com.google.maps.android.clustering.ClusterItem
 * stationLongitude : 경도
 * */
 
-data class MyBike(val stationId:String, val stationName:String, val rackTotCnt:Int, var parkingBikeTotCnt:Int,
+data class MyBike(val stationId:String, val stationName:String, val rackTotCnt:Int, val parkingBikeTotCnt:Int,
                   val shared:Int, val stationLatitude:Double, val stationLongitude:Double, var bookmarked:Int ): ClusterItem {
     override fun getSnippet(): String {
         return ""

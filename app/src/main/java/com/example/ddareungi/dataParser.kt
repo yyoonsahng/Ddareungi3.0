@@ -77,7 +77,6 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
         } catch (e: JSONException) {
             e.printStackTrace()
         }
-
     }
     fun restroomParse(jsonString: String){
         try {
@@ -122,5 +121,14 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
 
         }
     }
-
+//    fun getList(type: Int):MutableList<Any>?{
+//        when (type) {
+//            Data.BIKE.type ->return bList as MutableList<Any>
+//            Data.DUST.type ->return dList as MutableList<Any>
+//            Data.RESTROOM.type ->return rList as MutableList<Any>
+//            Data.PARK.type ->return pList as MutableList<Any>
+//            else -> return null
+//        }
+//
+//    }
 }
