@@ -4,6 +4,7 @@ package com.example.ddareungi
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -101,6 +102,11 @@ class BookmarkFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         showRentalOffice()
         initLayout()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i("stop","Stoped")
     }
 }
 
