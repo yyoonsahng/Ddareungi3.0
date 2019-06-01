@@ -37,7 +37,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-    fun getData(bikeList: MutableList<MyBike>, dustList: MutableList<MyDust>) {
+    fun setData(bikeList: MutableList<MyBike>, dustList: MutableList<MyDust>) {
         mBikeList = bikeList
         mDust = dustList
     }
@@ -48,20 +48,20 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         bookmarkMap = mutableMapOf()
         var Db = MyDB
         bookmarkArray = dbHandler!!.getAllUser()
+        upDate(false)
+        historyArray = dbHandler!!.getAllHistory()
+    }
+    fun upDate(onUpdate:Boolean){
         for (bookmark in bookmarkArray) {
-            bookmarkMap[bookmark.rentalOffice] = bookmark
-        }
-
-        for (bike in mBikeList) {
-            if (bookmarkMap.containsKey(bike.stationName)) {
-                bookmarkMap[bike.stationName]!!.leftBike = bike.parkingBikeTotCnt
+            for (bike in mBikeList) {
+                if (bookmark.rentalOffice == bike.stationName) {
+                    bookmark.leftBike = bike.parkingBikeTotCnt
+                    break
+                }
             }
         }
-
-        for (bookmark in bookmarkArray) {
-            bookmark.leftBike = bookmarkMap[bookmark.rentalOffice]!!.leftBike
-        }
-        historyArray = dbHandler!!.getAllHistory()
+        if(onUpdate)
+            bookmarkAdapter.notifyDataSetChanged()
     }
 
     fun initLayout() {
@@ -116,6 +116,11 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initLayout()
+        bookmark_refresh_fab.setOnClickListener {
+            val url="http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+            val networkTask= MainActivity.NetworkTask(0,url, null, activity as MainActivity,false)
+            networkTask.execute()
+        }
         val itemTouchHelperCallback_1: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this)
         val itemTouchHelperCallback_2: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper2(0, ItemTouchHelper.LEFT, this)
         //val item = ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(bookmark)

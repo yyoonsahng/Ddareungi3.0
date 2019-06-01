@@ -56,21 +56,22 @@ class MyDB(context: Context) :
     }
 
     fun getAllHistory(): ArrayList<History> {
-        var recenthistory: String = ""
-        var historyArray: ArrayList<History> = ArrayList()
-        val db = readableDatabase
-        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
-        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {//cursor를 가장 첫번째 행으로 옮긴다
-                do {
-                    recenthistory = cursor.getString(cursor.getColumnIndex(HISTORY))
-                    historyArray.add(History("$recenthistory"))
-                } while (cursor.moveToNext())
-            }
-        }
-        cursor.close()
-        db.close()
+//
+//        var recenthistory: String = ""
+       var historyArray: ArrayList<History> = ArrayList()
+//        val db = readableDatabase
+//        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
+//        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
+//        if (cursor != null) {
+//            if (cursor.moveToFirst()) {//cursor를 가장 첫번째 행으로 옮긴다
+//                do {
+//                    recenthistory = cursor.getString(cursor.getColumnIndex(HISTORY))
+//                    historyArray.add(History("$recenthistory"))
+//                } while (cursor.moveToNext())
+//            }
+//        }
+//        cursor.close()
+//        db.close()
         return historyArray
     }
     fun getHistoryCnt(): Int {
