@@ -12,7 +12,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.example.a190306app.MyBike
 import com.example.a190306app.MyDust
 import com.example.ddareungi.dataClass.Bookmark
@@ -163,7 +162,6 @@ class BookmarkFragment : Fragment() {
                 data: Bookmark,
                 position: Int
             ) {
-                Toast.makeText(context, data.rentalOffice, Toast.LENGTH_SHORT).show()
                 if (activity is BookmarkFragment.BookmarkToMapListener) {//구현하고있는 activity인 경우에만 이 기능이 수행된다.
                     val bookmarkListener = activity as BookmarkFragment.BookmarkToMapListener
                     bookmarkListener.changeBookmarkToMap(data.rentalOffice)
@@ -177,7 +175,6 @@ class BookmarkFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        showRentalOffice()
         initLayout()
         initSwipe()
     }
@@ -190,6 +187,11 @@ class BookmarkFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         Log.i("destroy","destroyed")
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        showRentalOffice()
     }
 }
 
