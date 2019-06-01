@@ -33,7 +33,7 @@ class BookmarkFragment : Fragment() {
 
     interface BookmarkToMapListener {
         //이미지를 터치하면 changeTextFrag 호출
-        fun changeBookmarkToMap(rentalOffice:String)
+        fun changeBookmarkToMap(rentalOffice: String)
     }
 
     override fun onCreateView(
@@ -102,5 +102,6 @@ class BookmarkFragment : Fragment() {
         showRentalOffice()
         initLayout()
     }
-
 }
+
+

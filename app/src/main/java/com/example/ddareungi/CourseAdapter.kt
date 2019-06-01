@@ -1,6 +1,5 @@
 package com.example.teamproject_2019_1
 
-
 import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -10,7 +9,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.ddareungi.R
-import com.example.teamproject_2019_1.Course
 
 class CourseAdapter(var items: ArrayList<Course>, val activity: FragmentActivity) : RecyclerView.Adapter<CourseAdapter.ViewHolder>() {
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): CourseAdapter.ViewHolder {
@@ -28,11 +26,11 @@ class CourseAdapter(var items: ArrayList<Course>, val activity: FragmentActivity
         p0.length.text = items.get(p1).length
         when (p1) {
             0 -> {
-                p0.crsImage.setImageResource(R.drawable.bicycle)
+                //p0.crsImage.setImageResource(R.drawable.bicycle)
 
             }
             1 -> {
-                p0.crsImage.setImageResource(R.drawable.cyclist)
+                //p0.crsImage.setImageResource(R.drawable.cyclist)
             }
         }
 

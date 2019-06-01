@@ -105,7 +105,7 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
             for (i in 0..jarray.length()) {
                 var jObject = jarray.getJSONObject(i)
                 var id: Int = jObject.optInt("P_IDX")
-                var name: String = jObject.optString("P_NAME")
+                var name: String = jObject.optString("P_PARK")
                 var zone: String = jObject.optString("P_ZONE")
                 var addr: String = jObject.optString("P_ADDR")
                 var g_longitude: Double = jObject.optDouble("G_LONGITUDE")
