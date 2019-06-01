@@ -18,19 +18,16 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
         val v = LayoutInflater.from(p0.context)
             .inflate(R.layout.bookmarklist_layout, p0, false)
         return ViewHolder(v)
-
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun getItemCount(): Int {
         return items.size
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-
     }
 
     override fun onBindViewHolder(p0: BookmarkAdapter.ViewHolder, p1: Int) {
-        p0.rentalName.text = items.get(p1).rentalOffice.toString()
-        p0.leftBike.text = items.get(p1).leftBike.toString()
+        p0.rentalName.text = items[p1].rentalOffice
+        val leftBike = items[p1].leftBike.toString() + "대"
+        p0.leftBike.text = leftBike
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

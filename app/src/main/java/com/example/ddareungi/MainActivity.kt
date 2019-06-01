@@ -13,7 +13,6 @@ import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.example.a190306app.*
@@ -25,8 +24,7 @@ import org.json.JSONObject
 import java.util.*
 
 
-
-class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, BookmarkFragment.BookmarkToMapListener {
+class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     lateinit var bookmarkFragment: BookmarkFragment
@@ -53,13 +51,12 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
     )
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initPermission()
-         checkNetwork()
-         init()
+        checkNetwork()
+        init()
     }
 
     override fun changeBookmarkToMap(rentalOffice: String) {
@@ -69,23 +66,23 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
 
     }
 
-    fun checkNetwork(){
-        var connectvityManager=getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo=connectvityManager.activeNetworkInfo
-        if(networkInfo!=null && networkInfo.isConnected){
+    fun checkNetwork() {
+        var connectvityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectvityManager.activeNetworkInfo
+        if (networkInfo != null && networkInfo.isConnected) {
 
-            Toast.makeText(this,"네트워크연결됨",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
-        }
-        else{
+        } else {
             //네트워크에연결안되어있으면 일단그냥종료
             //어떻게처리할지 고민해봐야겠음
-            Toast.makeText(this,"네트워크연결안됨",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "네트워크연결안됨", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
         }
     }
-    fun  initData() {
-        val networkTask0 = NetworkTask(0, urlStr[0],dParse,null)
+
+    fun initData() {
+        val networkTask0 = NetworkTask(0, urlStr[0], dParse, null)
         networkTask0.execute()
 
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, this)
@@ -108,6 +105,11 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
         courseFragment = CourseFragment()
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
+
+        ddraeungi_home_button.setOnClickListener {
+
+        }
+
         val dummyMapsInitializer = SupportMapFragment()
         supportFragmentManager.beginTransaction().attach(dummyMapsInitializer).commit()
         dummyMapsInitializer.getMapAsync {
@@ -130,19 +132,6 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
                 }
             }
             true
-        }
-    }
-
-    override fun onMenuItemClick(item: MenuItem?): Boolean {
-        when(item!!.itemId) {
-            R.id.action_homepage -> {
-                Toast.makeText(this, "action button clicked", Toast.LENGTH_SHORT).show()
-                return true
-            }
-            else -> {
-                super.onOptionsItemSelected(item)
-                return false
-            }
         }
     }
 
@@ -246,16 +235,16 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
                     count++
                 }
                 return rList
-            }
-            else if(type==Data.RESTROOM.type){
-                val rStr=url+"1/1000"
-                val result=RequestHttpURLConnection().request(rStr)
-                var rNum=JSONObject(result).getJSONObject("SearchPublicToiletPOIService").optInt("list_total_count")-1000
+            } else if (type == Data.RESTROOM.type) {
+                val rStr = url + "1/1000"
+                val result = RequestHttpURLConnection().request(rStr)
+                var rNum =
+                    JSONObject(result).getJSONObject("SearchPublicToiletPOIService").optInt("list_total_count") - 1000
                 rList.add(result)
-                var count=2
-                while(true){
-                    val rStr=url+(1+1000*(count-1)).toString()+"/"+(1000*count).toString()
-                    val result=RequestHttpURLConnection().request(rStr) // 해당 URL로 부터 결과물을 얻어온다.
+                var count = 2
+                while (true) {
+                    val rStr = url + (1 + 1000 * (count - 1)).toString() + "/" + (1000 * count).toString()
+                    val result = RequestHttpURLConnection().request(rStr) // 해당 URL로 부터 결과물을 얻어온다.
                     rList.add(result)
                     rNum -= 1000
                     if (rNum < 1)
@@ -285,7 +274,11 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
                 mActivity.window.statusBarColor = mActivity.resources.getColor(R.color.white, null)
                 mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
                 mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                Toast.makeText(mActivity.applicationContext, "Data parsing done"+mActivity.localty, Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    mActivity.applicationContext,
+                    "Data parsing done" + mActivity.localty,
+                    Toast.LENGTH_SHORT
+                ).show()
                 mActivity.loadFragment(mActivity.bookmarkFragment)
                 mActivity.bookmarkFragment.getData(dParse.bList, dParse.dList)
 
@@ -300,12 +293,13 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
             }
         }
 
-        fun initLocation(){
-            if(mActivity!!.enabledGPS){
-                var geocoder= Geocoder(mActivity, Locale.KOREA)
-                var addrList=geocoder.getFromLocation(mActivity.mLocation.latitude,mActivity!!.mLocation.longitude,1)
-                var addr=addrList.first().getAddressLine(0).split(" ")
-                mActivity.localty=addr[2]
+        fun initLocation() {
+            if (mActivity!!.enabledGPS) {
+                var geocoder = Geocoder(mActivity, Locale.KOREA)
+                var addrList =
+                    geocoder.getFromLocation(mActivity.mLocation.latitude, mActivity!!.mLocation.longitude, 1)
+                var addr = addrList.first().getAddressLine(0).split(" ")
+                mActivity.localty = addr[2]
             }
 //            if (mActivity!!.checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))){
 //                val lm=mActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager

@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context=".BookmarkFragment">
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 xmlns:tools="http://schemas.android.com/tools"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 tools:context=".BookmarkFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <LinearLayout
             android:layout_width="match_parent"
             android:orientation="vertical"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:paddingStart="8dp" android:paddingEnd="8dp">
         <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:textSize="12sp"
-                android:layout_marginBottom="20dp"
-                android:layout_marginTop="30dp"
+                android:layout_marginBottom="4dp" android:layout_marginTop="104dp"
+                android:layout_marginStart="8dp"
                 android:text="즐겨찾는 대여소"
+                android:fontFamily="@font/spoqahansansregular"
+                android:textColor="@color/black"
         />
 
-        <android.support.v7.widget.RecyclerView android:layout_width="match_parent"
-                                                android:id="@+id/bookmark"
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+              android:background="@color/black"/>
+
+        <android.support.v7.widget.RecyclerView android:id="@+id/bookmark"
+                                                android:layout_width="match_parent"
                                                 android:layout_height="wrap_content">
 
         </android.support.v7.widget.RecyclerView>
@@ -30,4 +35,15 @@
         </android.support.v7.widget.RecyclerView>
     </LinearLayout>
 
-</FrameLayout>
+    <android.support.design.widget.FloatingActionButton android:id="@+id/bookmark_refresh_fab"
+                                                        android:layout_width="wrap_content"
+                                                        android:layout_height="wrap_content"
+                                                        android:layout_gravity="bottom|end"
+                                                        android:layout_marginBottom="64dp"
+                                                        android:layout_marginEnd="16dp"
+                                                        app:elevation="6dp"
+                                                        android:src="@drawable/ic_refresh_black_16dp"
+                                                        app:backgroundTint="@color/colorPrimaryLight"
+                                                        app:borderWidth="0dp"/>
+
+</android.support.design.widget.CoordinatorLayout>

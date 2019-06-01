@@ -3,6 +3,7 @@ package com.example.ddareungi
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
@@ -15,15 +16,6 @@ import com.example.ddareungi.dataClass.BookmarkAdapter
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- *
- */
 class BookmarkFragment : Fragment() {
     var dbHandler: MyDB? = null
     var mBikeList: MutableList<MyBike> = mutableListOf()
@@ -71,11 +63,13 @@ class BookmarkFragment : Fragment() {
     }
 
     fun initLayout() {
-        var adapter = BookmarkAdapter(bookmarkArray)
+        val adapter = BookmarkAdapter(bookmarkArray)
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         bookmark.layoutManager = layoutManager
         bookmark.adapter = adapter
-        var mapfragment: MapFragment = MapFragment()
+        val dividerItemDecoration = DividerItemDecoration(context!!, layoutManager.orientation)
+        bookmark.addItemDecoration(dividerItemDecoration)
+
         adapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
             override fun OnItemClick(
                 holder: BookmarkAdapter.ViewHolder,
@@ -89,8 +83,6 @@ class BookmarkFragment : Fragment() {
                     bookmarkListener.changeBookmarkToMap(data.rentalOffice)
                 }
 
-
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
         }
