@@ -280,7 +280,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.position))
     }
 
-    private fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
+    fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
         if (clearAll) {
             mMap.clear()
             visibleMarkers.clear()
@@ -341,7 +341,9 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
-
+            val url= "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+            val networkTask= MainActivity.NetworkTask(0,url, null, activity as MainActivity,true)
+            networkTask.execute()
         }
 
         path_button.setOnClickListener {
