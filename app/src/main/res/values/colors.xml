@@ -10,4 +10,6 @@
     <color name="border_color">#C3C5C5</color>
     <color name="colorPrimaryRipple">#4227BC79</color>
     <color name="colorLoadingBackground">#61E1A7</color>
+
+    <color name="bg_row_background">#fa315b</color>
 </resources>

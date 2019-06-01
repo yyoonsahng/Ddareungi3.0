@@ -13,6 +13,21 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
         fun OnItemClick(holder: ViewHolder, view: View, data: Bookmark, position: Int)
     }
     var itemClickListener: OnItemClickListener? = null
+    fun removeItem(pos: Int) {//position정보, swipe하면 없어지게
+        items.removeAt(pos)
+        notifyItemRemoved(pos)
+    }
+    fun moveItem(pos1: Int, pos2: Int) {
+        val item1 = items[pos1]//position
+        val item2 = items[pos2]
+        //지우고 다시 넣어준다.
+        items.removeAt(pos1)//옮기려는걸 먼저 지운다
+        items.add(pos2, item1)//그리고 원하는 pos에 추가하면 알아서 밑에 있는것은 밀리게됨
+        //position이 바뀌었음을 알려준다.
+        notifyItemMoved(pos1, pos2)
+    }
+
+
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): BookmarkAdapter.ViewHolder {
         val v = LayoutInflater.from(p0.context)

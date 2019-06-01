@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
          init()
     }
 
-
     override fun changeBookmarkToMap(rentalOffice: String) {
         mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
         bottom_navigation.menu.findItem(R.id.map).setChecked(true)

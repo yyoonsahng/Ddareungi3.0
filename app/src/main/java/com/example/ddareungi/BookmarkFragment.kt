@@ -1,9 +1,13 @@
 package com.example.ddareungi
 
 
+import android.graphics.Canvas
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.helper.ItemTouchHelper
+import android.support.v7.widget.helper.ItemTouchHelper.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +35,7 @@ class BookmarkFragment : Fragment() {
     var mDust: MutableList<MyDust> = mutableListOf()
     lateinit var bookmarkArray: ArrayList<Bookmark>
     lateinit var bookmarkMap: MutableMap<String, Bookmark>
-
+    lateinit var adapter:BookmarkAdapter
     interface BookmarkToMapListener {
         //이미지를 터치하면 changeTextFrag 호출
         fun changeBookmarkToMap(rentalOffice: String)
@@ -50,6 +54,40 @@ class BookmarkFragment : Fragment() {
         mBikeList = bikeList
         mDust = dustList
     }
+    fun initSwipe() {//swipe 기능을 넣는다
+        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, RIGHT) {
+
+            override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
+                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                //View의 위치를 바꾼다. 두개의 배열의 내용이 서로 바뀌어야함
+                //adapter.moveItem(p1.adapterPosition, p2.adapterPosition)//바꿀 position정보 viewholder가 가지고 있음
+                return true
+            }
+
+            override fun onSwiped(p0: RecyclerView.ViewHolder, p1: Int) {
+                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                adapter.removeItem(p0.adapterPosition)
+            }
+
+            override fun onChildDraw(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+            }
+        }//여기까지가 객체 생성
+
+        //helper 객체를 하나 만든다
+        var itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
+
+        itemTouchHelper.attachToRecyclerView(bookmark)
+    }
+
 
     fun showRentalOffice() {
         dbHandler = MyDB(context!!)
@@ -72,7 +110,7 @@ class BookmarkFragment : Fragment() {
     }
 
     fun initLayout() {
-        var adapter = BookmarkAdapter(bookmarkArray)
+        adapter = BookmarkAdapter(bookmarkArray)
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         bookmark.layoutManager = layoutManager
         bookmark.adapter = adapter
@@ -107,6 +145,11 @@ class BookmarkFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         Log.i("stop","Stoped")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i("destroy","destroyed")
     }
 }
 
