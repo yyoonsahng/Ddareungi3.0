@@ -1,13 +1,11 @@
 package com.example.ddareungi
 
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.net.ConnectivityManager
-import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -24,7 +22,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONObject
 import java.util.*
-
 
 
 class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
@@ -110,9 +107,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         supportActionBar!!.setDisplayShowTitleEnabled(false)
 
         ddraeungi_home_button.setOnClickListener {
-            val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
-            val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
-            startActivity(webIntent)
+
         }
 
         val dummyMapsInitializer = SupportMapFragment()
@@ -270,13 +265,18 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 dParse.parse(type, i)
             if (mActivity != null) {
                 initLocation()
+                Toast.makeText(
+                    mActivity.applicationContext,
+                    "Data parsing done" + mActivity!!.localty,
+                    Toast.LENGTH_SHORT
+                ).show()
                 mActivity.logo_layout.visibility = View.GONE
                 mActivity.window.statusBarColor = mActivity.resources.getColor(R.color.white, null)
                 mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
                 mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 Toast.makeText(
                     mActivity.applicationContext,
-                    "Data parsing done " + mActivity.localty,
+                    "Data parsing done" + mActivity.localty,
                     Toast.LENGTH_SHORT
                 ).show()
                 mActivity.loadFragment(mActivity.bookmarkFragment)

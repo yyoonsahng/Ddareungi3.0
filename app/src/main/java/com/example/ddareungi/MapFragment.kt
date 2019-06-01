@@ -2,11 +2,7 @@ package com.example.ddareungi
 
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
 import android.location.Location
-import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -15,10 +11,11 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.a190306app.MyBike
+import com.example.ddareungi.dataClass.Rental
 import com.example.a190306app.MyPark
 import com.example.a190306app.MyRestroom
-import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -37,12 +34,12 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter
 import kotlinx.android.synthetic.main.fragment_map.*
-import java.net.URLEncoder
 import java.util.*
 
 
-class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
+class MapFragment : Fragment(), OnMapReadyCallback {
     var dbHandler: MyDB? = null
+    var bookmarked:Boolean = false
     lateinit var mMap: GoogleMap
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
     var mLocationPermissionGranted = false  //GPS 권환 획득 유무를 확인하는 flag 값
@@ -80,7 +77,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         mToiletList = toiletList
         mParkList = parkList
         mSentBikeName = sentBikeName
-        if (mSentBikeName != null)
+        if(mSentBikeName != null)
             fromBookmarkFragment = true
     }
 
@@ -101,25 +98,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
         markerController = MarkerController(context!!, mMap, visibleMarkers)
-        dbHandler = MyDB(context!!)
         visibleMarkers.clear()
 
         mMap.setMinZoomPreference(14f)
 
-        if (fromBookmarkFragment) {
-            for (bike in mBikeList) {
-                if (bike.stationName == mSentBikeName) {
-                    clickedMarker = markerController.addBikeMarker(bike)
-                    clickedMarker!!.tag = bike
-                    adjustMapWidget(clickedMarker!!, bike, PlaceType.BIKE)
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(clickedMarker!!.position))
-                }
-            }
-        }
-
         if (mLocationPermissionGranted && mEnableGPS) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (!fromBookmarkFragment) {
+                if(!fromBookmarkFragment) {
                     mMap.moveCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             LatLng(it.latitude, it.longitude),
@@ -132,7 +117,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             mMap.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
                 fusedLocationClient.lastLocation.addOnSuccessListener {
-                    if (!fromBookmarkFragment) {
+                    if(!fromBookmarkFragment) {
                         mMap.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(it.latitude, it.longitude),
@@ -155,9 +140,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         mMap.setOnCameraIdleListener {
             updateMarker(currentMarkerType, false)
         }
-
+        dbHandler = MyDB(context!!)
         mMap.setOnMarkerClickListener {
-            val clickedMarkerTag = it.tag
+            var clickedMarkerTag = it.tag
             clickedMarker = it
             when (clickedMarkerTag) {
                 is MyBike -> adjustMapWidget(it, clickedMarkerTag, PlaceType.BIKE)
@@ -165,8 +150,65 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 is MyPark -> adjustMapWidget(it, clickedMarkerTag, PlaceType.PARK)
                 is Place -> adjustMapWidget(it, clickedMarkerTag, PlaceType.SEARCH)
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(it.position))
+
+            clickedMarkerTag = it.tag as MyBike
+            if(dbHandler!!.findOffice(clickedMarkerTag.stationName) == 0){
+                bookmark_button.setImageDrawable(context!!.resources.getDrawable(R.drawable.ic_star_border_black_24dp, null))
+            }
+            else{
+                bookmark_button.setImageDrawable(context!!.resources.getDrawable(R.drawable.ic_star_black_24dp, null))
+            }
+
+            bookmark_button.setOnClickListener {
+                if (dbHandler!!.findOffice(clickedMarkerTag.stationName) == 0) {
+                    val rental: Rental = Rental("", "", 0)
+                    var success: Boolean = false
+                    rental.rental_office = clickedMarkerTag.stationName
+                    rental.bookmarked = 1
+                    success = dbHandler!!.addUser(rental)
+                    if (success) {
+                        Toast.makeText(context, "성공 ${clickedMarkerTag.stationName}", Toast.LENGTH_SHORT).show()
+                        bookmark_button.setImageDrawable(
+                            context!!.resources.getDrawable(
+                                R.drawable.ic_star_black_24dp,
+                                null
+                            )
+                        )
+                        clickedMarkerTag.bookmarked = 1
+                    } else
+                        Toast.makeText(context, "실패", Toast.LENGTH_SHORT).show()
+                } else {
+                    val rental: Rental = Rental("", "", 1)
+
+                    var success: Boolean = false
+                    rental.delete = clickedMarkerTag.stationName
+                    rental.bookmarked = 0
+                    success = dbHandler!!.deleteUser(rental)
+                    if (success)
+                        Toast.makeText(context, "delete 성공${clickedMarkerTag.stationName}", Toast.LENGTH_LONG).show()
+                    else
+                        Toast.makeText(context, "delete 실패", Toast.LENGTH_SHORT).show()
+                    bookmark_button.setImageDrawable(
+                        context!!.resources.getDrawable(
+                            R.drawable.ic_star_border_black_24dp,
+                            null
+                        )
+                    )
+
+                    clickedMarkerTag.bookmarked = 1
+                }
+            }
             true
+        }
+
+        if(fromBookmarkFragment) {
+            for(bike in mBikeList) {
+                if(bike.stationName == mSentBikeName) {
+                    clickedMarker = markerController.addBikeMarker(bike)
+                    clickedMarker!!.tag = bike
+                    adjustMapWidget(clickedMarker!!, bike, PlaceType.BIKE)
+                }
+            }
         }
 
         mMap.setOnMapClickListener {
@@ -184,7 +226,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
     }
 
-
     private fun adjustMapWidget(marker: Marker, content: Any?, markerType: MapFragment.PlaceType) {
         lateinit var widgetContent: Any
 
@@ -197,53 +238,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 map_card_view.visibility = View.VISIBLE
                 map_card_title_text.text = widgetContent.stationName
                 map_card_regular_text.text = "${widgetContent.parkingBikeTotCnt}대 사용 가능"
-
-                if (dbHandler!!.findOffice(widgetContent.stationName) == 0) {
-                    bookmark_button.setImageDrawable(
-                        context!!.resources.getDrawable(
-                            R.drawable.ic_star_border_black_24dp,
-                            null
-                        )
-                    )
-                } else {
-                    bookmark_button.setImageDrawable(
-                        context!!.resources.getDrawable(
-                            R.drawable.ic_star_black_24dp,
-                            null
-                        )
-                    )
-                }
-                bookmark_button.setOnClickListener {
-                    if (dbHandler!!.findOffice((widgetContent as MyBike).stationName) == 0) {
-                        val rental = Rental("", "", 0)
-                        val success: Boolean
-                        rental.rental_office = (widgetContent as MyBike).stationName
-                        rental.bookmarked = 1
-                        success = dbHandler!!.addUser(rental)
-                        if (success) {
-                            bookmark_button.setImageDrawable(
-                                context!!.resources.getDrawable(
-                                    R.drawable.ic_star_black_24dp,
-                                    null
-                                )
-                            )
-                            (widgetContent as MyBike).bookmarked = 1
-                        }
-                    } else {
-                        val rental = Rental("", "", 1)
-
-                        rental.delete = (widgetContent as MyBike).stationName
-                        rental.bookmarked = 0
-                        dbHandler!!.deleteUser(rental)
-                        bookmark_button.setImageDrawable(
-                            context!!.resources.getDrawable(
-                                R.drawable.ic_star_border_black_24dp,
-                                null
-                            )
-                        )
-                        (widgetContent as MyBike).bookmarked = 1
-                    }
-                }
             }
             MapFragment.PlaceType.TOILET -> {
                 marker.showInfoWindow()
@@ -283,6 +277,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 }
             }
         }
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.position))
     }
 
     private fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
@@ -339,107 +334,22 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         }
     }
 
-    private fun findClosetBike(place: Place?, park: MyPark?): MyBike {
-
-        val dest = Location("dest")
-        if(place != null) {
-            dest.latitude = place.latLng!!.latitude
-            dest.longitude = place.latLng!!.longitude
-        } else {
-            dest.latitude = park!!.latitude
-            dest.longitude = park.longitude
-        }
-        var closestBike: MyBike = mBikeList[0]
-        var dist = Float.MAX_VALUE
-
-        for (bike in mBikeList) {
-            val bikeStop = Location("bike")
-            bikeStop.latitude = bike.stationLatitude
-            bikeStop.longitude = bike.stationLongitude
-            var tempDist: Float
-            tempDist = dest.distanceTo(bikeStop)
-            if (dist > tempDist) {
-                dist = tempDist
-                closestBike = bike
-            }
-        }
-        return closestBike
-    }
-
-    override fun onClick(v: View?) {
-        val dlat: Double
-        val dlng: Double
-        val dname: String
-        var url: String = ""
-        if (v!!.id == R.id.path_button) {
-            dlat = clickedMarker!!.position.latitude
-            dlng = clickedMarker!!.position.longitude
-            dname = URLEncoder.encode((clickedMarker!!.tag as MyBike).stationName, "UTF-8")
-            url =
-                "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
-        }else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker != null) {
-            dlat = searchedPlaceMarker!!.position.latitude
-            dlng = searchedPlaceMarker!!.position.longitude
-            dname = URLEncoder.encode((searchedPlaceMarker!!.tag as Place).name, "UTF-8")
-
-            val closetBike = findClosetBike(searchedPlaceMarker!!.tag as Place, null)
-            val vlat = closetBike.stationLatitude
-            val vlng = closetBike.stationLongitude
-            val vname = URLEncoder.encode(closetBike.stationName, "UTF-8")
-            url =
-                "nmap://route/bicycle?dlat=$dlat&dlng=$dlng&dname=$dname&v1lat=$vlat&v1lng=$vlng&v1name=$vname&appname=com.example.ddareungi"
-        } else if(v.id == R.id.dest_card_path_button && searchedPlaceMarker == null) {
-            dlat = clickedMarker!!.position.latitude
-            dlng = clickedMarker!!.position.longitude
-            dname = URLEncoder.encode((clickedMarker!!.tag as MyPark).name, "UTF-8")
-            url =
-                "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
-
-            val closetBike = findClosetBike(null, clickedMarker!!.tag as MyPark)
-            val vlat = closetBike.stationLatitude
-            val vlng = closetBike.stationLongitude
-            val vname = URLEncoder.encode(closetBike.stationName, "UTF-8")
-            url =
-                "nmap://route/bicycle?dlat=$dlat&dlng=$dlng&dname=$dname&v1lat=$vlat&v1lng=$vlng&v1name=$vname&appname=com.example.ddareungi"
-        }
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        intent.addCategory(Intent.CATEGORY_BROWSABLE)
-        val list: MutableList<ResolveInfo> =
-            activity!!.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-        if (list.isEmpty()) {
-            context!!.startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("market://details?id=com.nhn.android.nmap")
-                )
-            )
-        } else {
-            context!!.startActivity(intent)
-        }
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
-        if (!(mLocationPermissionGranted && mEnableGPS))
+        if(!(mLocationPermissionGranted && mEnableGPS))
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
 
         }
 
-        path_button.setOnClickListener(this)
-
-        dest_card_path_button.setOnClickListener(this)
-
-        bookmark_button.setOnClickListener {
+        path_button.setOnClickListener {
 
         }
 
-        rent_button.setOnClickListener {
-            val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
-            val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
-            startActivity(webIntent)
+        bookmark_button.setOnClickListener {
+
         }
 
         map_place_fab.setMenuListener(object : SimpleMenuListenerAdapter() {
@@ -472,7 +382,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         initPlaceSearch()
     }
 
-
     private fun initPlaceSearch() {
         val placesClient = Places.createClient(context!!)
 
@@ -499,9 +408,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     searchedPlaceMarker = markerController.addSearchMarker(place)
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
-
-                    
                 }.addOnFailureListener {
                     Log.e("place search", "Place not found: " + it.message)
                 }
