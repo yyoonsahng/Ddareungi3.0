@@ -20,6 +20,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
+import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
@@ -44,9 +46,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var enabledGPS = false
 
     var urlStr = arrayOf(
-        "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
+        "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음
         "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/25/",
-        "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/", //4938개나 있음
+        "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/",//4938개나 있음
         "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/132/"
     )
 
@@ -70,8 +72,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         var connectvityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectvityManager.activeNetworkInfo
         if (networkInfo != null && networkInfo.isConnected) {
-
-            Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
             //네트워크에연결안되어있으면 일단그냥종료
@@ -98,14 +98,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun init() {
-        Log.i("location init", "init실행")
         bookmarkFragment = BookmarkFragment()
         mapFragment = MapFragment()
         timerFragment = TimerFragment()
         courseFragment = CourseFragment()
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
-
         ddraeungi_home_button.setOnClickListener {
 
         }
@@ -203,7 +201,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         }
     }
 
-    class NetworkTask(val type: Int, val url: String, val dParse: dataParser, activity: MainActivity?) :
+    class NetworkTask(val type: Int, val url: String, val dParse: dataParser?, activity: MainActivity?,var onUpdate:Boolean=false) :
         AsyncTask<Unit, Unit, List<String>>() { //void 대신 unit
         // doInBackground, onProgressUpdate, onPostExecute의 매개변수 자료형
 
@@ -261,35 +259,55 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
         override fun onPostExecute(result: List<String>) {
             super.onPostExecute(result)
-            for (i in result)
-                dParse.parse(type, i)
-            if (mActivity != null) {
-                initLocation()
-                Toast.makeText(
-                    mActivity.applicationContext,
-                    "Data parsing done" + mActivity!!.localty,
-                    Toast.LENGTH_SHORT
-                ).show()
-                mActivity.logo_layout.visibility = View.GONE
-                mActivity.window.statusBarColor = mActivity.resources.getColor(R.color.white, null)
-                mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
-                mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                Toast.makeText(
-                    mActivity.applicationContext,
-                    "Data parsing done" + mActivity.localty,
-                    Toast.LENGTH_SHORT
-                ).show()
-                mActivity.loadFragment(mActivity.bookmarkFragment)
-                mActivity.bookmarkFragment.getData(dParse.bList, dParse.dList)
+            if(onUpdate){
+                var mCount=0
+                for (i in result){
+                    try {
+                        var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
+                        for (j in 0..jarray.length()) {
+                            val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
+                            if(mActivity!!.mapFragment.mBikeList[mCount].parkingBikeTotCnt!=mParkingBikeTotCnt)
+                                mActivity!!.mapFragment.mBikeList[mCount].parkingBikeTotCnt=mParkingBikeTotCnt
+                            mCount++
+                        }
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                }
+                mActivity!!.mapFragment.updateMarker(MapFragment.PlaceType.BIKE,true)
 
-                mActivity.mapFragment.setData(
-                    mActivity.locationPermissionGranted,
-                    mActivity.enabledGPS,
-                    dParse.bList,
-                    dParse.rList,
-                    dParse.pList,
-                    null
-                )
+            }
+            else {
+                for (i in result)
+                    dParse!!.parse(type, i)
+                if (mActivity != null && type == Data.RESTROOM.type) {
+                    initLocation()
+                    Toast.makeText(
+                        mActivity!!.applicationContext,
+                        "Data parsing done" + mActivity!!.localty,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    mActivity.logo_layout.visibility = View.GONE
+                    mActivity.window.statusBarColor = mActivity.resources.getColor(R.color.white, null)
+                    mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
+                    mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    Toast.makeText(
+                        mActivity.applicationContext,
+                        "Data parsing done" + mActivity.localty,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    mActivity.loadFragment(mActivity.bookmarkFragment)
+                    mActivity.bookmarkFragment.getData(dParse!!.bList, dParse.dList)
+
+                    mActivity.mapFragment.setData(
+                        mActivity.locationPermissionGranted,
+                        mActivity.enabledGPS,
+                        dParse!!.bList,
+                        dParse!!.rList,
+                        dParse!!.pList,
+                        null
+                    )
+                }
             }
         }
 
@@ -301,15 +319,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 var addr = addrList.first().getAddressLine(0).split(" ")
                 mActivity.localty = addr[2]
             }
-//            if (mActivity!!.checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))){
-//                val lm=mActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//                if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-//                    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(mActivity)
-//                    fusedLocationClient.lastLocation.addOnSuccessListener {
-//
-//                    }
-//                }
-//            }
         }
     }
 }

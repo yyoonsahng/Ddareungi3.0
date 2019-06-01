@@ -16,6 +16,7 @@ import com.example.a190306app.MyBike
 import com.example.ddareungi.dataClass.Rental
 import com.example.a190306app.MyPark
 import com.example.a190306app.MyRestroom
+import com.example.a190306app.RequestHttpURLConnection
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -34,6 +35,9 @@ import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter
 import kotlinx.android.synthetic.main.fragment_map.*
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import java.util.*
 
 
@@ -280,7 +284,7 @@ class MapFragment : Fragment(), OnMapReadyCallback {
         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.position))
     }
 
-    private fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
+     fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
         if (clearAll) {
             mMap.clear()
             visibleMarkers.clear()
@@ -341,6 +345,10 @@ class MapFragment : Fragment(), OnMapReadyCallback {
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
+            val url= "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+            val networkTask= MainActivity.NetworkTask(0,url, null, activity as MainActivity,true)
+            networkTask.execute()
+            updateMarker(PlaceType.BIKE,true)
 
         }
 
