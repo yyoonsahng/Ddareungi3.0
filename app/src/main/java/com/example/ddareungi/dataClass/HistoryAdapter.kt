@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.example.ddareungi.R
 
@@ -14,6 +15,11 @@ class HistoryAdapter(val items: ArrayList<History>) : RecyclerView.Adapter<Histo
     }
 
     var itemClickListener: OnItemClickListener? = null
+
+    fun removeItem(pos: Int) {//position정보, swipe하면 없어지게
+        items.removeAt(pos)
+        notifyItemRemoved(pos)
+    }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): HistoryAdapter.ViewHolder {
         val v = LayoutInflater.from(p0.context)
@@ -31,9 +37,13 @@ class HistoryAdapter(val items: ArrayList<History>) : RecyclerView.Adapter<Histo
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var recentHistory: TextView
+        var viewForeground2: RelativeLayout
+        var viewBackground2: RelativeLayout
 
         init {
-            recentHistory = itemView.findViewById(R.id.rental_name)
+            recentHistory = itemView.findViewById(R.id.history)
+            viewBackground2 = itemView.findViewById(R.id.backgroundView2)
+            viewForeground2 = itemView.findViewById(R.id.foregroundView2)
             itemView.setOnClickListener {
                 val position = adapterPosition
                 itemClickListener?.OnItemClick(this, it, items[position], position)

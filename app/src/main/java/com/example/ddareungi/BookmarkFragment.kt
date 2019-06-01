@@ -14,15 +14,17 @@ import android.view.ViewGroup
 import com.example.ddareungi.dataClass.*
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
-class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHelperListener,
+    RecyclerItemTouchHelper2.RecyclerItemTouchHelperListener {
     var dbHandler: MyDB? = null
     var mBikeList: MutableList<MyBike> = mutableListOf()
     var mDust: MutableList<MyDust> = mutableListOf()
     lateinit var bookmarkArray: ArrayList<Bookmark>
     lateinit var bookmarkMap: MutableMap<String, Bookmark>
-    lateinit var adapter:BookmarkAdapter
+    lateinit var bookmarkAdapter:BookmarkAdapter
+    lateinit var historyAdapter:HistoryAdapter
+    lateinit var historyArray:ArrayList<History>
     interface BookmarkToMapListener {
-        //이미지를 터치하면 changeTextFrag 호출
         fun changeBookmarkToMap(rentalOffice: String)
     }
 
@@ -41,7 +43,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     }
 
 
-    fun showRentalOffice() {
+    fun rentalOfficeData() {
         dbHandler = MyDB(context!!)
         bookmarkMap = mutableMapOf()
         var Db = MyDB
@@ -59,17 +61,24 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         for (bookmark in bookmarkArray) {
             bookmark.leftBike = bookmarkMap[bookmark.rentalOffice]!!.leftBike
         }
+        historyArray = dbHandler!!.getAllHistory()
     }
 
     fun initLayout() {
-        adapter = BookmarkAdapter(bookmarkArray)
-        val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        bookmark.layoutManager = layoutManager
-        bookmark.adapter = adapter
-        val dividerItemDecoration = DividerItemDecoration(context!!, layoutManager.orientation)
-        bookmark.addItemDecoration(dividerItemDecoration)
+        bookmarkAdapter = BookmarkAdapter(bookmarkArray)
+        historyAdapter = HistoryAdapter(historyArray)
+        val layoutManager_bookmark = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        val layoutManager_history = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        bookmark.layoutManager = layoutManager_bookmark
+        recent_path.layoutManager = layoutManager_history
+        bookmark.adapter = bookmarkAdapter
+        recent_path.adapter = historyAdapter
+        val dividerItemDecoration1 = DividerItemDecoration(context!!, layoutManager_bookmark.orientation)
+        val dividerItemDecoration2 = DividerItemDecoration(context!!, layoutManager_history.orientation)
+        bookmark.addItemDecoration(dividerItemDecoration1)
+        recent_path.addItemDecoration(dividerItemDecoration2)
 
-        adapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
+        bookmarkAdapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
             override fun OnItemClick(
                 holder: BookmarkAdapter.ViewHolder,
                 view: View,
@@ -85,24 +94,51 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
 
         }
 
+        historyAdapter.itemClickListener = object : HistoryAdapter.OnItemClickListener {
+            override fun OnItemClick(
+                holder: HistoryAdapter.ViewHolder,
+                view: View,
+                data: History,
+                position: Int
+            ) {
+                /*if (activity is BookmarkFragment.BookmarkToMapListener) {//구현하고있는 activity인 경우에만 이 기능이 수행된다.
+                    val bookmarkListener = activity as BookmarkFragment.BookmarkToMapListener
+                    bookmarkListener.changeBookmarkToMap(data.rentalOffice)
+                }*/
+
+            }
+
+        }
+
+
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         initLayout()
-        val itemTouchHelperCallback: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT,this)
+        val itemTouchHelperCallback_1: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this)
+        val itemTouchHelperCallback_2: ItemTouchHelper.SimpleCallback = RecyclerItemTouchHelper2(0, ItemTouchHelper.LEFT, this)
         //val item = ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(bookmark)
-        object: ItemTouchHelper(itemTouchHelperCallback){}.attachToRecyclerView(bookmark)
+        object: ItemTouchHelper(itemTouchHelperCallback_1){}.attachToRecyclerView(bookmark)
+        object: ItemTouchHelper(itemTouchHelperCallback_2){}.attachToRecyclerView(recent_path)
+
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
+        dbHandler = MyDB(context!!)
         if(viewHolder is BookmarkAdapter.ViewHolder) {
-            dbHandler = MyDB(context!!)
             val rental: Rental = Rental("", "", 1)
             val delete_name = dbHandler!!.findOfficeWithRow(viewHolder.adapterPosition)
             rental.delete = delete_name
             dbHandler!!.deleteUser(rental)
-            adapter.removeItem(viewHolder.adapterPosition)
+            bookmarkAdapter.removeItem(viewHolder.adapterPosition)
+        }
+        else{
+            val history = History("")
+            val delete_name = dbHandler!!.findHistoryWithRow(viewHolder.adapterPosition)
+            history.recent = delete_name
+            dbHandler!!.deleteHistory(history)
+            historyAdapter.removeItem(viewHolder.adapterPosition)
         }
     }
 
@@ -118,8 +154,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        showRentalOffice()
+        rentalOfficeData()
     }
 }
-
-

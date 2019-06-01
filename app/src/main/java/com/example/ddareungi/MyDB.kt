@@ -133,6 +133,16 @@ class MyDB(context: Context) :
         return search
     }
 
+    fun findHistoryWithRow(row:Int):String{
+        var history = ""
+        val db = readableDatabase
+        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
+        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
+        cursor.moveToPosition(row)
+        history = cursor.getString(cursor.getColumnIndex(HISTORY))
+
+        return history
+    }
     fun findOfficeWithRow(row:Int):String{
         var rental = ""
         val db = readableDatabase

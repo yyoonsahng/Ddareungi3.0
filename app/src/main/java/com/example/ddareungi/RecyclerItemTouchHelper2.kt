@@ -3,15 +3,15 @@ package com.example.ddareungi
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import com.example.ddareungi.dataClass.BookmarkAdapter
+import com.example.ddareungi.dataClass.HistoryAdapter
 
-class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
+class RecyclerItemTouchHelper2: ItemTouchHelper.SimpleCallback {
     interface RecyclerItemTouchHelperListener {
         fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int)
     }
 
     val listener: RecyclerItemTouchHelperListener
-    constructor(dragDirs: Int, swipeDirs: Int, listener: RecyclerItemTouchHelperListener) : super(dragDirs, swipeDirs) {
+    constructor(dragDirs: Int, swipeDirs: Int, listener: BookmarkFragment) : super(dragDirs, swipeDirs) {
         this.listener = listener
     }
 
@@ -27,7 +27,7 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
         if(viewHolder != null){
-            val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+            val foregroundView = (viewHolder as HistoryAdapter.ViewHolder).viewForeground2
             getDefaultUIUtil().onSelected(foregroundView)
         }
 
@@ -36,7 +36,7 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
-        val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+        val foregroundView = (viewHolder as HistoryAdapter.ViewHolder).viewForeground2
         getDefaultUIUtil().clearView(foregroundView)
     }
     override fun onChildDrawOver(
@@ -48,7 +48,7 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+        val foregroundView = (viewHolder as HistoryAdapter.ViewHolder).viewForeground2
         getDefaultUIUtil().onDrawOver(c, recyclerView, foregroundView, dX, dY,
             actionState, isCurrentlyActive)
     }
@@ -61,7 +61,7 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+        val foregroundView = (viewHolder as HistoryAdapter.ViewHolder).viewForeground2
         getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY,
             actionState, isCurrentlyActive)
     }
