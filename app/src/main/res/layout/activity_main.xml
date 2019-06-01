@@ -21,16 +21,17 @@
                 android:layout_height="?attr/actionBarSize"
                 app:logo="@drawable/ic_appbar_logo"
                 android:background="@color/white"
-                android:paddingStart="24dp" android:paddingEnd="16dp"
+                android:paddingStart="24dp"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-            <ImageView
-                    android:id="@+id/ddraeungi_home_button"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:src="@drawable/ic_ddareungi_home"
-                    android:layout_marginStart="275dp"
-                    android:layout_marginTop="13dp"/>
-
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                <ImageView
+                        android:id="@+id/ddraeungi_home_button"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:src="@drawable/ic_ddareungi_home"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"/>
+            </RelativeLayout>
         </android.support.v7.widget.Toolbar>
 
         <FrameLayout
@@ -65,7 +66,6 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:id="@+id/logo_layout"
-            android:visibility="gone"
             android:background="@color/colorLoadingBackground">
         <ImageView
                 android:layout_width="wrap_content" android:background="@color/colorLoadingBackground"
