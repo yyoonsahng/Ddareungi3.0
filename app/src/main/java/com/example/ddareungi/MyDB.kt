@@ -132,4 +132,15 @@ class MyDB(context: Context) :
         search = cursor.getCount()
         return search
     }
+
+    fun findOfficeWithRow(row:Int):String{
+        var rental = ""
+        val db = readableDatabase
+        val selectALLQuery = "SELECT * FROM $TABLE_NAME"//query문을 저장
+        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
+        cursor.moveToPosition(row)
+        rental = cursor.getString(cursor.getColumnIndex(RENTAL_OFFICE))
+
+        return rental
+    }
 }

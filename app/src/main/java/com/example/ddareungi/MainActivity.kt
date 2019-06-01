@@ -26,6 +26,7 @@ import org.json.JSONObject
 import java.util.*
 
 
+
 class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
