@@ -115,8 +115,8 @@ class MyDB(context: Context) :
                 do {
                     rentalOffice = cursor.getString(cursor.getColumnIndex(RENTAL_OFFICE))
                     bookmarked = cursor.getInt(cursor.getColumnIndex(CHECKED))
-                    bookmarkArray.add(Bookmark("$rentalOffice", 0, bookmarked))
-                } while (cursor.moveToNext())
+                bookmarkArray.add(Bookmark("$rentalOffice",0, bookmarked))
+            } while (cursor.moveToNext())
             }
         }
         cursor.close()
