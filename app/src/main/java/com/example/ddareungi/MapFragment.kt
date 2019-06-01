@@ -15,9 +15,9 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import com.example.a190306app.MyBike
 import com.example.a190306app.MyPark
-import com.example.a190306app.MyRestroom
+import com.example.ddareungi.dataClass.MyBike
+import com.example.ddareungi.dataClass.MyRestroom
 import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -285,7 +285,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         }
     }
 
-    private fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
+    fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
         if (clearAll) {
             mMap.clear()
             visibleMarkers.clear()
@@ -425,7 +425,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
-
+            val url= "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+            val networkTask= MainActivity.NetworkTask(0,url, null, activity as MainActivity,true)
+            networkTask.execute()
         }
 
         path_button.setOnClickListener(this)

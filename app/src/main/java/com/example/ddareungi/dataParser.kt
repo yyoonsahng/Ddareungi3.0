@@ -1,5 +1,6 @@
-package com.example.a190306app
+package com.example.ddareungi.dataClass
 
+import com.example.a190306app.MyPark
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject

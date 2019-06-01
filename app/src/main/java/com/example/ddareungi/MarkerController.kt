@@ -9,9 +9,9 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.a190306app.MyBike
 import com.example.a190306app.MyPark
-import com.example.a190306app.MyRestroom
+import com.example.ddareungi.dataClass.MyBike
+import com.example.ddareungi.dataClass.MyRestroom
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.model.Place

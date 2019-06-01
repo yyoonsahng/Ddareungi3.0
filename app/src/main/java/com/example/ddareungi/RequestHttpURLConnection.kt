@@ -1,4 +1,4 @@
-package com.example.a190306app
+package com.example.ddareungi
 
 import java.io.BufferedReader
 import java.io.IOException

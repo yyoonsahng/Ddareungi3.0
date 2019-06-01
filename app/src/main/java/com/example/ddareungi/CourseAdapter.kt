@@ -1,4 +1,4 @@
-package com.example.teamproject_2019_1
+package com.example.ddareungi
 
 import android.support.v4.app.FragmentActivity
 import android.support.v7.widget.RecyclerView
@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.example.ddareungi.R
+import com.example.ddareungi.dataClass.Course
 
 class CourseAdapter(var items: ArrayList<Course>, val activity: FragmentActivity) : RecyclerView.Adapter<CourseAdapter.ViewHolder>() {
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): CourseAdapter.ViewHolder {

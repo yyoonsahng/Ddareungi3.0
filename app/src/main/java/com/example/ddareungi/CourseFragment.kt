@@ -8,7 +8,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.teamproject_2019_1.Course
+import com.example.ddareungi.dataClass.Course
 import com.example.teamproject_2019_1.CourseAdapter
 
 class CourseFragment : Fragment() {

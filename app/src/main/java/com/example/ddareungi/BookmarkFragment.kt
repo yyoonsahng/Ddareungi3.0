@@ -11,11 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.a190306app.MyBike
-import com.example.a190306app.MyDust
-import com.example.ddareungi.dataClass.Bookmark
-import com.example.ddareungi.dataClass.BookmarkAdapter
-import com.example.ddareungi.dataClass.Rental
+import com.example.ddareungi.dataClass.*
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
 class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
