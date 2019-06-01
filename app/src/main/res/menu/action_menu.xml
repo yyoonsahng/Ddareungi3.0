@@ -3,6 +3,6 @@
 <item
         android:id="@+id/action_homepage"
         android:icon="@drawable/ic_ddareungi_logo"
-        android:title=""
+        android:title="따릉이 홈페이지"
         app:showAsAction="always"/>
 </menu>

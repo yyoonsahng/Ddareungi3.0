@@ -1,9 +1,9 @@
 package com.example.ddareungi
 
 
-import android.graphics.Canvas
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -17,18 +17,10 @@ import com.example.a190306app.MyBike
 import com.example.a190306app.MyDust
 import com.example.ddareungi.dataClass.Bookmark
 import com.example.ddareungi.dataClass.BookmarkAdapter
+import com.example.ddareungi.dataClass.Rental
+import kotlinx.android.synthetic.main.bookmarklist_layout.*
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- *
- */
 class BookmarkFragment : Fragment() {
     var dbHandler: MyDB? = null
     var mBikeList: MutableList<MyBike> = mutableListOf()
@@ -55,20 +47,57 @@ class BookmarkFragment : Fragment() {
         mDust = dustList
     }
     fun initSwipe() {//swipe 기능을 넣는다
-        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(UP or DOWN, RIGHT) {
+        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(0, LEFT) {
+            /*val listener: RecyclerItemTouchHelperListener =
+
+            fun RecyclerItemTouchHelper(dragDirs: Int, swipeDirs: Int, listener: RecyclerItemTouchHelperListener) {
+                super(dragDirs, swipeDirs)
+                this.listener = listener
+            }*/
 
             override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
                 //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                //View의 위치를 바꾼다. 두개의 배열의 내용이 서로 바뀌어야함
-                //adapter.moveItem(p1.adapterPosition, p2.adapterPosition)//바꿀 position정보 viewholder가 가지고 있음
-                return true
+                 return true
             }
-
             override fun onSwiped(p0: RecyclerView.ViewHolder, p1: Int) {
                 //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                dbHandler = MyDB(context!!)
+                val rental: Rental = Rental("", "", 1)
+                var delete_name = dbHandler!!.findOfficeWithRow(p0.adapterPosition)
+                rental.delete = delete_name
+                dbHandler!!.deleteUser(rental)
                 adapter.removeItem(p0.adapterPosition)
+
+            }
+            /*override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+                super.onSelectedChanged(viewHolder, actionState)
+                if(viewHolder != null){
+                    val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+                    getDefaultUIUtil().onSelected(foregroundView)
+                }
+
             }
 
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+                getDefaultUIUtil().clearView(foregroundView)
+            }
+            override fun onChildDrawOver(
+                c: Canvas,
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder?,
+                dX: Float,
+                dY: Float,
+                actionState: Int,
+                isCurrentlyActive: Boolean
+            ) {
+                super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
+                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+                getDefaultUIUtil().onDrawOver(c, recyclerView, foregroundView, dX, dY,
+                    actionState, isCurrentlyActive)
+            }
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
@@ -79,12 +108,22 @@ class BookmarkFragment : Fragment() {
                 isCurrentlyActive: Boolean
             ) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-            }
-        }//여기까지가 객체 생성
+                val foregroundView = (viewHolder as BookmarkAdapter.ViewHolder).viewForeground
+                getDefaultUIUtil().onDraw(c, recyclerView, foregroundView, dX, dY,
+                    actionState, isCurrentlyActive)
+            }*/
 
+            /*override fun convertToAbsoluteDirection(flags: Int, layoutDirection: Int): Int {
+                return super.convertToAbsoluteDirection(flags, layoutDirection)
+            }
+            interface RecyclerItemTouchHelperListener{
+                fun onSwiped(p0: RecyclerView.ViewHolder, p1: Int, p2:Int)
+            }*/
+            
+
+        }//여기까지가 객체 생성
         //helper 객체를 하나 만든다
         var itemTouchHelper = ItemTouchHelper(simpleItemTouchCallback)
-
         itemTouchHelper.attachToRecyclerView(bookmark)
     }
 
@@ -114,7 +153,9 @@ class BookmarkFragment : Fragment() {
         val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         bookmark.layoutManager = layoutManager
         bookmark.adapter = adapter
-        var mapfragment: MapFragment = MapFragment()
+        val dividerItemDecoration = DividerItemDecoration(context!!, layoutManager.orientation)
+        bookmark.addItemDecoration(dividerItemDecoration)
+
         adapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
             override fun OnItemClick(
                 holder: BookmarkAdapter.ViewHolder,
@@ -128,8 +169,6 @@ class BookmarkFragment : Fragment() {
                     bookmarkListener.changeBookmarkToMap(data.rentalOffice)
                 }
 
-
-                //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
         }
@@ -140,6 +179,7 @@ class BookmarkFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         showRentalOffice()
         initLayout()
+        initSwipe()
     }
 
     override fun onStop() {
