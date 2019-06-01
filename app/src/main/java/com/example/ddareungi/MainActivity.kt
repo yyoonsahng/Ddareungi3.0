@@ -25,7 +25,7 @@ import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, BookmarkFragment.BookmarkToMapListener {
+class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener {
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     lateinit var bookmarkFragment: BookmarkFragment
@@ -59,10 +59,10 @@ class MainActivity : AppCompatActivity(), MenuItem.OnMenuItemClickListener, Book
          init()
     }
 
-    override fun changeBookmarkToMap(rentalOffice: String) {
-        mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
-        loadFragment(mapFragment)
-    }
+//    override fun changeBookmarkToMap(rentalOffice: String) {
+//        mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
+//        loadFragment(mapFragment)
+//    }
 
     fun checkNetwork(){
         var connectvityManager=getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

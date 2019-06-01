@@ -3,6 +3,6 @@
 <item
         android:id="@+id/action_homepage"
         android:icon="@drawable/ic_ddareungi_logo"
-        android:title="따"
+        android:title=""
         app:showAsAction="always"/>
 </menu>
