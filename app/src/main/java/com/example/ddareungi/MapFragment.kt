@@ -500,6 +500,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
+
+                    
                 }.addOnFailureListener {
                     Log.e("place search", "Place not found: " + it.message)
                 }
