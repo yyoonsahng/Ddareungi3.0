@@ -1,4 +1,4 @@
-package com.example.a190306app
+package com.example.ddareungi.dataClass
 /*
 * id: 공중화장실 id
 * fName: 대명칭 ex. 건물이름

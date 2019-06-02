@@ -1,4 +1,4 @@
-package com.example.a190306app
+package com.example.ddareungi.dataClass
 
 import org.json.JSONArray
 import org.json.JSONException
@@ -34,13 +34,14 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
             for (i in 0..jarray.length()) {
                 var jObject = jarray.getJSONObject(i)
                 var stationId: String = jObject.optString("stationId")
-
                 var stationName: String = jObject.optString("stationName")
                 var rackTotCnt: Int = jObject.optInt("rackTotCnt")
                 var parkingBikeTotCnt: Int = jObject.optInt("parkingBikeTotCnt")
                 var shared: Int = jObject.optInt("shared")
                 var stationLatitude: Double = jObject.optDouble("stationLatitude")
                 var stationLongitude: Double = jObject.optDouble("stationLongitude")
+                var bookmarked:Int = 0
+
                 bList.add(
                     MyBike(
                         stationId,
@@ -49,7 +50,8 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
                         parkingBikeTotCnt,
                         shared,
                         stationLatitude,
-                        stationLongitude
+                        stationLongitude,
+                        bookmarked
                     )
                 )
             }
@@ -103,7 +105,7 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
             for (i in 0..jarray.length()) {
                 var jObject = jarray.getJSONObject(i)
                 var id: Int = jObject.optInt("P_IDX")
-                var name: String = jObject.optString("P_NAME")
+                var name: String = jObject.optString("P_PARK")
                 var zone: String = jObject.optString("P_ZONE")
                 var addr: String = jObject.optString("P_ADDR")
                 var g_longitude: Double = jObject.optDouble("G_LONGITUDE")

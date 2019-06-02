@@ -1,4 +1,4 @@
-package com.example.a190306app
+package com.example.ddareungi.dataClass
 /*
 * pm10: 미세먼지 농도
 * pm25: 초미세먼지 농도

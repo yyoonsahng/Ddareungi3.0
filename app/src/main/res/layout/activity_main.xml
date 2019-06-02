@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
-tools:context=".MainActivity">
+<android.support.design.widget.CoordinatorLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/white"
+        tools:context=".MainActivity">
 
     <LinearLayout
-            xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -21,46 +19,58 @@ tools:context=".MainActivity">
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                app:logo="@drawable/ic_appbar_logo"
                 android:background="@color/white"
-                android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+                android:paddingStart="24dp"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
+            <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                <ImageView
+                        android:id="@+id/ddraeungi_home_button"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:src="@drawable/ic_ddareungi_home"
+                        android:layout_alignParentEnd="true"
+                        android:paddingTop="13dp"   android:paddingBottom="10dp"
+                        android:layout_centerVertical="true"/>
+            </RelativeLayout>
         </android.support.v7.widget.Toolbar>
 
         <FrameLayout
                 android:layout_width="match_parent" android:layout_height="match_parent">
 
             <FrameLayout
+                    android:fitsSystemWindows="true"
                     android:id="@+id/fragment_container"
                     android:layout_width="match_parent" android:layout_height="match_parent"/>
 
-            <View
-                    android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_gravity="bottom"
-                    android:layout_marginBottom="56dp"
-                    android:background="@color/border_color"/>
             <android.support.design.widget.BottomNavigationView
                     android:id="@+id/bottom_navigation"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:layout_gravity="bottom"
                     app:labelVisibilityMode="labeled"
                     app:menu="@menu/main_menu"
                     app:itemIconTint="@color/menu_item_selector"
                     app:itemTextColor="@color/menu_item_selector"
                     android:theme="@style/Widget.BottomNavigationView"
-                    android:background="@color/white"
-                    android:paddingStart="16dp" android:paddingEnd="16dp"/>
+                    app:itemTextAppearanceActive="@style/TextAppearance.BottomNavigationView.Active"
+                    app:itemTextAppearanceInactive="@style/TextAppearance.BottomNavigationView.Inactive"
+                    android:paddingStart="16dp" android:paddingEnd="16dp"
+                    android:background="@color/white"/>
 
         </FrameLayout>
     </LinearLayout>
-<LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    <TextView
-            android:text="따릉이3.0" android:gravity="center_vertical|center_horizontal" android:textSize="25sp"
-            android:layout_width="match_parent" android:fontFamily="@font/spoqahansansregular" android:background="@color/white"
-            android:layout_height="match_parent" android:id="@+id/mainTextView"/>
-</LinearLayout>
-</FrameLayout>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/logo_layout"
+            android:background="@color/colorLoadingBackground">
+        <ImageView
+                android:layout_width="wrap_content" android:background="@color/colorLoadingBackground"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/ic_loading_logo"
+                android:id="@+id/imageView"/>
+    </LinearLayout>
+</android.support.design.widget.CoordinatorLayout>
