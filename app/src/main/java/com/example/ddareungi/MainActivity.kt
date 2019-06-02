@@ -11,11 +11,13 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
+import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.a190306app.*
+import com.example.course.myPagerAdapter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
@@ -42,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     var dParse= dataParser(bList, dList, rList, pList)
     lateinit var localty:String
     var enabledGPS=false
+
+
 
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
