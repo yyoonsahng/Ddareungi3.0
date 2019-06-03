@@ -282,8 +282,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         e.printStackTrace()
                     }
                 }
-                if(onMapUpdate!!)
-                    mActivity!!.mapFragment.updateMarker(MapFragment.PlaceType.BIKE,true)
+                if(onMapUpdate!!) {
+                    mActivity!!.mapFragment.currentMarkerType=MapFragment.PlaceType.BIKE
+                    mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+                }
                 else{
                     mActivity!!.bookmarkFragment.upDate(true)
                 }
