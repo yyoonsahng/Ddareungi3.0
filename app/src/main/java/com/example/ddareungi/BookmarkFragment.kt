@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import com.example.ddareungi.dataClass.*
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
@@ -65,6 +66,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     }
 
     fun initLayout() {
+        val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+        if(progressBar != null)
+            progressBar.visibility = View.GONE
+
         bookmarkAdapter = BookmarkAdapter(bookmarkArray)
         historyAdapter = HistoryAdapter(historyArray)
         val layoutManager_bookmark = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)

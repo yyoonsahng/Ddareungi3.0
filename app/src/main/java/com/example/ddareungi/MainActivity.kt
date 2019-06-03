@@ -18,7 +18,10 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.a190306app.MyPark
-import com.example.ddareungi.dataClass.*
+import com.example.ddareungi.dataClass.MyBike
+import com.example.ddareungi.dataClass.MyDust
+import com.example.ddareungi.dataClass.MyRestroom
+import com.example.ddareungi.dataClass.dataParser
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment

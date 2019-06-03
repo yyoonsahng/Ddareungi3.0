@@ -133,14 +133,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             mMap.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
                 fusedLocationClient.lastLocation.addOnSuccessListener {
-                    if (!fromBookmarkFragment) {
                         mMap.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(it.latitude, it.longitude),
                                 DEFAULT_ZOOM
                             ), 500, null
                         )
-                    }
+                    
                 }
             }
         } else {
@@ -434,10 +433,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         path_button.setOnClickListener(this)
 
         dest_card_path_button.setOnClickListener(this)
-
-        bookmark_button.setOnClickListener {
-
-        }
 
         rent_button.setOnClickListener {
             val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
