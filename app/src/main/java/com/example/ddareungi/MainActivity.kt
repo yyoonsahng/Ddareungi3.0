@@ -3,6 +3,7 @@ package com.example.ddareungi
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -17,11 +18,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import com.example.a190306app.MyPark
-import com.example.ddareungi.dataClass.MyBike
-import com.example.ddareungi.dataClass.MyDust
-import com.example.ddareungi.dataClass.MyRestroom
-import com.example.ddareungi.dataClass.dataParser
+import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
@@ -58,7 +55,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/132/"
     )
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -71,7 +67,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
         bottom_navigation.menu.findItem(R.id.map).setChecked(true)
         loadFragment(mapFragment)
-
     }
 
     fun checkNetwork() {
@@ -214,16 +209,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
 
-    class NetworkTask(
-        val type: Int,
-        val url: String,
-        val dParse: dataParser?,
-        activity: MainActivity?,
-        var onUpdate: Boolean = false
-    ) :
+
+    class NetworkTask(val type: Int, val url: String, val dParse: dataParser?, var mActivity: MainActivity?,var onMapUpdate:Boolean?=null) :
         AsyncTask<Unit, Unit, List<String>>() { //void 대신 unit
         // doInBackground, onProgressUpdate, onPostExecute의 매개변수 자료형
-
         enum class Data(val type: Int) {
             BIKE(0),
             DUST(1),
@@ -231,7 +220,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             PARK(3)
         }
 
-        val mActivity = activity
 
         override fun doInBackground(vararg params: Unit?): List<String> {
             var rList = mutableListOf<String>()
@@ -278,23 +266,31 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
         override fun onPostExecute(result: List<String>) {
             super.onPostExecute(result)
-            if (onUpdate) {
-                var mCount = 0
-                for (i in result) {
+            if(onMapUpdate!=null){
+                var mCount=0
+                for (i in result){
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
                         for (j in 0..jarray.length()) {
                             val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
-                            if (mActivity!!.mapFragment.mBikeList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt)
-                                mActivity!!.mapFragment.mBikeList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
+                            if(mActivity!!.dParse.bList[mCount].parkingBikeTotCnt!=mParkingBikeTotCnt) {
+                                mActivity!!.dParse.bList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
+                            }
                             mCount++
                         }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
                 }
-                mActivity!!.mapFragment.updateMarker(MapFragment.PlaceType.BIKE, true)
-            } else {
+                if(onMapUpdate!!) {
+                    mActivity!!.mapFragment.currentMarkerType=MapFragment.PlaceType.BIKE
+                    mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+                }
+                else{
+                    mActivity!!.bookmarkFragment.upDate(true)
+                }
+            }
+            else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
@@ -304,21 +300,17 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         "Data parsing done" + mActivity!!.localty,
                         Toast.LENGTH_SHORT
                     ).show()
-                    mActivity.logo_layout.visibility = View.GONE
-                    mActivity.window.statusBarColor = mActivity.resources.getColor(R.color.white, null)
-                    mActivity.window.decorView.background = mActivity.resources.getDrawable(R.color.white, null)
-                    mActivity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    Toast.makeText(
-                        mActivity.applicationContext,
-                        "Data parsing done" + mActivity.localty,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    mActivity!!.logo_layout.visibility = View.GONE
+                    mActivity!!.window.statusBarColor = mActivity!!.resources.getColor(R.color.white, null)
+                    mActivity!!.window.decorView.background = mActivity!!.resources.getDrawable(R.color.white, null)
+                    mActivity!!.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
-                    mActivity.loadFragment(mActivity.bookmarkFragment)
-                    mActivity.bookmarkFragment.getData(dParse!!.bList, dParse.dList)
-                    mActivity.mapFragment.setData(
-                        mActivity.locationPermissionGranted,
-                        mActivity.enabledGPS,
+                    mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
+                    mActivity!!.bookmarkFragment.setData(dParse!!.bList, dParse.dList)
+
+                    mActivity!!.mapFragment.setData(
+                        mActivity!!.locationPermissionGranted,
+                        mActivity!!.enabledGPS,
                         dParse!!.bList,
                         dParse!!.rList,
                         dParse!!.pList,
@@ -326,18 +318,18 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     )
                 }
             }
+
         }
 
         fun initLocation() {
             if (mActivity!!.enabledGPS) {
                 var geocoder = Geocoder(mActivity, Locale.KOREA)
                 var addrList =
-                    geocoder.getFromLocation(mActivity.mLocation.latitude, mActivity!!.mLocation.longitude, 1)
+                    geocoder.getFromLocation(mActivity!!.mLocation.latitude, mActivity!!.mLocation.longitude, 1)
                 var addr = addrList.first().getAddressLine(0).split(" ")
-                mActivity.localty = addr[2]
+                mActivity!!.localty = addr[2]
             }
         }
     }
 }
-
 

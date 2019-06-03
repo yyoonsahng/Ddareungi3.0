@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.ddareungi.dataClass.Course
-import com.example.ddareungi.CourseAdapter
+import kotlinx.android.synthetic.main.activity_main.*
 
 class CourseFragment : Fragment() {
 
@@ -32,6 +32,11 @@ class CourseFragment : Fragment() {
         crsCards.adapter = adapter
 
         adapter.notifyDataSetChanged()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activity!!.appbar_title.text = "추천 코스"
     }
 
 }

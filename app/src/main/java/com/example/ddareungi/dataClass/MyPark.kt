@@ -1,4 +1,4 @@
-package com.example.a190306app
+package com.example.ddareungi.dataClass
 /*
 * id: 공원 id
 * name: 공원 이름

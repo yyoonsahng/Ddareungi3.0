@@ -15,9 +15,8 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import com.example.a190306app.MyPark
-import com.example.ddareungi.dataClass.History
 import com.example.ddareungi.dataClass.MyBike
+import com.example.ddareungi.dataClass.MyPark
 import com.example.ddareungi.dataClass.MyRestroom
 import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.common.api.Status
@@ -498,9 +497,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
-                    var history_path:History = History("")
-                    history_path.recent = place.name.toString()
-                    dbHandler!!.addHistory(history_path)
+
                     
                 }.addOnFailureListener {
                     Log.e("place search", "Place not found: " + it.message)
