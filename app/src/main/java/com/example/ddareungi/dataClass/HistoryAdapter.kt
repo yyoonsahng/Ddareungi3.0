@@ -47,6 +47,8 @@ class HistoryAdapter(val items: ArrayList<History>) : RecyclerView.Adapter<Histo
             itemView.setOnClickListener {
                 val position = adapterPosition
                 itemClickListener?.OnItemClick(this, it, items[position], position)
+
+
             }
 
         }
