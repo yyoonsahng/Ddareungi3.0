@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 
+import android.icu.lang.UCharacter.GraphemeClusterBreak.V
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.fragment_bookmark.*
 class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
     var dbHandler: MyDB? = null
     var mBikeList: MutableList<MyBike> = mutableListOf()
-    var mDust: MutableList<MyDust> = mutableListOf()
+    lateinit  var mDust: MyDust
     lateinit var bookmarkArray: ArrayList<Bookmark>
     lateinit var bookmarkMap: MutableMap<String, Bookmark>
     lateinit var bookmarkAdapter: BookmarkAdapter
@@ -37,9 +38,9 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-    fun setData(bikeList: MutableList<MyBike>, dustList: MutableList<MyDust>) {
+    fun setData(bikeList: MutableList<MyBike>, mDust:MyDust) {
         mBikeList = bikeList
-        mDust = dustList
+        this.mDust=mDust
     }
 
 
