@@ -1,10 +1,17 @@
 package com.example.ddareungi.dataClass
 
+import android.util.Log
+import com.google.common.primitives.UnsignedBytes.toInt
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
+import java.io.StringReader
+import kotlin.math.floor
+import kotlin.math.round
 
-class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var rList:MutableList<MyRestroom>,var pList:MutableList<MyPark>){
+class dataParser(var bList:MutableList<MyBike>,var mDust:MyDust,var rList:MutableList<MyRestroom>,var pList:MutableList<MyPark>, var mWeather:MyWeather){
 //json데이터 파싱하는 클래스
     /*
     * 고민사항
@@ -16,7 +23,8 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
         BIKE(0),
         DUST(1),
         RESTROOM(2),
-        PARK(3)
+        PARK(3),
+        WEATHER(4)
     }
 
     fun parse(type: Int, jsonString: String) {
@@ -26,6 +34,7 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
             Data.DUST.type ->dustParse(jsonString)
             Data.RESTROOM.type ->restroomParse(jsonString)
             Data.PARK.type ->parkParse(jsonString)
+            Data.WEATHER.type->weatherParse(jsonString)
         }
     }
     fun bikeParse(jsonString: String){
@@ -65,18 +74,17 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
             var jarray: JSONArray = JSONObject(jsonString).getJSONObject("RealtimeCityAir").getJSONArray("row")
             for (i in 0..jarray.length()) {
                 var jObject = jarray.getJSONObject(i)
-                var pm10: Double = jObject.optDouble("PM10")
-                var pm25: Double = jObject.optDouble("PM25")
-                var idex_nm: String = jObject.optString("IDEX_NM")
-                var idex_mvl: Double = jObject.optDouble("IDEX_MVL")
-                var localty:String=jObject.optString("MSRSTE_NM")
-                dList.add(
-                    MyDust(pm10,pm25,idex_nm,idex_mvl,localty)
-                )
+                mDust.pm10 = jObject.optDouble("PM10")
+                mDust.pm25= jObject.optDouble("PM25")
+                mDust.idex_nm = jObject.optString("IDEX_NM")
+                mDust.idex_mvl = jObject.optDouble("IDEX_MVL")
+                mDust.localty=jObject.optString("MSRSTE_NM")
+
             }
         } catch (e: JSONException) {
             e.printStackTrace()
         }
+
     }
     fun restroomParse(jsonString: String){
         try {
@@ -121,14 +129,45 @@ class dataParser(var bList:MutableList<MyBike>,var dList:MutableList<MyDust>,var
 
         }
     }
-//    fun getList(type: Int):MutableList<Any>?{
-//        when (type) {
-//            Data.BIKE.type ->return bList as MutableList<Any>
-//            Data.DUST.type ->return dList as MutableList<Any>
-//            Data.RESTROOM.type ->return rList as MutableList<Any>
-//            Data.PARK.type ->return pList as MutableList<Any>
-//            else -> return null
-//        }
-//
-//    }
+    fun weatherParse(xmlString: String){
+        var factory: XmlPullParserFactory? = null
+        factory = XmlPullParserFactory.newInstance()
+        factory!!.setNamespaceAware(true)
+        val xpp = factory!!.newPullParser()
+        xpp.setInput(StringReader(xmlString))
+        var dataSet = false
+        var tag_name:String?=null
+        var eventType = xpp.getEventType()
+        var isEnd=false
+        while (eventType != XmlPullParser.END_DOCUMENT && !isEnd) {
+            when (eventType) {
+                XmlPullParser.START_DOCUMENT -> { }
+                XmlPullParser.START_TAG -> {
+                    tag_name = xpp.getName()
+                    if (tag_name == "temp"||tag_name == "sky"||tag_name == "pty"||tag_name == "wfKor"||tag_name == "pop"){
+                        dataSet=true
+                    }
+                }
+                XmlPullParser.TEXT -> {
+                    if (dataSet) {
+                        val data = xpp.getText()
+                        when(tag_name) {
+                            "temp"-> mWeather.temp= data.toDouble().toInt()
+                            "sky"-> mWeather.sky= data.toInt()
+                            "pty"->  mWeather.pty= data.toInt()
+                            "wfKor"-> mWeather.wfKor=data
+                            "pop"->{
+                                mWeather.pop=data.toInt()
+                                isEnd=true
+                            }
+                        }
+                    }
+                    dataSet = false
+                }
+                XmlPullParser.END_TAG -> { }
+            }
+            eventType = xpp.next()
+        }
+    }
+
 }
