@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.ddareungi.dataClass.*
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkUserState()
         initPermission()
         checkNetwork()
-        init()
+        //init()
         readFile()
     }
 

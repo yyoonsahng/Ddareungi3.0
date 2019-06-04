@@ -6,10 +6,10 @@
 
     <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="vertical">
 
-    <TextView android:layout_height="70dp" android:layout_width="match_parent" android:textColor="@color/black" android:paddingLeft="17dp" android:textSize="27sp" android:text="따릉이 추천 코스" android:gravity="center_vertical"/>
+        <!--  <TextView android:layout_height="70dp" android:layout_width="match_parent" android:textColor="@color/black" android:paddingLeft="17dp" android:textSize="27sp" android:text="따릉이 추천 코스" android:gravity="center_vertical"/>-->
 
-    <android.support.v7.widget.RecyclerView android:layout_height="match_parent" android:layout_width="match_parent" android:id="@+id/CoursemenuList"/>
+         <android.support.v7.widget.RecyclerView android:layout_height="match_parent" android:layout_width="match_parent" android:id="@+id/CoursemenuList"/>
 
-</LinearLayout>
+     </LinearLayout>
 
-</FrameLayout>
+     </FrameLayout>
