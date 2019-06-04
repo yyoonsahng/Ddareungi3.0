@@ -52,9 +52,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     lateinit var fusedLocationClient: FusedLocationProviderClient   //휴대폰이 마지막으로 얻은 내 위치를 얻어오기 위한 객체
     private val KONKUK_UNIV = LatLng(37.540, 127.07)
     private val DEFAULT_ZOOM = 16f
-    lateinit var mBikeList: MutableList<MyBike>
-    lateinit var mToiletList: MutableList<MyRestroom>
-    lateinit var mParkList: MutableList<MyPark>
+    val mBikeList = mutableListOf<MyBike>()
+    val mToiletList = mutableListOf<MyRestroom>()
+    val mParkList = mutableListOf<MyPark>()
     val visibleMarkers = mutableMapOf<String, Marker>()
     lateinit var markerController: MarkerController
     var searchedPlaceMarker: Marker? = null
@@ -63,6 +63,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     var myLocation: Location? = null
     var fromBookmarkFragment = false
     var mSentBikeName: String? = null
+    var networkState = false
 
 
     enum class PlaceType {
@@ -79,9 +80,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     ) {
         mLocationPermissionGranted = locationPermissionGranted
         mEnableGPS = enableGPS
-        mBikeList = bikeList
-        mToiletList = toiletList
-        mParkList = parkList
+        mBikeList.addAll(bikeList)
+        mToiletList.addAll(toiletList)
+        mParkList.addAll(parkList)
         mSentBikeName = sentBikeName
         if (mSentBikeName != null)
             fromBookmarkFragment = true
@@ -132,6 +133,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                         )
                     }
                     myLocation = it
+                } else {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
                 }
             }
             mMap.isMyLocationEnabled = true
@@ -432,13 +435,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
-        if (!(mLocationPermissionGranted || mEnableGPS))
+        if (mLocationPermissionGranted && mEnableGPS)
+            my_location_button.show()
+        else
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
-            val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-            val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, true)
-            networkTask.execute()
+            if(networkState) {
+                val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+                val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, true)
+                networkTask.execute()
+            }
         }
 
         path_button.setOnClickListener(this)
