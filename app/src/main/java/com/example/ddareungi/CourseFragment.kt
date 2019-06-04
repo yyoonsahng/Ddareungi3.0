@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.ddareungi.MainActivity.Companion.courseList
 
+
 class CourseFragment : Fragment() {
 
 
@@ -18,7 +19,6 @@ class CourseFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_course, container, false)
     }
@@ -42,8 +42,12 @@ class CourseFragment : Fragment() {
 
 
 
+
     }
 
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activity!!.appbar_title.text = "추천 코스"
+    }
 
 }

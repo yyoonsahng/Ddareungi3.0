@@ -1,7 +1,9 @@
 package com.example.ddareungi
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -14,7 +16,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.ddareungi.dataClass.*
@@ -39,10 +40,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
-    lateinit var bookmarkFragment: BookmarkFragment
-    lateinit var mapFragment: MapFragment
-    lateinit var timerFragment: TimerFragment
-    lateinit var courseFragment: CourseFragment
+    val bookmarkFragment = BookmarkFragment()
+    val mapFragment = MapFragment()
+    val timerFragment = TimerFragment()
+    val courseFragment = CourseFragment()
 
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -51,13 +52,17 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var dList = mutableListOf<MyDust>()
     var rList = mutableListOf<MyRestroom>()
     var pList = mutableListOf<MyPark>()
-    var dParse = dataParser(bList, dList, rList, pList)
+    var mWeather = MyWeather(-1, -1, -1, "", -1)
+    var mDust = MyDust(0.0, 0.0, "", 0.0, "")
+    var dParse = dataParser(bList, mDust, rList, pList, mWeather)
     lateinit var localty: String
-    var enabledGPS = false
+    lateinit var neighborhood: String
+    var enabledGPS = false  //GPS 켜져 있는지
+    var networkState = false       //네트워크 켜져 있는지
 
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
-        "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/25/",
+        "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/1/",
         "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/", //4938개나 있음
         "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/132/"
     )
@@ -65,6 +70,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        checkUserState()
         initPermission()
         checkNetwork()
         init()
@@ -100,6 +107,57 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             Log.v("scan1", courseList.size.toString())
         }
 
+        initFragment()
+    }
+
+    //GPS나 네트워크 켜져 있는지 broadcast receiver로 확인
+    //상태 바뀌면 플래그 변수 값 바꿔서 프래그먼트로 넘겨줌
+    fun checkUserState() {
+
+        val intentFilter = IntentFilter()
+        intentFilter.addAction("android.net.conn.CONNECTIVITY_CHANGE")
+        val networkReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val networkInfo = connectivityManager.activeNetworkInfo
+                networkState = networkInfo != null && networkInfo.isConnected
+                mapFragment.networkState = networkState
+                bookmarkFragment.networkState = networkState
+            }
+        }
+        val gpsIntentFilter = IntentFilter()
+        gpsIntentFilter.addAction("android.location.PROVIDERS_CHANGED")
+        val gpsReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+                enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                mapFragment.mEnableGPS = enabledGPS
+                bookmarkFragment.enableGPS = enabledGPS
+            }
+        }
+        registerReceiver(networkReceiver, intentFilter)
+        registerReceiver(gpsReceiver, gpsIntentFilter)
+
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        networkState = networkInfo != null && networkInfo.isConnected
+        mapFragment.networkState = networkState
+        bookmarkFragment.networkState = networkState
+
+        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+        enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        mapFragment.mEnableGPS = enabledGPS
+        bookmarkFragment.enableGPS = enabledGPS
+    }
+
+    fun initLocation() {
+        if (enabledGPS && networkState) {
+            var geocoder = Geocoder(this, Locale.KOREA)
+            var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+            var addr = addrList.first().getAddressLine(0).split(" ")
+            localty = addr[2]
+            neighborhood = addr[3]
+        }
     }
 
     override fun changeBookmarkToMap(rentalOffice: String) {
@@ -109,10 +167,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun checkNetwork() {
-        var connectvityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networkInfo = connectvityManager.activeNetworkInfo
-        if (networkInfo != null && networkInfo.isConnected) {
-
+        if (networkState) {
             Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
@@ -120,6 +175,11 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             //어떻게처리할지 고민해봐야겠음
             Toast.makeText(this, "네트워크연결안됨", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
+            window.statusBarColor = resources.getColor(R.color.white, null)
+            window.decorView.background = resources.getDrawable(R.color.white, null)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
+            loadFragment(bookmarkFragment)
         }
     }
 
@@ -130,21 +190,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, this)
         networkTask2.execute()
 
-        val networkTask1 = NetworkTask(1, urlStr[1], dParse, null)
-        networkTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
         val networkTask3 = NetworkTask(3, urlStr[3], dParse, null)
         networkTask3.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
-
     }
 
-    fun init() {
-        Log.i("location init", "init실행")
-        bookmarkFragment = BookmarkFragment()
-        mapFragment = MapFragment()
-        timerFragment = TimerFragment()
-        courseFragment = CourseFragment()
+    fun initFragment() {
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
 
@@ -166,6 +218,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     loadFragment(bookmarkFragment)
                 }
                 R.id.map -> {
+                    mapFragment.mLocationPermissionGranted = locationPermissionGranted
                     loadFragment(mapFragment)
                 }
                 R.id.timer -> {
@@ -185,6 +238,16 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             .commit()
     }
 
+    fun loadWeatherFile(id: Int): String { //날씨 api / 구에 따른 지역코드 파싱
+        val scan = Scanner(resources.openRawResource(id)) //json 파일
+        var result = ""
+        while (scan.hasNextLine()) {
+            val line = scan.nextLine()
+            result += line
+        }
+        return result
+    }
+
     fun checkAppPermission(requestPermission: Array<String>): Boolean {
         val requestResult = BooleanArray(requestPermission.size)
         for (i in requestResult.indices) {
@@ -195,19 +258,22 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             if (!requestResult[i]) {
                 return false
             }
-            if (enabledGPS) {
-                fusedLocationClient.lastLocation.addOnSuccessListener {
-                    if (it != null) {
-                        mLocation = it
-                    } else {
-                        mLocation.latitude = 37.540
-                        mLocation.longitude = 127.07
-                    }
+
+        }
+        if (enabledGPS) {
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    mLocation = it
+                    initLocation()
+
+                } else {
+                    mLocation.latitude = 37.540
+                    mLocation.longitude = 127.07
                 }
             }
-
-            locationPermissionGranted = true
         }
+
+        locationPermissionGranted = true
         return true
     }
 
@@ -230,33 +296,60 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun initPermission() {
-        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
         mLocation.latitude = 37.540
         mLocation.longitude = 127.07
-
-        if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER))
-            enabledGPS = true
-        if (enabledGPS)
+        localty = "광진구"
+        neighborhood = "화양동"
+        if (enabledGPS) {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        else
-            localty = "광진구"
-
+        }
         if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
+
+        val wResult = loadWeatherFile(R.raw.weather)
+        val wArray = JSONObject(wResult).getJSONArray("data")
+        //미세먼지
+        val dResult = loadWeatherFile(R.raw.dust)
+        val dArray = JSONObject(dResult).getJSONArray("data")
+
+        var wCode = ""
+        var dCode = ""
+        for (i in 0 until wArray.length()) {
+            val wValue = wArray.getJSONObject(i).getString("value")
+            if (localty == wValue) {
+                wCode = wArray.getJSONObject(i).getString("code")
+                dCode = dArray.getJSONObject(i).getString("code")
+                break
+            }
+        }
+
+        if (networkState) {
+            val networkTask1 = NetworkTask(1, urlStr[1] + dCode + "/" + localty, dParse, null)
+            networkTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+
+            val networkTask4 = NetworkTask(4, wCode, dParse, this)
+            networkTask4.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+        }
     }
 
 
-
-    class NetworkTask(val type: Int, val url: String, val dParse: dataParser?, var mActivity: MainActivity?,var onMapUpdate:Boolean?=null) :
+    class NetworkTask(
+        val type: Int,
+        var url: String,
+        val dParse: dataParser?,
+        var mActivity: MainActivity?,
+        var onMapUpdate: Boolean? = null
+    ) :
         AsyncTask<Unit, Unit, List<String>>() { //void 대신 unit
         // doInBackground, onProgressUpdate, onPostExecute의 매개변수 자료형
         enum class Data(val type: Int) {
             BIKE(0),
             DUST(1),
             RESTROOM(2),
-            PARK(3)
+            PARK(3),
+            WEATHER(4)
         }
 
 
@@ -297,6 +390,20 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 }
                 return rList
             }
+            if (type == Data.WEATHER.type) {
+                val wStr = "http://www.kma.go.kr/DFSROOT/POINT/DATA/leaf." + url + ".json.txt" //url :지역구 코드
+                val result = RequestHttpURLConnection().request(wStr)
+                val array = JSONArray(result)
+                var code = ""
+                for (i in 0 until array.length()) {
+                    val value = array.getJSONObject(i).getString("value")
+                    if (mActivity!!.neighborhood == value) {
+                        code = array.getJSONObject(i).getString("code")
+                        break
+                    }
+                }
+                url = "http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone=" + code
+            }
             val result = RequestHttpURLConnection().request(url) // 해당 URL로 부터 결과물을 얻어온다.
             rList.add(result)
 
@@ -305,36 +412,56 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
         override fun onPostExecute(result: List<String>) {
             super.onPostExecute(result)
-            if(onMapUpdate!=null){
-                var mCount=0
-                for (i in result){
+            if (onMapUpdate != null) {
+                var mCount = 0
+                for (i in result) {
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
-                        for (j in 0..jarray.length()) {
-                            val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
-                            if(mActivity!!.dParse.bList[mCount].parkingBikeTotCnt!=mParkingBikeTotCnt) {
-                                mActivity!!.dParse.bList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
+
+                        //네트워크 켜진 상태에서 앱 켰을 때(한 번 파싱해온 상태)
+                        if (mActivity!!.dParse.bList.size == jarray.length()) {
+                            for (j in 0..jarray.length()) {
+                                val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
+                                if (mActivity!!.dParse.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
+                                    mActivity!!.dParse.bList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
+                                }
+                                mCount++
                             }
-                            mCount++
+                        }
+                        //네트워크 꺼진 상태에서 앱 켰을 때
+                        //아무 정보도 dParse에 없는 상태라서 파싱을 전부 다시 해와야함
+                        else {
+                            mActivity!!.dParse.parse(type, i)
                         }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
                 }
-                if(onMapUpdate!!)
-                    mActivity!!.mapFragment.updateMarker(MapFragment.PlaceType.BIKE,true)
-                else{
+                if (onMapUpdate!!) {
+                    mActivity!!.mapFragment.currentMarkerType = MapFragment.PlaceType.BIKE
+                    mActivity!!.mapFragment.setData(
+                        mActivity!!.locationPermissionGranted,
+                        mActivity!!.enabledGPS,
+                        mActivity!!.dParse.bList,
+                        mActivity!!.dParse.rList,
+                        mActivity!!.dParse.pList,
+                        null
+                    )
+                    mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+                } else {
+                    mActivity!!.bookmarkFragment.setData(
+                        mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather
+                    )
                     mActivity!!.bookmarkFragment.upDate(true)
                 }
-            }
-            else {
+            } else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
-                    initLocation()
+                    //    initLocation()
                     Toast.makeText(
                         mActivity!!.applicationContext,
-                        "Data parsing done" + mActivity!!.localty,
+                        "Data parsing done" + mActivity!!.localty + "의 날씨는 " + dParse!!.mWeather.wfKor,
                         Toast.LENGTH_SHORT
                     ).show()
                     mActivity!!.logo_layout.visibility = View.GONE
@@ -343,14 +470,14 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
-                    mActivity!!.bookmarkFragment.setData(dParse!!.bList, dParse.dList)
+                    mActivity!!.bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
 
                     mActivity!!.mapFragment.setData(
                         mActivity!!.locationPermissionGranted,
                         mActivity!!.enabledGPS,
-                        dParse!!.bList,
-                        dParse!!.rList,
-                        dParse!!.pList,
+                        dParse.bList,
+                        dParse.rList,
+                        dParse.pList,
                         null
                     )
                 }
@@ -358,15 +485,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
         }
 
-        fun initLocation() {
-            if (mActivity!!.enabledGPS) {
-                var geocoder = Geocoder(mActivity, Locale.KOREA)
-                var addrList =
-                    geocoder.getFromLocation(mActivity!!.mLocation.latitude, mActivity!!.mLocation.longitude, 1)
-                var addr = addrList.first().getAddressLine(0).split(" ")
-                mActivity!!.localty = addr[2]
-            }
-        }
+
     }
 }
 
