@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FrameLayout
+        android:background="@color/white"
+        android:layout_height="match_parent" android:layout_width="match_parent" xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="vertical">
+
+
+        <FrameLayout android:layout_height="0dp"  android:layout_weight="7" android:layout_width="match_parent">
+
+            <ImageView
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:scaleType="fitXY"
+                    android:id="@+id/crsvp4_titleimg"/>
+
+            <ImageView
+                    android:layout_height="50dp"
+                    android:layout_width="50dp"
+                    android:id="@+id/crsvp4_preicon"
+                    android:src="@drawable/ic_chevron_left_black_24dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="17dp"/>
+
+
+            <LinearLayout android:layout_height="wrap_content" android:layout_width="match_parent" android:orientation="vertical" android:layout_marginTop="300dp" android:paddingLeft="30dp">
+
+                <TextView android:layout_height="wrap_content"
+                          android:layout_width="wrap_content"
+                          android:id="@+id/crsvp4_mainTitle"
+                          android:textColor="#fff"
+                          android:textSize="30sp"
+                          android:textStyle="bold"/>
+
+                <TextView android:layout_height="wrap_content"
+                          android:layout_width="wrap_content"
+                          android:id="@+id/crsvp4_subTitle"
+                          android:layout_marginTop="5dp"
+                          android:textColor="#fff"
+                          android:textSize="16sp"
+                        />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+
+        <LinearLayout android:layout_height="0dp"  android:layout_weight="1"
+                      android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon21" android:src="@drawable/ic_bike_button"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="250dp"
+                      android:id="@+id/crsvp4_busstop"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp"  android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon22" android:src="@drawable/ic_place_black_24dp"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="250dp"
+                      android:id="@+id/crsvp4_location"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp"  android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp"
+                       android:layout_width="30dp"
+                       android:id="@+id/crsInfoIcon23"
+                       android:src="@drawable/ic_access_time_black_24dp"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="250dp"
+                      android:id="@+id/crsvp4_time"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp"  android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon24" android:src="@drawable/ic_phone_black_24dp"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="250dp"
+                      android:id="@+id/crsvp4_tel"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>
