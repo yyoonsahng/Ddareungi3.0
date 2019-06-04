@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -42,6 +43,7 @@ import java.util.*
 
 
 class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
+
     var dbHandler: MyDB? = null
     lateinit var mMap: GoogleMap
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
@@ -61,6 +63,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     var myLocation: Location? = null
     var fromBookmarkFragment = false
     var mSentBikeName: String? = null
+
 
     enum class PlaceType {
         BIKE, TOILET, PARK, SEARCH
@@ -119,26 +122,35 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
         if (mLocationPermissionGranted && mEnableGPS) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (!fromBookmarkFragment) {
-                    mMap.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            LatLng(it.latitude, it.longitude),
-                            DEFAULT_ZOOM
-                        )
-                    )
-                }
-                myLocation = it
-            }
-            mMap.isMyLocationEnabled = true
-            my_location_button.setOnClickListener {
-                fusedLocationClient.lastLocation.addOnSuccessListener {
-                        mMap.animateCamera(
+                if(it != null) {
+                    if (!fromBookmarkFragment) {
+                        mMap.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(it.latitude, it.longitude),
                                 DEFAULT_ZOOM
-                            ), 500, null
+                            )
                         )
-                    
+                    }
+                    myLocation = it
+                }
+            }
+            mMap.isMyLocationEnabled = true
+            my_location_button.setOnClickListener {
+                val lm = context!!.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
+                mEnableGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                if (mEnableGPS) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        if (it != null) {
+                            mMap.animateCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(it.latitude, it.longitude),
+                                    DEFAULT_ZOOM
+                                ), 500, null
+                            )
+                        }
+                    }
+                } else {
+                    // my_location_button.setImageResource(R.drawable.ic_location_missing)
                 }
             }
         } else {
@@ -341,7 +353,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     private fun findClosetBike(place: Place?, park: MyPark?): MyBike {
 
         val dest = Location("dest")
-        if(place != null) {
+        if (place != null) {
             dest.latitude = place.latLng!!.latitude
             dest.longitude = place.latLng!!.longitude
         } else {
@@ -376,7 +388,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             dname = URLEncoder.encode((clickedMarker!!.tag as MyBike).stationName, "UTF-8")
             url =
                 "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
-        }else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker != null) {
+        } else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker != null) {
             dlat = searchedPlaceMarker!!.position.latitude
             dlng = searchedPlaceMarker!!.position.longitude
             dname = URLEncoder.encode((searchedPlaceMarker!!.tag as Place).name, "UTF-8")
@@ -387,7 +399,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             val vname = URLEncoder.encode(closetBike.stationName, "UTF-8")
             url =
                 "nmap://route/bicycle?dlat=$dlat&dlng=$dlng&dname=$dname&v1lat=$vlat&v1lng=$vlng&v1name=$vname&appname=com.example.ddareungi"
-        } else if(v.id == R.id.dest_card_path_button && searchedPlaceMarker == null) {
+        } else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker == null) {
             dlat = clickedMarker!!.position.latitude
             dlng = clickedMarker!!.position.longitude
             dname = URLEncoder.encode((clickedMarker!!.tag as MyPark).name, "UTF-8")
@@ -420,12 +432,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
-        if (!(mLocationPermissionGranted && mEnableGPS))
+        if (!(mLocationPermissionGranted || mEnableGPS))
             my_location_button.hide()
 
         map_refresh_fab.setOnClickListener {
-            val url= "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-            val networkTask= MainActivity.NetworkTask(0,url, null, activity as MainActivity,true)
+            val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+            val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, true)
             networkTask.execute()
         }
 
@@ -498,7 +510,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
 
-                    
+
                 }.addOnFailureListener {
                     Log.e("place search", "Place not found: " + it.message)
                 }

@@ -3,7 +3,6 @@ package com.example.ddareungi
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
