@@ -172,8 +172,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
-            //네트워크에연결안되어있으면 일단그냥종료
-            //어떻게처리할지 고민해봐야겠음
             Toast.makeText(this, "네트워크 설정을 확인하세요", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
             window.statusBarColor = resources.getColor(R.color.white, null)
@@ -266,7 +264,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 if (it != null) {
                     mLocation = it
                     initLocation()
-
                 } else {
                     mLocation.latitude = 37.540
                     mLocation.longitude = 127.07
@@ -308,7 +305,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
-
         val wResult = loadWeatherFile(R.raw.weather)
         val wArray = JSONArray(wResult)
         //미세먼지
@@ -333,8 +329,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             networkTask4.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }
     }
-
-
     class NetworkTask(
         val type: Int,
         var url: String,
@@ -440,13 +434,16 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         null
                     )
                     mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+
                 } else {
+                    mActivity!!.bookmarkFragment.setData(mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather)
                     mActivity!!.bookmarkFragment.upDate(true)
-                    val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
-                    if (progressBar != null)
-                        progressBar.visibility = View.GONE
                 }
-            } else {
+                val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
+                if (progressBar != null)
+                    progressBar.visibility = View.GONE
+            }
+            else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
