@@ -15,7 +15,10 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import com.example.ddareungi.dataClass.*
+import com.example.ddareungi.dataClass.MyBike
+import com.example.ddareungi.dataClass.MyPark
+import com.example.ddareungi.dataClass.MyRestroom
+import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -129,14 +132,13 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             mMap.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
                 fusedLocationClient.lastLocation.addOnSuccessListener {
-                    if (!fromBookmarkFragment) {
                         mMap.animateCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(it.latitude, it.longitude),
                                 DEFAULT_ZOOM
                             ), 500, null
                         )
-                    }
+                    
                 }
             }
         } else {
@@ -431,10 +433,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
         dest_card_path_button.setOnClickListener(this)
 
-        bookmark_button.setOnClickListener {
-
-        }
-
         rent_button.setOnClickListener {
             val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
             val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
@@ -499,9 +497,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
-                    var history_path:History = History("")
-                    history_path.recent = place.name.toString()
-                    dbHandler!!.addHistory(history_path)
+
                     
                 }.addOnFailureListener {
                     Log.e("place search", "Place not found: " + it.message)

@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.ddareungi.dataClass.Bookmark
-import com.example.ddareungi.dataClass.History
 import com.example.ddareungi.dataClass.Rental
 
 class MyDB(context: Context) :
@@ -15,9 +14,7 @@ class MyDB(context: Context) :
         val DB_NAME = "UserDB"
         val DB_VERSION = 1
         val TABLE_NAME = "users"
-        val TABLE_NAME2 = "recentHistory"
         val RENTAL_OFFICE = "OfficeName"
-        val HISTORY = "history"
         var CHECKED = "bookmarked"
     }
 
@@ -25,11 +22,7 @@ class MyDB(context: Context) :
         val createTable =
             "CREATE TABLE $TABLE_NAME" +
                     "($RENTAL_OFFICE TEXT PRIMARY KEY," + "$CHECKED INTEGER)"
-        val createHistoryTable =
-            "CREATE TABLE $TABLE_NAME2" +
-                    "($HISTORY TEXT PRIMARY KEY)"
         p0?.execSQL(createTable)//select를 사용하지 않는경우 execSQL 사용
-        p0?.execSQL(createHistoryTable)
         //TODO("not implemented") //To ch ange body of created functions use File | Settings | File Templates.
     }
 
@@ -37,51 +30,6 @@ class MyDB(context: Context) :
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun addHistory(history: History): Boolean {
-        val db = this.writableDatabase
-        val values = ContentValues()
-        values.put(HISTORY, history.recent)
-        val success = db.insert(TABLE_NAME2, null, values)
-        db.close()
-        return (Integer.parseInt("$success") != -1)
-    }
-
-    fun deleteHistory(history: History): Boolean {
-        val db = this.writableDatabase
-        var st: Array<String>
-        st = arrayOf(history.recent)
-        val success = db.delete(TABLE_NAME2, HISTORY + "=?", st)
-        db.close()
-        return (Integer.parseInt("$success") != -1)
-    }
-
-    fun getAllHistory(): ArrayList<History> {
-
-        var recenthistory: String = ""
-       var historyArray: ArrayList<History> = ArrayList()
-        val db = readableDatabase
-        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
-        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {//cursor를 가장 첫번째 행으로 옮긴다
-                do {
-                    recenthistory = cursor.getString(cursor.getColumnIndex(HISTORY))
-                    historyArray.add(History("$recenthistory"))
-                } while (cursor.moveToNext())
-            }
-        }
-        cursor.close()
-        db.close()
-        return historyArray
-    }
-    fun getHistoryCnt(): Int {
-        var search = 0
-        val db = readableDatabase
-        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
-        val cursor = db.rawQuery(selectALLQuery, null)
-        search = cursor.getCount()
-        return search
-    }
 
     fun addUser(rental: Rental): Boolean {
         val db = this.writableDatabase
@@ -134,16 +82,6 @@ class MyDB(context: Context) :
         return search
     }
 
-    fun findHistoryWithRow(row:Int):String{
-        var history = ""
-        val db = readableDatabase
-        val selectALLQuery = "SELECT * FROM $TABLE_NAME2"//query문을 저장
-        val cursor = db.rawQuery(selectALLQuery, null)//인자로 받은 query문 실행
-        cursor.moveToPosition(row)
-        history = cursor.getString(cursor.getColumnIndex(HISTORY))
-
-        return history
-    }
     fun findOfficeWithRow(row:Int):String{
         var rental = ""
         val db = readableDatabase
