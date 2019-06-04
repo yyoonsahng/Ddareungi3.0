@@ -1,7 +1,6 @@
 package com.example.ddareungi
 
 
-import android.icu.lang.UCharacter.GraphemeClusterBreak.V
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -20,7 +19,8 @@ import kotlinx.android.synthetic.main.fragment_bookmark.*
 class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
     var dbHandler: MyDB? = null
     var mBikeList: MutableList<MyBike> = mutableListOf()
-    lateinit  var mDust: MyDust
+    lateinit var mDust: MyDust
+    lateinit var mWeather: MyWeather
     lateinit var bookmarkArray: ArrayList<Bookmark>
     lateinit var bookmarkMap: MutableMap<String, Bookmark>
     lateinit var bookmarkAdapter: BookmarkAdapter
@@ -38,9 +38,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-    fun setData(bikeList: MutableList<MyBike>, mDust:MyDust) {
+    fun setData(bikeList: MutableList<MyBike>, mDust: MyDust, mWeather: MyWeather) {
         mBikeList = bikeList
-        this.mDust=mDust
+        this.mDust = mDust
+        this.mWeather = mWeather
     }
 
 
@@ -70,6 +71,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         if (progressBar != null)
             progressBar.visibility = View.GONE
 
+        Log.e("success", "success log ${mWeather.wfKor}")
+        weather_image.setImageResource(mWeather.matchImage())
+        dust_text.text = "오늘 미세먼지는\n${mDust.idex_nm}입니다."
+
         bookmarkAdapter = BookmarkAdapter(bookmarkArray)
         val layoutManager_bookmark = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         bookmark.layoutManager = layoutManager_bookmark
@@ -77,7 +82,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         val dividerItemDecoration1 = DividerItemDecoration(context!!, layoutManager_bookmark.orientation)
         bookmark.addItemDecoration(dividerItemDecoration1)
 
-        if(bookmark!!.adapter!!.itemCount == 0) {
+        if (bookmark!!.adapter!!.itemCount == 0) {
             bookmark.visibility = View.GONE
             no_bookmark_image.visibility = View.VISIBLE
             no_bookmark_text.visibility = View.VISIBLE
@@ -126,7 +131,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         dbHandler!!.deleteUser(rental)
         bookmarkAdapter.removeItem(viewHolder.adapterPosition)
 
-        if(bookmark!!.adapter!!.itemCount == 0) {
+        if (bookmark!!.adapter!!.itemCount == 0) {
             bookmark.visibility = View.GONE
             no_bookmark_image.visibility = View.VISIBLE
             no_bookmark_text.visibility = View.VISIBLE

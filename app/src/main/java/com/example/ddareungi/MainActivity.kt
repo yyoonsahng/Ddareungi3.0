@@ -16,7 +16,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
-import com.example.ddareungi.RequestHttpURLConnection
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -25,10 +24,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.lang.Math.floor
-import java.lang.Math.pow
 import java.util.*
-import kotlin.math.*
 
 
 class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
@@ -48,7 +44,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var pList = mutableListOf<MyPark>()
     var mWeather=MyWeather(-1,-1,-1,"",-1)
     var mDust=MyDust(0.0,0.0,"",0.0,"")
-    var dParse = dataParser(bList, mDust, rList, pList,mWeather)
+    var dParse = dataParser(bList, mDust, rList, pList, mWeather)
     lateinit var localty: String
     lateinit var neighborhood:String
     var enabledGPS = false
@@ -361,7 +357,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     Toast.makeText(
                         mActivity!!.applicationContext,
                         "Data parsing done" + mActivity!!.localty+"의 날씨는 "+dParse!!.mWeather.wfKor,
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
                     mActivity!!.logo_layout.visibility = View.GONE
                     mActivity!!.window.statusBarColor = mActivity!!.resources.getColor(R.color.white, null)
@@ -369,7 +365,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
-                    mActivity!!.bookmarkFragment.setData(dParse!!.bList, dParse.mDust)
+
+                    mActivity!!.bookmarkFragment.setData(dParse!!.bList, dParse.mDust, dParse.mWeather)
 
                     mActivity!!.mapFragment.setData(
                         mActivity!!.locationPermissionGranted,
