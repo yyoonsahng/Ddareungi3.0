@@ -3,7 +3,6 @@ package com.example.ddareungi
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -30,6 +29,14 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
+
+    companion object {
+
+        val courseList=ArrayList<Course>()
+        val courseInfoList=ArrayList<CourseInfo>()
+
+    }
+
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     lateinit var bookmarkFragment: BookmarkFragment
@@ -61,6 +68,38 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         initPermission()
         checkNetwork()
         init()
+        readFile()
+    }
+
+    fun readFile(){
+        val scan= Scanner(resources.openRawResource(R.raw.courseinfo))
+        while(scan.hasNextLine()){
+
+            val title=scan.nextLine()
+            Log.v("scan",title)
+            val subtitle=scan.nextLine()
+            Log.v("scan",subtitle)
+            val bikestop=scan.nextLine()
+            val location=scan.nextLine()
+            val open=scan.nextLine()
+            val tel=scan.nextLine()
+            val data=CourseInfo(title,subtitle,bikestop,location,tel,open)
+            courseInfoList.add(data)
+            Log.v("scan", courseInfoList.size.toString())
+        }
+
+        val scan0= Scanner(resources.openRawResource(R.raw.coursename))
+        while(scan0.hasNextLine()){
+
+            val subtitle=scan0.nextLine()
+            val title=scan0.nextLine()
+            val length=scan0.nextLine()
+            val time=scan0.nextLine()
+            val data=Course(title,subtitle,length,time)
+            courseList.add(data)
+            Log.v("scan1", courseList.size.toString())
+        }
+
     }
 
     override fun changeBookmarkToMap(rentalOffice: String) {
