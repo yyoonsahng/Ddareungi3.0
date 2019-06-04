@@ -189,30 +189,31 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mLocation.longitude = 127.07
                 }
                 //날씨
-                val wResult=loadWeatherFile(R.raw.weather)
-                val wArray = JSONObject(wResult).getJSONArray("data")
-                //미세먼지
-                val dResult=loadWeatherFile(R.raw.dust)
-                val dArray = JSONObject(dResult).getJSONArray("data")
 
-                var wCode=""
-                var dCode=""
-                for (i in 0 until wArray.length()) {
-                    val wValue = wArray.getJSONObject(i).getString("value")
-                    if (localty == wValue) {
-                        wCode=wArray.getJSONObject(i).getString("code")
-                        dCode=dArray.getJSONObject(i).getString("code")
-                        break
-                    }
-                }
-                val networkTask1 = NetworkTask(1, urlStr[1]+dCode+"/"+localty, dParse, null)
-                networkTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-
-                val networkTask4 = NetworkTask(4, wCode, dParse, this)
-                networkTask4.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
             }
         }
+        val wResult=loadWeatherFile(R.raw.weather)
+        val wArray = JSONObject(wResult).getJSONArray("data")
+        //미세먼지
+        val dResult=loadWeatherFile(R.raw.dust)
+        val dArray = JSONObject(dResult).getJSONArray("data")
+
+        var wCode=""
+        var dCode=""
+        for (i in 0 until wArray.length()) {
+            val wValue = wArray.getJSONObject(i).getString("value")
+            if (localty == wValue) {
+                wCode=wArray.getJSONObject(i).getString("code")
+                dCode=dArray.getJSONObject(i).getString("code")
+                break
+            }
+        }
+        val networkTask1 = NetworkTask(1, urlStr[1]+dCode+"/"+localty, dParse, null)
+        networkTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+
+        val networkTask4 = NetworkTask(4, wCode, dParse, this)
+        networkTask4.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         locationPermissionGranted = true
         return true
     }
