@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.example.ddareungi.MainActivity.Companion.courseList
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class CourseFragment : Fragment() {

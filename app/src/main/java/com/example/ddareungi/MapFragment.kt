@@ -65,7 +65,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     var mSentBikeName: String? = null
     var networkState = false
 
-
     enum class PlaceType {
         BIKE, TOILET, PARK, SEARCH
     }
@@ -442,8 +441,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
         map_refresh_fab.setOnClickListener {
             if(networkState) {
+                val mActivity=activity as MainActivity
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, true)
+                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
                 networkTask.execute()
             }
         }
