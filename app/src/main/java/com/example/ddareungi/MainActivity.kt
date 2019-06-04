@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.example.ddareungi.dataClass.*
@@ -74,8 +75,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkUserState()
         initPermission()
         checkNetwork()
-        init()
         readFile()
+        initFragment()
     }
 
     fun readFile(){
@@ -106,8 +107,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             courseList.add(data)
             Log.v("scan1", courseList.size.toString())
         }
-
-        initFragment()
     }
 
     //GPS나 네트워크 켜져 있는지 broadcast receiver로 확인

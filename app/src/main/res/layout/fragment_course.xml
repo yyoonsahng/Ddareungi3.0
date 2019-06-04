@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-        <FrameLayout tools:context=".CourseFragment" android:layout_height="match_parent" android:layout_width="match_parent" xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android">
+<FrameLayout xmlns:tools="http://schemas.android.com/tools" xmlns:android="http://schemas.android.com/apk/res/android" tools:context=".CourseFragment"
+             android:layout_height="match_parent" android:layout_width="match_parent">
 
     <!-- TODO: Update blank fragment layout -->
 
-    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="vertical">
+    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent"
+                  android:orientation="vertical">
 
-    <TextView android:layout_height="70dp" android:layout_width="match_parent" android:textColor="@color/black" android:paddingLeft="17dp" android:textSize="27sp" android:text="따릉이 추천 코스" android:gravity="center_vertical"/>
+        <!--<TextView android:layout_height="70dp" android:layout_width="match_parent" android:textColor="@color/black"-->
+                  <!--android:paddingLeft="17dp" android:textSize="27sp" android:text="따릉이 추천 코스"-->
+                  <!--android:gravity="center_vertical"/>-->
 
-    <android.support.v7.widget.RecyclerView android:layout_height="match_parent" android:layout_width="match_parent" android:id="@+id/CoursemenuList"/>
+        <android.support.v7.widget.RecyclerView
+                android:layout_marginStart="4dp"  android:layout_marginEnd="4dp"
+                android:layout_height="match_parent" android:layout_width="match_parent"
+                                                android:id="@+id/CoursemenuList"/>
 
-</LinearLayout>
+    </LinearLayout>
 
 </FrameLayout>
