@@ -5,7 +5,6 @@
                                                  android:layout_width="match_parent"
                                                  android:layout_height="match_parent"
                                                  tools:context=".BookmarkFragment">
-
     <LinearLayout
             android:layout_width="match_parent"
             android:orientation="vertical"
@@ -30,7 +29,6 @@
                     android:textSize="20sp"
                     android:textColor="@color/black"/>
         </LinearLayout>
-
         <ImageView
                 android:id="@+id/no_bookmark_image"
                 android:src="@drawable/ic_no_bookmark"
@@ -53,7 +51,7 @@
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorAccent"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/spoqahansansregular" android:textSize="12sp"
+                android:fontFamily="@font/spoqahansansregular" android:textSize="14sp"
                 android:visibility="gone"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 
@@ -66,12 +64,11 @@
 
     </LinearLayout>
 
-
     <android.support.design.widget.FloatingActionButton android:id="@+id/bookmark_refresh_fab"
                                                         android:layout_width="wrap_content"
                                                         android:layout_height="wrap_content"
                                                         android:layout_gravity="bottom|end"
-                                                        android:layout_marginBottom="64dp"
+                                                        android:layout_marginBottom="16dp"
                                                         android:layout_marginEnd="16dp"
                                                         app:elevation="6dp"
                                                         android:src="@drawable/ic_refresh_black_16dp"

@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
     var bList = mutableListOf<MyBike>()
-    var dList = mutableListOf<MyDust>()
     var rList = mutableListOf<MyRestroom>()
     var pList = mutableListOf<MyPark>()
     var mWeather = MyWeather(-1, -1, -1, "", -1)
@@ -165,11 +164,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 mapFragment.mEnableGPS = enabledGPS
                 bookmarkFragment.enableGPS = enabledGPS
+                mapFragment.setGPSWidget()
             }
         }
         registerReceiver(networkReceiver, intentFilter)
         registerReceiver(gpsReceiver, gpsIntentFilter)
 
+        //처음 어플을 실행 했을 때 네트워크 및 GPS 상태를 확인
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         networkState = networkInfo != null && networkInfo.isConnected
@@ -200,15 +201,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun checkNetwork() {
         if (networkState) {
-            Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
-            Toast.makeText(this, "네트워크 설정을 확인하세요", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
             window.statusBarColor = resources.getColor(R.color.white, null)
             window.decorView.background = resources.getDrawable(R.color.white, null)
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
+            bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather, neighborhood)
             loadFragment(bookmarkFragment)
         }
     }
@@ -481,23 +480,21 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
 
                 } else {
-                    mActivity!!.bookmarkFragment.setData(mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather)
+                    mActivity!!.bookmarkFragment.setData(
+                        mActivity!!.dParse.bList,
+                        mActivity!!.dParse.mDust,
+                        mActivity!!.dParse.mWeather,
+                        mActivity!!.neighborhood
+                    )
                     mActivity!!.bookmarkFragment.upDate(true)
                 }
                 val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
                 if (progressBar != null)
                     progressBar.visibility = View.GONE
-            }
-            else {
+            } else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
-                    //    initLocation()
-                    Toast.makeText(
-                        mActivity!!.applicationContext,
-                        "Data parsing done" + mActivity!!.localty + "의 날씨는 " + dParse!!.mWeather.wfKor,
-                        Toast.LENGTH_SHORT
-                    ).show()
                     mActivity!!.logo_layout.visibility = View.GONE
                     mActivity!!.window.statusBarColor = mActivity!!.resources.getColor(R.color.white, null)
                     mActivity!!.window.decorView.background = mActivity!!.resources.getDrawable(R.color.white, null)
@@ -505,7 +502,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
 
-                    mActivity!!.bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
+                    mActivity!!.bookmarkFragment.setData(
+                        dParse!!.bList,
+                        dParse.mDust,
+                        dParse.mWeather,
+                        mActivity!!.neighborhood
+                    )
 
                     if (mActivity!!.isreLoad) { //네트워크 연결 재시도로 호출한 파싱일 경우
                         mActivity!!.bookmarkFragment.weather_image.visibility = View.VISIBLE
@@ -516,9 +518,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.mapFragment.setData(
                         mActivity!!.locationPermissionGranted,
                         mActivity!!.enabledGPS,
-                        dParse.bList,
-                        dParse.rList,
-                        dParse.pList,
+                        dParse!!.bList,
+                        dParse!!.rList,
+                        dParse!!.pList,
                         null
                     )
                 }

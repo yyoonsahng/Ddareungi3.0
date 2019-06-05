@@ -46,6 +46,7 @@ class MarkerController(
         } else {
             markerOptions.zIndex(2.0f)
         }
+        //뷰를 drawable로 만들어서 마커의 아이콘으로 설정
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(mContext, markerView)))
         return mMap.addMarker(markerOptions)
     }
@@ -53,6 +54,7 @@ class MarkerController(
     fun addToiletMarker(toilet: MyRestroom): Marker {
         val markerOptions = MarkerOptions()
         markerOptions.position(LatLng(toilet.wgs84_y, toilet.wgs84_x))
+        markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_toilet_marker))
 
         return mMap.addMarker(markerOptions)
     }
