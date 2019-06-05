@@ -3,13 +3,11 @@ package com.example.ddareungi
 
 import android.os.AsyncTask
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.update
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,6 +26,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     lateinit var bookmarkAdapter: BookmarkAdapter
     var networkState = false
     var enableGPS = false
+    lateinit var neighbor:String
 
     interface BookmarkToMapListener {
         fun changeBookmarkToMap(rentalOffice: String)
@@ -42,10 +41,11 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-    fun setData(bikeList: MutableList<MyBike>, mDust: MyDust, mWeather: MyWeather) {
+    fun setData(bikeList: MutableList<MyBike>, mDust: MyDust, mWeather: MyWeather, neiborhood:String) {
         mBikeList = bikeList
         this.mWeather = mWeather
         this.mDust = mDust
+        neighbor = neiborhood
     }
 
 
@@ -68,7 +68,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         }
         if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
-            dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+            dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
             weather_image.setImageResource(mWeather.matchImage())
         }
     }
@@ -79,7 +79,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         if (progressBar != null)
             progressBar.visibility = View.GONE
 
-        dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+        dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
         weather_image.setImageResource(mWeather.matchImage())
 
         bookmarkAdapter = BookmarkAdapter(bookmarkArray)

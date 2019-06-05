@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             window.statusBarColor = resources.getColor(R.color.white, null)
             window.decorView.background = resources.getDrawable(R.color.white, null)
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
+            bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather, neighborhood)
             loadFragment(bookmarkFragment)
         }
     }
@@ -452,14 +452,18 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
 
                 } else {
-                    mActivity!!.bookmarkFragment.setData(mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather)
+                    mActivity!!.bookmarkFragment.setData(
+                        mActivity!!.dParse.bList,
+                        mActivity!!.dParse.mDust,
+                        mActivity!!.dParse.mWeather,
+                        mActivity!!.neighborhood
+                    )
                     mActivity!!.bookmarkFragment.upDate(true)
                 }
                 val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
                 if (progressBar != null)
                     progressBar.visibility = View.GONE
-            }
-            else {
+            } else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
@@ -476,7 +480,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
 
-                    mActivity!!.bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
+                    mActivity!!.bookmarkFragment.setData(
+                        dParse.bList,
+                        dParse.mDust,
+                        dParse.mWeather,
+                        mActivity!!.neighborhood
+                    )
 
                     if (mActivity!!.isreLoad) { //네트워크 연결 재시도로 호출한 파싱일 경우
                         mActivity!!.bookmarkFragment.weather_image.visibility = View.VISIBLE
