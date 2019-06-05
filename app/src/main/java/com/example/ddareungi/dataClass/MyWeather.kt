@@ -11,31 +11,33 @@ import com.example.ddareungi.R
 * */
 data class MyWeather(var temp: Int, var sky: Int, var pty: Int, var wfKor: String, var pop: Int) {
     fun matchImage(): Int {
-        var weatherInt = 0
+        var weatherId = 0
         when (wfKor) {
             "맑음" -> {
-                weatherInt = R.drawable.ic_sunny
+                weatherId = R.drawable.ic_sunny
             }
             "구름 조금" -> {
-                weatherInt = R.drawable.ic_partialy_cloudy
+                weatherId = R.drawable.ic_partialy_cloudy
             }
             "구름 많음" -> {
-                weatherInt = R.drawable.ic_cloudy
+                weatherId = R.drawable.ic_cloudy
             }
             "흐림" -> {
-                weatherInt = R.drawable.ic_overcast
+                weatherId = R.drawable.ic_overcast
             }
             "비" -> {
-                weatherInt = R.drawable.ic_rainy_day
+                weatherId = R.drawable.ic_rainy_day
             }
             "눈/비" -> {
-                weatherInt = R.drawable.ic_sleet
+                weatherId = R.drawable.ic_sleet
             }
             "눈" -> {
-                weatherInt = R.drawable.ic_snow
+                weatherId = R.drawable.ic_snow
+            }
+            else -> {
+                weatherId = R.drawable.ic_sunny
             }
         }
-        return weatherInt
+        return weatherId
     }
-
 }

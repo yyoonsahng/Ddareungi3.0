@@ -15,4 +15,38 @@
     <string name="toilet_fab_text">화장실</string>
     <string name="park_fab_text">공원</string>
     <string name="delete">DELETE</string>
+
+    <array name="drawable">
+        <item>@drawable/banpo</item>
+        <item>@drawable/crs11</item>
+        <item>@drawable/crs12</item>
+        <item>@drawable/crs13</item>
+        <item>@drawable/crs14</item>
+        <item>@drawable/crs20</item>
+        <item>@drawable/crs21</item>
+        <item>@drawable/crs22</item>
+        <item>@drawable/crs23</item>
+        <item>@drawable/crs24</item>
+        <item>@drawable/yangjae</item>
+        <item>@drawable/crs31</item>
+        <item>@drawable/crs32</item>
+        <item>@drawable/crs33</item>
+        <item>@drawable/crs34</item>
+        <item>@drawable/gwang</item>
+        <item>@drawable/crs41</item>
+        <item>@drawable/crs42</item>
+        <item>@drawable/crs43</item>
+        <item>@drawable/crs44</item>
+        <item>@drawable/crs50</item>
+        <item>@drawable/crs51</item>
+        <item>@drawable/crs52</item>
+        <item>@drawable/crs53</item>
+        <item>@drawable/crs54</item>
+        <item>@drawable/crs60</item>
+        <item>@drawable/crs61</item>
+        <item>@drawable/crs62</item>
+        <item>@drawable/crs63</item>
+        <item>@drawable/crs64</item>
+
+    </array>
 </resources>

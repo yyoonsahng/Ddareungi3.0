@@ -3,18 +3,18 @@ package com.example.ddareungi
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.ddareungi.dataClass.Course
+import com.example.ddareungi.MainActivity.Companion.courseList
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class CourseFragment : Fragment() {
 
-    var data: ArrayList<Course> = ArrayList()
-    lateinit var adapter: CourseAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,14 +24,26 @@ class CourseFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_course, container, false)
     }
 
-    fun init() {
-        val layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        val crsCards = activity!!.findViewById<RecyclerView>(R.id.crsCards)
-        crsCards.layoutManager = layoutManager
-        adapter = CourseAdapter(data, activity!!)
-        crsCards.adapter = adapter
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        Log.v("doing","cardviewList")
+        super.onActivityCreated(savedInstanceState)
+        val layoutManager= GridLayoutManager(activity,2)
+        if(layoutManager!=null)
+            Log.v("doing","layoutmanager")
+        val coursemenu=activity!!.findViewById<RecyclerView>(R.id.CoursemenuList)
+        coursemenu.layoutManager=layoutManager
 
-        adapter.notifyDataSetChanged()
+        val adapter=crsmenucardAdapter(courseList,this.requireActivity())
+        if(adapter!=null)
+            Log.v("doing","adapter")
+        coursemenu.adapter=adapter
+        if(coursemenu.adapter!=null)
+            Log.v("doing","cousemenuadapter")
+
+
+
+
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
