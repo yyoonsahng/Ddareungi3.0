@@ -177,7 +177,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
         dbHandler = MyDB(context!!)
-        val rental: Rental = Rental("", "", 1)
+        val rental: Bookmark = Bookmark("", 0, 1,"")
         val delete_name = dbHandler!!.findOfficeWithRow(viewHolder.adapterPosition)
         rental.delete = delete_name
         dbHandler!!.deleteUser(rental)
