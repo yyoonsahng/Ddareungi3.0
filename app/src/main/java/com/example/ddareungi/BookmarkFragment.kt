@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 
+import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.SyncStateContract.Helpers.update
 import android.support.v4.app.Fragment
@@ -160,7 +161,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
                 mActivity.initPermission()
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
                 val networkTask = MainActivity.NetworkTask(0, url,mActivity.dParse , mActivity, false)
-                networkTask.execute()
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
             }
             else{
                 initLayout()

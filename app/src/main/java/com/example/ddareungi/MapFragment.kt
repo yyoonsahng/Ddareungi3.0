@@ -8,6 +8,7 @@ import android.content.pm.ResolveInfo
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -456,7 +457,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 val mActivity=activity as MainActivity
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
                 val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
-                networkTask.execute()
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
             }
             else{
                 //북마크 프레그먼트 네트워크 연결안되어있다는 창으로 넘기는건 어떤지 ,,,?

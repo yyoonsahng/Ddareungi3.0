@@ -184,10 +184,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun initData() {
         val networkTask0 = NetworkTask(0, urlStr[0], dParse, null)
-        networkTask0.execute()
+        networkTask0.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, this)
-        networkTask2.execute()
+        networkTask2.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
 
         val networkTask3 = NetworkTask(3, urlStr[3], dParse, null)
