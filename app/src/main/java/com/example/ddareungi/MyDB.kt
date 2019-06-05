@@ -5,7 +5,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.ddareungi.dataClass.Bookmark
-import com.example.ddareungi.dataClass.Rental
 
 class MyDB(context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
@@ -31,17 +30,17 @@ class MyDB(context: Context) :
     }
 
 
-    fun addUser(rental: Rental): Boolean {
+    fun addUser(rental: Bookmark): Boolean {
         val db = this.writableDatabase
         val values = ContentValues()
-        values.put(RENTAL_OFFICE, rental.rental_office)
+        values.put(RENTAL_OFFICE, rental.rentalOffice)
         values.put(CHECKED, rental.bookmarked)
         val success = db.insert(TABLE_NAME, null, values)
         db.close()
         return (Integer.parseInt("$success") != -1)//새롭게 insert된 Row Id를 반환
     }
 
-    fun deleteUser(rental: Rental): Boolean {
+    fun deleteUser(rental: Bookmark): Boolean {
         val db = this.writableDatabase
         var st: Array<String>
         st = arrayOf(rental.delete)
@@ -64,7 +63,7 @@ class MyDB(context: Context) :
                 do {
                     rentalOffice = cursor.getString(cursor.getColumnIndex(RENTAL_OFFICE))
                     bookmarked = cursor.getInt(cursor.getColumnIndex(CHECKED))
-                bookmarkArray.add(Bookmark("$rentalOffice",0, bookmarked))
+                bookmarkArray.add(Bookmark("$rentalOffice",0, bookmarked, ""))
             } while (cursor.moveToNext())
             }
         }

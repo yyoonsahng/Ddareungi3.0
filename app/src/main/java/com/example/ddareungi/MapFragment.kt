@@ -19,10 +19,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import com.example.ddareungi.dataClass.Bookmark
 import com.example.ddareungi.dataClass.MyBike
 import com.example.ddareungi.dataClass.MyPark
 import com.example.ddareungi.dataClass.MyRestroom
-import com.example.ddareungi.dataClass.Rental
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -232,9 +232,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 }
                 bookmark_button.setOnClickListener {
                     if (dbHandler!!.findOffice((widgetContent as MyBike).stationName) == 0) {
-                        val rental = Rental("", "", 0)
+                        val rental = Bookmark("", 0, 0, "")
                         val success: Boolean
-                        rental.rental_office = (widgetContent as MyBike).stationName
+                        rental.rentalOffice = (widgetContent as MyBike).stationName
                         rental.bookmarked = 1
                         success = dbHandler!!.addUser(rental)
                         if (success) {
@@ -247,7 +247,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                             (widgetContent as MyBike).bookmarked = 1
                         }
                     } else {
-                        val rental = Rental("", "", 1)
+                        val rental = Bookmark("", 0, 1, "")
 
                         rental.delete = (widgetContent as MyBike).stationName
                         rental.bookmarked = 0
