@@ -2,7 +2,6 @@ package com.example.ddareungi
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,10 @@ private const val ARG_PARAM2 = "param2"
  */
 class crsVP1Fragment : Fragment() {
 
-    var index=0
+        val plusforimg=1
+        val plusforinfo=0
+        var indexx=0
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,19 +42,17 @@ class crsVP1Fragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        index=this.getArguments()!!.getInt("index")
-        Log.v("fragindex",index.toString())
-
+        indexx=this.getArguments()!!.getInt("index")
         return inflater.inflate(R.layout.fragment_crs_vp1, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        index=4*index
-        setdata(index)
+
+        setdata(indexx)
     }
     fun setdata(num:Int){
-            index=num
+
         var drawableTypeArray=context!!.resources.obtainTypedArray(R.array.drawable)
             if(activity!=null) {
                 val imageView = activity!!.findViewById<ImageView>(R.id.crsvp1_titleimg)
@@ -63,7 +63,8 @@ class crsVP1Fragment : Fragment() {
                 val place=activity!!.findViewById<TextView>(R.id.crsvp1_location)
                 val tel=activity!!.findViewById<TextView>(R.id.crsvp1_tel)
 
-                imageView.setImageResource(drawableTypeArray.getResourceId(index+1,-1))
+                imageView.setImageResource(drawableTypeArray.getResourceId(num*5+plusforimg,-1))
+                val index=num*4+plusforinfo
                 title.text=courseInfoList[index].mainTitle
                 subtitle.text= courseInfoList[index].subtitle
                 bikeStop.text=courseInfoList[index].bikeStop

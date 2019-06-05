@@ -24,8 +24,9 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class crsVP3Fragment : Fragment() {
-
-    var index=2
+    val plusforimg=3
+    val plusforinfo=2
+    var indexx=0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,17 +38,16 @@ class crsVP3Fragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        index=this.getArguments()!!.getInt("index")*4+2
-
+        indexx =this.getArguments()!!.getInt("index")
         return inflater.inflate(R.layout.fragment_crs_vp3, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        setdata(index)
+        setdata(indexx)
     }
     fun setdata(num:Int){
-        index=num
+
         var drawableTypeArray=context!!.resources.obtainTypedArray(R.array.drawable)
         if(activity!=null) {
             val imageView = activity!!.findViewById<ImageView>(R.id.crsvp3_titleimg)
@@ -58,7 +58,8 @@ class crsVP3Fragment : Fragment() {
             val place=activity!!.findViewById<TextView>(R.id.crsvp3_location)
             val tel=activity!!.findViewById<TextView>(R.id.crsvp3_tel)
 
-            imageView.setImageResource(drawableTypeArray.getResourceId(index+1,-1))
+            imageView.setImageResource(drawableTypeArray.getResourceId(num*5+plusforimg,-1))
+            val index=num*4+plusforinfo
             title.text= MainActivity.courseInfoList[index].mainTitle
             subtitle.text= MainActivity.courseInfoList[index].subtitle
             bikeStop.text= MainActivity.courseInfoList[index].bikeStop

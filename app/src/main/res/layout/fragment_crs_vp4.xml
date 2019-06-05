@@ -53,7 +53,7 @@
             <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon21" android:src="@drawable/ic_bike_button"/>
 
             <TextView android:layout_height="wrap_content"
-                      android:layout_width="250dp"
+                      android:layout_width="match_parent"
                       android:id="@+id/crsvp4_busstop"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>
@@ -66,7 +66,7 @@
             <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon22" android:src="@drawable/ic_place_black_24dp"/>
 
             <TextView android:layout_height="wrap_content"
-                      android:layout_width="250dp"
+                      android:layout_width="match_parent"
                       android:id="@+id/crsvp4_location"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>
@@ -82,7 +82,7 @@
                        android:src="@drawable/ic_access_time_black_24dp"/>
 
             <TextView android:layout_height="wrap_content"
-                      android:layout_width="250dp"
+                      android:layout_width="match_parent"
                       android:id="@+id/crsvp4_time"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>
@@ -95,7 +95,7 @@
             <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon24" android:src="@drawable/ic_phone_black_24dp"/>
 
             <TextView android:layout_height="wrap_content"
-                      android:layout_width="250dp"
+                      android:layout_width="match_parent"
                       android:id="@+id/crsvp4_tel"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>

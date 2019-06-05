@@ -30,10 +30,11 @@ class TimerFragment : Fragment() {
 
     var timerView: View? = null
     var hour=1
-    var btnState=true //시작 버튼
+    var btnState=true //시작 버튼 (반납 상태)
     enum class TimerState{
         Stopped,Paused,Running
     }
+
     private lateinit var timer: CountDownTimer
     private var timerLengthSeconds=0L
     private var timerState=TimerState.Stopped
@@ -50,12 +51,24 @@ class TimerFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.v("status", "onStart")
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Log.v("status", "onDetach")
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity!!.appbar_title.text = "타이머"
     }
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
 
 
         timerSpinner.onItemSelectedListener=SpinnerSelectedListener()
@@ -66,9 +79,8 @@ class TimerFragment : Fragment() {
                 timerState = TimerState.Running
                 btnState=false
                 timerBtn.text="반납 완료"
-                //    timerBtn.setBackgroundResource(R.drawable.btn22)
                 timerPrgbar.visibility=View.VISIBLE
-            }else{
+            }else{//반납완료 버튼 클릭
                 timer.cancel()
                 finishTimer()
                 btnState=true
@@ -82,10 +94,13 @@ class TimerFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         initTimer()
+        Log.v("status", "onResume")
     }
 
     override fun onPause() {
+        //옆 프레그먼트로 이동할 때
         super.onPause()
+        Log.v("status", "onPause")
         if(timerState==TimerState.Running){
             timer.cancel()
         }
