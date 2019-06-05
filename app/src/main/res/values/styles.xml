@@ -56,5 +56,8 @@
         <item name="android:fontFamily">@font/spoqahansansbold</item>
         <item name="android:textSize">24sp</item>
     </style>
+    <style name="ProgressbarColor">
+        <item name="colorAccent">@color/colorPrimaryLight</item>
+    </style>
 
 </resources>

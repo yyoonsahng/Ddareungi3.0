@@ -8,6 +8,7 @@ import android.content.pm.ResolveInfo
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
@@ -16,6 +17,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import com.example.ddareungi.dataClass.MyBike
 import com.example.ddareungi.dataClass.MyPark
 import com.example.ddareungi.dataClass.MyRestroom
@@ -64,7 +66,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     var fromBookmarkFragment = false
     var mSentBikeName: String? = null
     var networkState = false
-
 
     enum class PlaceType {
         BIKE, TOILET, PARK, SEARCH
@@ -139,6 +140,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
             mMap.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
+                Log.i("weather","gps버튼 클릭")
                 val lm = context!!.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
                 mEnableGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 if (mEnableGPS) {
@@ -434,6 +436,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
         if (mLocationPermissionGranted && mEnableGPS)
             my_location_button.show()
@@ -442,9 +445,22 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
         map_refresh_fab.setOnClickListener {
             if(networkState) {
+//                if (mLocationPermissionGranted && mEnableGPS) {
+//                    my_location_button.show() //활성화시켜야함!
+//                    my_location_button.isClickable=true
+//                }
+//                else
+//                    my_location_button.hide()
+                val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+                if (progressBar != null)
+                    progressBar.visibility = View.VISIBLE
+                val mActivity=activity as MainActivity
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, true)
-                networkTask.execute()
+                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            }
+            else{
+                //북마크 프레그먼트 네트워크 연결안되어있다는 창으로 넘기는건 어떤지 ,,,?
             }
         }
 

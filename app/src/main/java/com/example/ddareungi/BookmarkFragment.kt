@@ -1,7 +1,9 @@
 package com.example.ddareungi
 
 
+import android.os.AsyncTask
 import android.os.Bundle
+import android.provider.SyncStateContract.Helpers.update
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -64,11 +66,15 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
                 }
             }
         }
-        if (onUpdate)
+        if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
+            dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+            weather_image.setImageResource(mWeather.matchImage())
+        }
     }
 
     fun initLayout() {
+        rentalOfficeData()
         val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
         if (progressBar != null)
             progressBar.visibility = View.GONE
@@ -102,6 +108,8 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             weather_image.visibility = View.GONE
             dust_text.visibility = View.GONE
             bookmark.visibility = View.GONE
+            no_bookmark_image.visibility = View.VISIBLE
+            no_bookmark_text.visibility = View.VISIBLE
             no_bookmark_text.text = "네트워크 연결을 확인해주세요"
             network_refresh_button.visibility = View.VISIBLE
             no_bookmark_image.setImageResource(R.drawable.ic_wifi)
@@ -124,15 +132,19 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     }
 
     override fun onClick(v: View?) {
-        if (v!!.id == R.id.network_refresh_button) {
+        if (v!!.id == R.id.network_refresh_button) { //새로고침버튼
+            val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+            if (progressBar != null)
+                progressBar.visibility = View.VISIBLE
             if (networkState) {
-                val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, false)
-                networkTask.execute()
-
-                weather_image.visibility = View.VISIBLE
-                dust_text.visibility = View.VISIBLE
-                initLayout()
+                val mActivity=activity as MainActivity
+                mActivity.initPermission()
+                mActivity.checkNetwork()
+                mActivity.isreLoad=true
+            }
+            else{
+                if (progressBar != null)
+                    progressBar.visibility = View.GONE
             }
         }
     }
@@ -141,10 +153,20 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         super.onActivityCreated(savedInstanceState)
         initLayout()
         bookmark_refresh_fab.setOnClickListener {
+            val mActivity=activity as MainActivity
+            val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+            if (progressBar != null)
+                progressBar.visibility = View.VISIBLE
             if (networkState) {
+                mActivity.initPermission()
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, null, activity as MainActivity, false)
-                networkTask.execute()
+                val networkTask = MainActivity.NetworkTask(0, url,mActivity.dParse , mActivity, false)
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            }
+            else{
+                initLayout()
+                if (progressBar != null)
+                    progressBar.visibility = View.GONE
             }
         }
         val itemTouchHelperCallback_1: ItemTouchHelper.SimpleCallback =
@@ -176,19 +198,8 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-        Log.i("stop", "Stoped")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i("destroy", "destroyed")
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity!!.appbar_title.text = "즐겨찾기"
-        rentalOfficeData()
     }
 }

@@ -18,12 +18,14 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_bookmark.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -33,10 +35,8 @@ import java.util.*
 class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
 
     companion object {
-
-        val courseList=ArrayList<Course>()
-        val courseInfoList=ArrayList<CourseInfo>()
-
+        val courseList = ArrayList<Course>()
+        val courseInfoList = ArrayList<CourseInfo>()
     }
 
     val MY_LOCATION_REQUEST = 99
@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     lateinit var neighborhood: String
     var enabledGPS = false  //GPS 켜져 있는지
     var networkState = false       //네트워크 켜져 있는지
+    var isreLoad = false //네트워크 재연결 검사 후 켜져 있을 때 true
+
 
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
@@ -79,31 +81,31 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         readFile()
     }
 
-    fun readFile(){
-        val scan= Scanner(resources.openRawResource(R.raw.courseinfo))
-        while(scan.hasNextLine()){
+    fun readFile() {
+        val scan = Scanner(resources.openRawResource(R.raw.courseinfo))
+        while (scan.hasNextLine()) {
 
-            val title=scan.nextLine()
-            Log.v("scan",title)
-            val subtitle=scan.nextLine()
-            Log.v("scan",subtitle)
-            val bikestop=scan.nextLine()
-            val location=scan.nextLine()
-            val open=scan.nextLine()
-            val tel=scan.nextLine()
-            val data=CourseInfo(title,subtitle,bikestop,location,tel,open)
+            val title = scan.nextLine()
+            Log.v("scan", title)
+            val subtitle = scan.nextLine()
+            Log.v("scan", subtitle)
+            val bikestop = scan.nextLine()
+            val location = scan.nextLine()
+            val open = scan.nextLine()
+            val tel = scan.nextLine()
+            val data = CourseInfo(title, subtitle, bikestop, location, tel, open)
             courseInfoList.add(data)
             Log.v("scan", courseInfoList.size.toString())
         }
 
-        val scan0= Scanner(resources.openRawResource(R.raw.coursename))
-        while(scan0.hasNextLine()){
+        val scan0 = Scanner(resources.openRawResource(R.raw.coursename))
+        while (scan0.hasNextLine()) {
 
-            val subtitle=scan0.nextLine()
-            val title=scan0.nextLine()
-            val length=scan0.nextLine()
-            val time=scan0.nextLine()
-            val data=Course(title,subtitle,length,time)
+            val subtitle = scan0.nextLine()
+            val title = scan0.nextLine()
+            val length = scan0.nextLine()
+            val time = scan0.nextLine()
+            val data = Course(title, subtitle, length, time)
             courseList.add(data)
             Log.v("scan1", courseList.size.toString())
         }
@@ -172,9 +174,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
-            //네트워크에연결안되어있으면 일단그냥종료
-            //어떻게처리할지 고민해봐야겠음
-            Toast.makeText(this, "네트워크연결안됨", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "네트워크 설정을 확인하세요", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
             window.statusBarColor = resources.getColor(R.color.white, null)
             window.decorView.background = resources.getDrawable(R.color.white, null)
@@ -186,10 +186,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun initData() {
         val networkTask0 = NetworkTask(0, urlStr[0], dParse, null)
-        networkTask0.execute()
+        networkTask0.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, this)
-        networkTask2.execute()
+        networkTask2.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
 
         val networkTask3 = NetworkTask(3, urlStr[3], dParse, null)
@@ -310,10 +310,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         }
 
         val wResult = loadWeatherFile(R.raw.weather)
-        val wArray = JSONObject(wResult).getJSONArray("data")
+        val wArray = JSONArray(wResult)
         //미세먼지
         val dResult = loadWeatherFile(R.raw.dust)
-        val dArray = JSONObject(dResult).getJSONArray("data")
+        val dArray = JSONArray(dResult)
 
         var wCode = ""
         var dCode = ""
@@ -389,6 +389,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         break
                     count++
                 }
+
                 return rList
             }
             if (type == Data.WEATHER.type) {
@@ -423,8 +424,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         if (mActivity!!.dParse.bList.size == jarray.length()) {
                             for (j in 0..jarray.length()) {
                                 val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
-                                if (mActivity!!.dParse.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
-                                    mActivity!!.dParse.bList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
+                                if (dParse!!.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
+                                    dParse!!.bList[mCount].parkingBikeTotCnt = mParkingBikeTotCnt
                                 }
                                 mCount++
                             }
@@ -449,13 +450,16 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         null
                     )
                     mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+
                 } else {
-                    mActivity!!.bookmarkFragment.setData(
-                        mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather
-                    )
+                    mActivity!!.bookmarkFragment.setData(mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather)
                     mActivity!!.bookmarkFragment.upDate(true)
                 }
-            } else {
+                val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
+                if (progressBar != null)
+                    progressBar.visibility = View.GONE
+            }
+            else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
@@ -471,8 +475,15 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
+
                     mActivity!!.bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)
 
+                    if (mActivity!!.isreLoad) { //네트워크 연결 재시도로 호출한 파싱일 경우
+                        mActivity!!.bookmarkFragment.weather_image.visibility = View.VISIBLE
+                        mActivity!!.bookmarkFragment.dust_text.visibility = View.VISIBLE
+                        mActivity!!.bookmarkFragment.initLayout()
+                    }
+                    mActivity!!.isreLoad = false
                     mActivity!!.mapFragment.setData(
                         mActivity!!.locationPermissionGranted,
                         mActivity!!.enabledGPS,
