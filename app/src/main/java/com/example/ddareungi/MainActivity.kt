@@ -20,6 +20,7 @@ import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
+import com.example.ddareungi.TimerFragment.Companion.hour
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -86,14 +87,15 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     fun maketimer(){
         timer=Timer()
         timer.schedule(CustomerTimer(timerFragment),2000,60000) //1 분 간격 동작.
-        Log.v("timer","ttt")
+        val t=hour
+        Log.v("timer",hour.toString())
     }
 
     class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
-        var timer=60
+        var timermin=60
         override fun run() {
-             timer--
-             timerStr="00:"+timer.toString()
+             timermin--
+             timerStr="00:"+timermin.toString()
      //       timerFragment.timerTxt.text=timerStr
             Log.v("timer",timerStr)
 
