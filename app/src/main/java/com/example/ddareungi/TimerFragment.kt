@@ -52,19 +52,16 @@ class TimerFragment : Fragment() {
             if(timerState){
                 timerBtn.text="반납 완료"
                 timerState=false
-
+                timer.start()
 
             }else{
                 timerBtn.text="대여시작"
                 timerState=true
             }
-            timer.start()
+
 
         }
 
-        spinner.setOnItemClickListener { parent, view, position, id ->
-
-        }
 
 
     }
