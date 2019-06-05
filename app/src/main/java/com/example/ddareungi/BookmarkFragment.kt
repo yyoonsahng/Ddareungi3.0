@@ -22,7 +22,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     var mBikeList: MutableList<MyBike> = mutableListOf()
     lateinit var mDust: MyDust
     lateinit var bookmarkArray: ArrayList<Bookmark>
-    lateinit var bookmarkMap: MutableMap<String, Bookmark>
     lateinit var mWeather: MyWeather
     lateinit var bookmarkAdapter: BookmarkAdapter
     var networkState = false
@@ -53,8 +52,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
 
     fun rentalOfficeData() {
         dbHandler = MyDB(context!!)
-        bookmarkMap = mutableMapOf()
-        var Db = MyDB
         bookmarkArray = dbHandler!!.getAllUser()
         upDate(false)
     }
