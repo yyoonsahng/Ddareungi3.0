@@ -8,7 +8,6 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -118,7 +117,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
 
     fun initLayout() {
         rentalOfficeData()
-        Log.i("weather", "네트워크상태: " + networkState.toString())
         val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
         if (progressBar != null)
             progressBar.visibility = View.GONE
@@ -134,13 +132,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         bookmark.addItemDecoration(dividerItemDecoration1)
 
         if (bookmark!!.adapter!!.itemCount == 0 && networkState) {
-            Log.i("weather", "실행31 ")
             adjustWidgets(0)
         } else if (bookmark!!.adapter!!.itemCount > 0 && networkState) {
-            Log.i("weather", "실행2 ")
             adjustWidgets(1)
         } else {
-            Log.i("weather", "실행3 ")
             adjustWidgets(2)
         }
 

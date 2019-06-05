@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -52,7 +51,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     var mMap: GoogleMap? = null
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
     var mLocationPermissionGranted = false  //GPS 권환 획득 유무를 확인하는 flag 값
-    var mEnableGPS = false
+    var mEnableGPS = false  //
     lateinit var fusedLocationClient: FusedLocationProviderClient   //휴대폰이 마지막으로 얻은 내 위치를 얻어오기 위한 객체
     private val KONKUK_UNIV = LatLng(37.540, 127.07)
     private val DEFAULT_ZOOM = 16f
@@ -109,10 +108,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         mMap = googleMap!!
         markerController = MarkerController(context!!, mMap!!, visibleMarkers)
         dbHandler = MyDB(context!!)
-        visibleMarkers.clear()
+        visibleMarkers.clear()  //지도 화면을 생성할 때 이전에 있던 마커 정보를 지움
 
         mMap!!.setMinZoomPreference(14f)
 
+        //즐겨찾기 화면에서 정류소를 클릭해서 지도로 넘어온 경우 해당 정류소로 화면을 이동
         if (fromBookmarkFragment) {
             for (bike in mBikeList) {
                 if (bike.stationName == mSentBikeName) {
@@ -124,6 +124,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
         }
 
+        //사용자의 위치 정보를 사용할 수 있는 경우 지도 화면을 처음 실행했을 때의 위치를 사용자의 위치로 설정
         if (mLocationPermissionGranted && mEnableGPS) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
                 if (it != null) {
@@ -141,23 +142,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 }
             }
             mMap!!.isMyLocationEnabled = true
+
+            //지도를 현재 사용자 위치로 이동시키는 버튼의 클릭 리스너
             my_location_button.setOnClickListener {
-                Log.i("weather", "gps버튼 클릭")
-                val lm = context!!.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
-                mEnableGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                if (mEnableGPS) {
-                    fusedLocationClient.lastLocation.addOnSuccessListener {
-                        if (it != null) {
-                            mMap!!.animateCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(it.latitude, it.longitude),
-                                    DEFAULT_ZOOM
-                                ), 500, null
-                            )
-                        }
+                fusedLocationClient.lastLocation.addOnSuccessListener {
+                    if (it != null) {
+                        mMap!!.animateCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                LatLng(it.latitude, it.longitude),
+                                DEFAULT_ZOOM
+                            ), 500, null
+                        )
                     }
-                } else {
-                    // my_location_button.setImageResource(R.drawable.ic_location_missing)
                 }
             }
         } else {
@@ -167,6 +163,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             mMap!!.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
         }
 
+        //사용자가 지도를 이동시킬 때마다 보여지는 화면에 마커를 생성
         mMap!!.setOnCameraMoveListener {
             updateMarker(currentMarkerType, false)
         }
@@ -174,6 +171,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             updateMarker(currentMarkerType, false)
         }
 
+        //사용자가 클릭한 마커의 종류에 따라 서로 다른 위젯을 보여주기 위한 클릭 리스너
         mMap!!.setOnMarkerClickListener {
             val clickedMarkerTag = it.tag
             clickedMarker = it
@@ -187,6 +185,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             true
         }
 
+        //정류소나 공원, 목적지 등에 대한 카드가 보여지고 있을 때 맵을 클릭하면 해당 카드를 숨김
         mMap!!.setOnMapClickListener {
             map_card_view.visibility = View.GONE
             dest_card_view.visibility = View.GONE
@@ -314,6 +313,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         when (markerType) {
             PlaceType.BIKE -> {
                 for (bikeStop in mBikeList) {
+                    //현재 지도에 보여지고 있는 범위 안에 있는 정류소를 찾아서 마커를 생성
                     if (bounds.contains(LatLng(bikeStop.stationLatitude, bikeStop.stationLongitude))) {
                         if (!visibleMarkers.containsKey(bikeStop.stationId)) {
                             if (mMap!!.cameraPosition.zoom >= 15f) {
@@ -326,6 +326,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                                 }
                             }
                         } else {
+                            //지도를 일정 수준 축소하면 빌릴 수 있는 자전거 수가 0대인 정류소 마커를 제거
                             if (mMap!!.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0) {
                                 markerController.removeMarker(bikeStop.stationId)
                             }
@@ -335,6 +336,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
             PlaceType.TOILET -> {
                 for (toilet in mToiletList) {
+                    //현재 지도에 보여지고 있는 범위 안에 있는 화장실를 찾아서 마커를 생성
                     if (bounds.contains(LatLng(toilet.wgs84_y, toilet.wgs84_x))) {
                         if (!visibleMarkers.containsKey(toilet.fName)) {
                             visibleMarkers[toilet.fName] = markerController.addToiletMarker(toilet)
@@ -346,6 +348,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
             PlaceType.PARK -> {
                 for (park in mParkList) {
+                    //현재 지도에 보여지고 있는 범위 안에 있는 공원을 찾아서 마커를 생성
                     if (bounds.contains(LatLng(park.latitude, park.longitude))) {
                         if (!visibleMarkers.containsKey(park.id.toString())) {
                             visibleMarkers[park.id.toString()] = markerController.addParkMarker(park)
@@ -385,33 +388,41 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
-        val dlat: Double
-        val dlng: Double
-        val dname: String
-        var url: String = ""
+        val dlat: Double    //도착지 위도
+        val dlng: Double    //도착지 경도
+        val dname: String   //도착지 이름
+        var url: String = ""    //네이버 지도 앱으로 넘겨줄 url
+        //따릉이 정류소까지 길찾기를 하는 경우
         if (v!!.id == R.id.path_button) {
+            //선택된 마커의 위치 및 태그를 이용하여 도착지 위도, 경도 및 이름을 가져옴
             dlat = clickedMarker!!.position.latitude
             dlng = clickedMarker!!.position.longitude
             dname = URLEncoder.encode((clickedMarker!!.tag as MyBike).stationName, "UTF-8")
+            //네이버 지도 앱으로 연결하기 위한 url
             url =
                 "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
-        } else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker != null) {
+        }
+        //목적지를 검색하고 길찾기를 하는 경우
+        else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker != null) {
+            //선택된 마커의 위치 및 태그를 이용하여 도착지 위도, 경도 및 이름을 가져옴
             dlat = searchedPlaceMarker!!.position.latitude
             dlng = searchedPlaceMarker!!.position.longitude
             dname = URLEncoder.encode((searchedPlaceMarker!!.tag as Place).name, "UTF-8")
 
+            //findClosetBike함수를 사용하여 경유지로 설정할 따릉이 정류소에 대한 MyBike 객체를 구함
             val closetBike = findClosetBike(searchedPlaceMarker!!.tag as Place, null)
             val vlat = closetBike.stationLatitude
             val vlng = closetBike.stationLongitude
             val vname = URLEncoder.encode(closetBike.stationName, "UTF-8")
             url =
                 "nmap://route/bicycle?dlat=$dlat&dlng=$dlng&dname=$dname&v1lat=$vlat&v1lng=$vlng&v1name=$vname&appname=com.example.ddareungi"
-        } else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker == null) {
+        }
+        //공원에 대해 길찾기를 하는 경우
+        else if (v.id == R.id.dest_card_path_button && searchedPlaceMarker == null) {
+            //목적지에 대해 길찾기를 하는 경우와 동일하게 정보를 가져옴
             dlat = clickedMarker!!.position.latitude
             dlng = clickedMarker!!.position.longitude
             dname = URLEncoder.encode((clickedMarker!!.tag as MyPark).name, "UTF-8")
-            url =
-                "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
 
             val closetBike = findClosetBike(null, clickedMarker!!.tag as MyPark)
             val vlat = closetBike.stationLatitude
@@ -425,6 +436,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         val list: MutableList<ResolveInfo> =
             activity!!.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
         if (list.isEmpty()) {
+            //네이버 지도 앱이 깔려있지 않은 경우에 플레이 스토어로 연결해 줌
             context!!.startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
@@ -469,7 +481,6 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 builder.setMessage("네트워크 연결을 확인해주세요")
                 builder.setPositiveButton("확인", object : DialogInterface.OnClickListener {
                     override fun onClick(dialog: DialogInterface?, which: Int) {
-
                     }
                 })
                 builder.show()
@@ -525,21 +536,21 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         val bounds = LatLngBounds(LatLng(37.413294, 126.734086), LatLng(37.715133, 127.269311))
         val rectBounds = RectangularBounds.newInstance(bounds)
 
+        //구글 Places API에서 제공하는 autocomplete Widget 생성
         val autocompleteFragment =
             childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment?
         autocompleteFragment!!.setHint("목적지 검색")
         autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
-        autocompleteFragment.setLocationRestriction(rectBounds)
+        autocompleteFragment.setLocationRestriction(rectBounds) //장소 검색 결과를 서울 내로 제한
 
         autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(place: Place) {
-                Log.i("place search", "Place : " + place.name + ", " + place.id)
                 placeId = place.id.toString()
 
                 val request = FetchPlaceRequest.builder(placeId, placeFields).build()
                 placesClient.fetchPlace(request).addOnSuccessListener {
-                    val place = it.place
-                    Log.i("place search", "Place found " + place.name + ", " + place.latLng.toString())
+                    val place = it.place    //사용자가 입력한 장소를 성공적으로 검색했을 때 반환되는 Place 객체
+                    //해당 Place 객체로부터 위치 및 장소 이름 등의 정보를 이용하여 지도에 마커 생성
                     searchedPlaceMarker = markerController.addSearchMarker(place)
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)

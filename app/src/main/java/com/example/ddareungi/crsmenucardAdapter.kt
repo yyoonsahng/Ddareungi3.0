@@ -44,7 +44,6 @@ class crsmenucardAdapter( var items: ArrayList<Course>, val activity: FragmentAc
             itemView.setOnClickListener {
 
                 val i=adapterPosition
-                Log.v("click",i.toString())
 
                 intent=Intent(activity,courseInfoPager::class.java)
                 intent.putExtra("index",adapterPosition)//position찾기
