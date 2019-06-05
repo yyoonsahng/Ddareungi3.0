@@ -7,14 +7,16 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
 
+/*
+* bList: 대여소 객체를 관리하는 컬렉션
+* mDust: 미세먼지 정보 객체
+* rList: 화장실 객체를 관리하는 컬렉션
+* pList: 공원 객체를 관리하는 컬렉션
+* mWeather: 날씨 객체
+* bikeParse(), dustParse(), restroomParse(), parkParse(), weatherParse() : 각 데이터를 파싱하는 함수
+* */
 class dataParser(var bList:MutableList<MyBike>,var mDust:MyDust,var rList:MutableList<MyRestroom>,var pList:MutableList<MyPark>, var mWeather:MyWeather){
-//json데이터 파싱하는 클래스
-    /*
-    * 고민사항
-    * api마다 따로 파싱하는 클래스를 둘지/ 현 방식대로 할지
-    * 따로 두면 일단 클래스가 많아져서 복잡해보임 . ..
-    * 기존 방식은 통합적으로 관리하기때문에 한번에 하려해서 복잡해짐 ㅠㅠㅠ
-    * */
+
     enum class Data(val type: Int) {
         BIKE(0),
         DUST(1),
