@@ -1,15 +1,11 @@
 package com.example.ddareungi.dataClass
 
-import android.util.Log
-import com.google.common.primitives.UnsignedBytes.toInt
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
-import kotlin.math.floor
-import kotlin.math.round
 
 class dataParser(var bList:MutableList<MyBike>,var mDust:MyDust,var rList:MutableList<MyRestroom>,var pList:MutableList<MyPark>, var mWeather:MyWeather){
 //json데이터 파싱하는 클래스

@@ -27,6 +27,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     lateinit var bookmarkAdapter: BookmarkAdapter
     var networkState = false
     var enableGPS = false
+    lateinit var neighbor: String
 
     interface BookmarkToMapListener {
         fun changeBookmarkToMap(rentalOffice: String)
@@ -41,10 +42,12 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         return inflater.inflate(R.layout.fragment_bookmark, container, false)
     }
 
-    fun setData(bikeList: MutableList<MyBike>, mDust: MyDust, mWeather: MyWeather) {
+
+    fun setData(bikeList: MutableList<MyBike>, mDust: MyDust, mWeather: MyWeather, neiborhood: String) {
         mBikeList = bikeList
         this.mWeather = mWeather
         this.mDust = mDust
+        neighbor = neiborhood
     }
 
 
@@ -67,7 +70,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         }
         if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
-            dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+            dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
             weather_image.setImageResource(mWeather.matchImage())
         }
     }
@@ -106,7 +109,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             network_refresh_button.setOnClickListener(this)
         }
         //네트워크 다시 연결, 파싱하는 중
-        else if(status == 3) {
+        else if (status == 3) {
             no_bookmark_image.visibility = View.GONE
             no_bookmark_text.visibility = View.GONE
             network_refresh_button.visibility = View.GONE
@@ -120,7 +123,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         if (progressBar != null)
             progressBar.visibility = View.GONE
 
-        dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+        dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
         weather_image.setImageResource(mWeather.matchImage())
 
         bookmarkAdapter = BookmarkAdapter(bookmarkArray)
@@ -166,7 +169,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             val mActivity = activity as MainActivity
             //mActivity.checkUserState()
             if (networkState) {
-                val mActivity=activity as MainActivity
+                val mActivity = activity as MainActivity
                 mActivity.initPermission()
                 mActivity.checkNetwork()
                 mActivity.isreLoad = true
@@ -183,7 +186,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         super.onActivityCreated(savedInstanceState)
         initLayout()
         bookmark_refresh_fab.setOnClickListener {
-            val mActivity=activity as MainActivity
+            val mActivity = activity as MainActivity
             val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
             if (progressBar != null)
                 progressBar.visibility = View.VISIBLE
@@ -193,7 +196,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
                 if (progressBar != null)
                     progressBar.visibility = View.VISIBLE
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url,mActivity.dParse , mActivity, false)
+                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, false)
                 networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
             }
         }
