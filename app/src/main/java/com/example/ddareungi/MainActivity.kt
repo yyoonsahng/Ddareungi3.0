@@ -16,10 +16,8 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -50,7 +48,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
     var bList = mutableListOf<MyBike>()
-    var dList = mutableListOf<MyDust>()
     var rList = mutableListOf<MyRestroom>()
     var pList = mutableListOf<MyPark>()
     var mWeather = MyWeather(-1, -1, -1, "", -1)
@@ -86,16 +83,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         while (scan.hasNextLine()) {
 
             val title = scan.nextLine()
-            Log.v("scan", title)
             val subtitle = scan.nextLine()
-            Log.v("scan", subtitle)
             val bikestop = scan.nextLine()
             val location = scan.nextLine()
             val open = scan.nextLine()
             val tel = scan.nextLine()
             val data = CourseInfo(title, subtitle, bikestop, location, tel, open)
             courseInfoList.add(data)
-            Log.v("scan", courseInfoList.size.toString())
         }
 
         val scan0 = Scanner(resources.openRawResource(R.raw.coursename))
@@ -107,7 +101,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             val time = scan0.nextLine()
             val data = Course(title, subtitle, length, time)
             courseList.add(data)
-            Log.v("scan1", courseList.size.toString())
         }
 
         initFragment()
@@ -142,6 +135,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         registerReceiver(networkReceiver, intentFilter)
         registerReceiver(gpsReceiver, gpsIntentFilter)
 
+        //처음 어플을 실행 했을 때 네트워크 및 GPS 상태를 확인
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val networkInfo = connectivityManager.activeNetworkInfo
         networkState = networkInfo != null && networkInfo.isConnected
@@ -172,10 +166,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun checkNetwork() {
         if (networkState) {
-            Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
-            Toast.makeText(this, "네트워크 설정을 확인하세요", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
             window.statusBarColor = resources.getColor(R.color.white, null)
             window.decorView.background = resources.getDrawable(R.color.white, null)
@@ -291,7 +283,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 if (checkAppPermission(permissions)) {
                     locationPermissionGranted = true
                 } else {
-                    //finish()
                 }
             }
         }
@@ -468,12 +459,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
-                    //    initLocation()
-                    Toast.makeText(
-                        mActivity!!.applicationContext,
-                        "Data parsing done" + mActivity!!.localty + "의 날씨는 " + dParse!!.mWeather.wfKor,
-                        Toast.LENGTH_SHORT
-                    ).show()
                     mActivity!!.logo_layout.visibility = View.GONE
                     mActivity!!.window.statusBarColor = mActivity!!.resources.getColor(R.color.white, null)
                     mActivity!!.window.decorView.background = mActivity!!.resources.getDrawable(R.color.white, null)
@@ -482,7 +467,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
 
                     mActivity!!.bookmarkFragment.setData(
-                        dParse.bList,
+                        dParse!!.bList,
                         dParse.mDust,
                         dParse.mWeather,
                         mActivity!!.neighborhood
@@ -497,7 +482,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.mapFragment.setData(
                         mActivity!!.locationPermissionGranted,
                         mActivity!!.enabledGPS,
-                        dParse.bList,
+                        dParse!!.bList,
                         dParse.rList,
                         dParse.pList,
                         null

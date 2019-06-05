@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,24 +24,13 @@ class CourseFragment : Fragment() {
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        Log.v("doing","cardviewList")
         super.onActivityCreated(savedInstanceState)
         val layoutManager= GridLayoutManager(activity,2)
-        if(layoutManager!=null)
-            Log.v("doing","layoutmanager")
         val coursemenu=activity!!.findViewById<RecyclerView>(R.id.CoursemenuList)
         coursemenu.layoutManager=layoutManager
 
         val adapter=crsmenucardAdapter(courseList,this.requireActivity())
-        if(adapter!=null)
-            Log.v("doing","adapter")
         coursemenu.adapter=adapter
-        if(coursemenu.adapter!=null)
-            Log.v("doing","cousemenuadapter")
-
-
-
-
 
     }
 

@@ -3,7 +3,6 @@ package com.example.ddareungi
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,7 +34,6 @@ class crsVP_title : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val value=this.getArguments()!!.getInt("index")
-        Log.v("fragindex",value.toString())
         index=value
         return inflater.inflate(R.layout.fragment_crs_vp_title, container, false)
     }
@@ -50,9 +48,7 @@ class crsVP_title : Fragment() {
     fun setdata(num:Int){
         index=num
         if(activity!=null) {
-            Log.v("data","setdata")
             val drawableTypeArray= resources.obtainTypedArray(R.array.drawable)
-            Log.v("data","drawable")
 
             val imageView = activity!!.findViewById<ImageView>(R.id.crsvp_titleimg)
 
