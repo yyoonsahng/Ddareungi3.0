@@ -35,7 +35,7 @@ data class MyWeather(var temp: Int, var sky: Int, var pty: Int, var wfKor: Strin
                 weatherId = R.drawable.ic_snow
             }
             else -> {
-                weatherId = R.drawable.ic_rainy_day
+                weatherId = R.drawable.ic_sunny
             }
         }
         return weatherId

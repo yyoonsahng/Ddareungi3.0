@@ -136,6 +136,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 mapFragment.mEnableGPS = enabledGPS
                 bookmarkFragment.enableGPS = enabledGPS
+                mapFragment.setGPSWidget()
             }
         }
         registerReceiver(networkReceiver, intentFilter)
@@ -509,4 +510,3 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     }
 }
-

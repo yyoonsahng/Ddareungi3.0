@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.RecyclerView
@@ -47,6 +48,7 @@ class crsmenucardAdapter( var items: ArrayList<Course>, val activity: FragmentAc
 
                 intent=Intent(activity,courseInfoPager::class.java)
                 intent.putExtra("index",adapterPosition)//position찾기
+                intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
                 startActivity(activity.applicationContext,intent,null)
             }
         }
