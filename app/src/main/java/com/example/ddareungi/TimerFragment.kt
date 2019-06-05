@@ -1,6 +1,9 @@
 package com.example.ddareungi
 
 
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
@@ -12,7 +15,10 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
+import com.example.ddareungi.MainActivity.Companion.timerStart
 import com.example.ddareungi.MainActivity.Companion.timerStr
+import com.example.ddareungi.MainActivity.Companion.timermin
+import kotlinx.android.synthetic.main.fragment_timer.*
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -29,10 +35,15 @@ class TimerFragment : Fragment() {
     var timerState=true//반납상태
     companion object {
         var hour=0//시간
+        var min=0
+
     }
     lateinit var timer:CountDownTimer
     lateinit var timerBtn: Button
     lateinit var timerTxt:TextView
+    private lateinit var notification:Uri
+    private  lateinit var  ring:Ringtone
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
@@ -45,20 +56,34 @@ class TimerFragment : Fragment() {
         val spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
         spinner.onItemSelectedListener = SpinnerSelectedListener()
         updateUI(!timerState)
-        init()
+      init()
         Log.v("timer","oncreated")
 
 
     }
+    fun startSound(){
 
+        var notification: Uri
+        var  ring: Ringtone
+        notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        Log.v("timer","ring")
+        ring= RingtoneManager.getRingtone(activity?.applicationContext,notification)
+        ring.play()
+    }
     fun init(){
 
         timer = object : CountDownTimer(3600000, 1000) {//1시간짜리
         override fun onTick(millisUntilFinished: Long) {
             Log.v("timer",timerStr)
-         //   timerTxt.text = MainActivity.timerStr
+              timerTxt.text = MainActivity.timerStr
+
+            if(timermin==58)startSound()
+            min++
+
             updateUI(!timerState)
+
         }
+
 
             override fun onFinish() {
                 Log.v("timerstate", "onfinish")
@@ -72,27 +97,34 @@ class TimerFragment : Fragment() {
         timerBtn.setOnClickListener {
 
             if (timerState) {
+
                 timerBtn.text = "반납 완료"
                 timerState = false
                 timer.start()
-
+                timerSpinner.isEnabled=false
+                 timerStart=true
             } else {
                 timerBtn.text = "대여시작"
                 timerState = true
                 timerTxt.text="0"+hour.toString()+":00"
+                timermin=59
                 timer.cancel()
+                timerSpinner.isEnabled=true
             }
 
 
         }
     }
+
     fun updateUI(state:Boolean){
         if(state){//실행 중
             timerBtn.text = "반납 완료"
-            timerTxt.text = MainActivity.timerStr
+            val h=(hour-1).toString()
+            timerStr="0"+h+":"+timermin
+            timerTxt.text =timerStr
        }else {
             timerBtn.text = "대여시작"
-            timerTxt.text="0"+hour.toString()+":00"
+           timerTxt.text="0"+hour.toString()+":00"
         }
     }
     override fun onDetach() {

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
+import android.media.Ringtone
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.AsyncTask
@@ -19,7 +20,6 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
-import com.example.ddareungi.TimerFragment.Companion.hour
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -38,9 +38,14 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         val courseList = ArrayList<Course>()
         val courseInfoList = ArrayList<CourseInfo>()
         var timerStr=""
+            //지금 수정
+        var timermin=60
+        var timerStart=false
     }
 
+
     lateinit var timer:Timer
+
 
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
@@ -65,12 +70,14 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var isreLoad = false //네트워크 재연결 검사 후 켜져 있을 때 true
 
 
+
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
         "http://openapi.seoul.go.kr:8088/6d71556a42627a7437377549426e67/json/RealtimeCityAir/1/1/",
         "http://openapi.seoul.go.kr:8088/694b534943627a7434307364586868/json/SearchPublicToiletPOIService/", //4938개나 있음
         "http://openapi.seoul.go.kr:8088/527a4a4b47627a74363558734a7658/json/SearchParkInfoService/1/132/"
     )
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,30 +88,42 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkNetwork()
         //init()
         readFile()
-        maketimer()
+
+        timer=Timer()
+        timer.schedule(CustomerTimer(timerFragment), 2000, 60000) //1 분 간격 동작.
+
     }
+    /*
     fun maketimer(){
         timer=Timer()
-        timer.schedule(CustomerTimer(timerFragment),2000,60000) //1 분 간격 동작.
-        val t=hour
-        Log.v("timer",hour.toString())
-    }
+        if(TimerFragment.hour ==1) {
+            timer.schedule(CustomerTimer(timerFragment), 2000, 60000) //1 분 간격 동작.
+        }
+        else{
 
-    class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
-        var timermin=60
-        var alarm=0
-        override fun run() {
-             timermin--
-              alarm++
-            if(alarm==2){
-                ringtone()
-            }
-             timerStr="00:"+timermin.toString()
-     //       timerFragment.timerTxt.text=timerStr
-            Log.v("timer",timerStr)
-
+            timer.schedule(CustomerTimer(timerFragment), 2000, 120000)
+            Log.v("timer","2hour")
         }
 
+    }
+*/
+
+
+    class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
+            //지금수정
+        //timermin=3600
+        var timercount=0
+        //maketimer()
+        override fun run() {
+
+            timermin--
+            timerStr = timermin.toString()
+
+            //       timerFragment.timerTxt.text=timerStr
+            Log.v("timer", timerStr)
+
+
+        }
 
         override fun scheduledExecutionTime(): Long {
             return super.scheduledExecutionTime()
@@ -113,10 +132,23 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         override fun cancel(): Boolean {
             return super.cancel()
         }
-        fun ringtone(){
 
         }
-    }
+
+
+
+
+/*
+        fun maketimer(){
+            timer=Timer()
+            timer.schedule(CustomerTimer(timerFragment),2000,60000) //1 분 간격 동작.
+            val t=hour
+            Log.v("timer",hour.toString())
+        }*/
+
+
+
+
 
     fun readFile() {
         val scan = Scanner(resources.openRawResource(R.raw.courseinfo))

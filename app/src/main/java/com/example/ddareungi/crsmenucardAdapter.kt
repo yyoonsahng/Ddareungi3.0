@@ -5,7 +5,6 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -45,6 +44,7 @@ class crsmenucardAdapter( var items: ArrayList<Course>, val activity: FragmentAc
 
                 val i=adapterPosition
 
+                //메뉴 카드뷰 레이아웃 인텐트 생성
                 intent=Intent(activity,courseInfoPager::class.java)
                 intent.putExtra("index",adapterPosition)//position찾기
                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK)

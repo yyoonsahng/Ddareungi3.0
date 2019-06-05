@@ -25,6 +25,7 @@ class crsViewPager(fm:FragmentManager,var index:Int):FragmentPagerAdapter(fm) {
             4->{crsVP4Fragment()}
             else->{crsVP_title()}//제목 페이지
         }
+        //fragment에 인자 전달
         fragment.arguments=bundle
         return fragment
     }
