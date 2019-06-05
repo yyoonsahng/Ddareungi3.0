@@ -2,7 +2,6 @@ package com.example.ddareungi
 
 
 import android.os.Bundle
-import android.provider.SyncStateContract.Helpers.update
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -69,9 +68,50 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             bookmarkAdapter.notifyDataSetChanged()
     }
 
+    fun adjustWidgets(status: Int) {
+        //네트워크 연결됨 && 즐겨찾는 정류소에 등록된 정류소 없음
+        if (status == 0) {
+            bookmark.visibility = View.GONE
+            network_refresh_button.visibility = View.GONE
+            no_bookmark_image.setImageResource(R.drawable.ic_no_bookmark)
+            no_bookmark_text.text = "즐겨찾는 정류소를 추가해주세요"
+            no_bookmark_image.visibility = View.VISIBLE
+            no_bookmark_text.visibility = View.VISIBLE
+            activity!!.bookmark_refresh_fab.hide()
+        }
+        //네트워크 연결됨 && 즐겨찾는 정류소에 등록된 정류소 있음
+        else if (status == 1) {
+            bookmark.visibility = View.VISIBLE
+            no_bookmark_image.visibility = View.GONE
+            no_bookmark_text.visibility = View.GONE
+            network_refresh_button.visibility = View.GONE
+            activity!!.bookmark_refresh_fab.show()
+        }
+        //네트워크 연결 안됨
+        else if (status == 2) {
+            weather_image.visibility = View.GONE
+            dust_text.visibility = View.GONE
+            bookmark.visibility = View.GONE
+            activity!!.bookmark_refresh_fab.hide()
+
+            no_bookmark_image.visibility = View.VISIBLE
+            no_bookmark_text.visibility = View.VISIBLE
+            no_bookmark_text.text = "네트워크 연결을 확인해주세요"
+            network_refresh_button.visibility = View.VISIBLE
+            no_bookmark_image.setImageResource(R.drawable.ic_wifi)
+            network_refresh_button.setOnClickListener(this)
+        }
+        //네트워크 다시 연결, 파싱하는 중
+        else if(status == 3) {
+            no_bookmark_image.visibility = View.GONE
+            no_bookmark_text.visibility = View.GONE
+            network_refresh_button.visibility = View.GONE
+        }
+    }
+
     fun initLayout() {
         rentalOfficeData()
-        Log.i("weather","네트워크상태: "+ networkState.toString())
+        Log.i("weather", "네트워크상태: " + networkState.toString())
         val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
         if (progressBar != null)
             progressBar.visibility = View.GONE
@@ -87,31 +127,14 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         bookmark.addItemDecoration(dividerItemDecoration1)
 
         if (bookmark!!.adapter!!.itemCount == 0 && networkState) {
-            Log.i("weather","실행31 ")
-            bookmark.visibility = View.GONE
-            network_refresh_button.visibility = View.GONE
-            no_bookmark_image.setImageResource(R.drawable.ic_no_bookmark)
-            no_bookmark_text.text = "즐겨찾는 정류소를 추가해주세요"
-            no_bookmark_image.visibility = View.VISIBLE
-            no_bookmark_text.visibility = View.VISIBLE
-            activity!!.bookmark_refresh_fab.hide()
+            Log.i("weather", "실행31 ")
+            adjustWidgets(0)
         } else if (bookmark!!.adapter!!.itemCount > 0 && networkState) {
-            Log.i("weather","실행2 ")
-            bookmark.visibility = View.VISIBLE
-            no_bookmark_image.visibility = View.GONE
-            no_bookmark_text.visibility = View.GONE
-            network_refresh_button.visibility = View.GONE
-            activity!!.bookmark_refresh_fab.show()
+            Log.i("weather", "실행2 ")
+            adjustWidgets(1)
         } else {
-            Log.i("weather","실행3 ")
-            activity!!.bookmark_refresh_fab.hide()
-            weather_image.visibility = View.GONE
-            dust_text.visibility = View.GONE
-            bookmark.visibility = View.GONE
-            no_bookmark_text.text = "네트워크 연결을 확인해주세요"
-            network_refresh_button.visibility = View.VISIBLE
-            no_bookmark_image.setImageResource(R.drawable.ic_wifi)
-            network_refresh_button.setOnClickListener(this)
+            Log.i("weather", "실행3 ")
+            adjustWidgets(2)
         }
 
         bookmarkAdapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
@@ -132,18 +155,21 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     override fun onClick(v: View?) {
         if (v!!.id == R.id.network_refresh_button) {
             val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
-            if (progressBar != null)
+            if (progressBar != null) {
+                adjustWidgets(3)
                 progressBar.visibility = View.VISIBLE
-            val mActivity=activity as MainActivity
-            mActivity.checkUserState()
+            }
+            val mActivity = activity as MainActivity
+            //mActivity.checkUserState()
             if (networkState) {
                 mActivity.initPermission()
                 mActivity.checkNetwork()
-                mActivity.isreLoad=true
-            }
-            else{
-                if (progressBar != null)
+                mActivity.isreLoad = true
+            } else {
+                if (progressBar != null) {
                     progressBar.visibility = View.GONE
+                    adjustWidgets(2)
+                }
             }
         }
     }
@@ -153,12 +179,12 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         initLayout()
         bookmark_refresh_fab.setOnClickListener {
             if (networkState) {
-                val mActivity=activity as MainActivity
+                val mActivity = activity as MainActivity
                 val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
                 if (progressBar != null)
                     progressBar.visibility = View.VISIBLE
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url,mActivity.dParse , mActivity, false)
+                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, false)
                 networkTask.execute()
             }
         }
@@ -195,6 +221,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         super.onPause()
         Log.i("Pause", "Paused")
     }
+
     override fun onStop() {
         super.onStop()
         Log.i("Stop", "Stoped")

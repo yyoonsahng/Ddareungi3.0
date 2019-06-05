@@ -45,7 +45,7 @@ import java.util.*
 class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
     var dbHandler: MyDB? = null
-    lateinit var mMap: GoogleMap
+    var mMap: GoogleMap? = null
     var mapView: MapView? = null    //GoogleMap을 보여주는 MapView
     var mLocationPermissionGranted = false  //GPS 권환 획득 유무를 확인하는 flag 값
     var mEnableGPS = false
@@ -103,11 +103,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap?) {
         mMap = googleMap!!
-        markerController = MarkerController(context!!, mMap, visibleMarkers)
+        markerController = MarkerController(context!!, mMap!!, visibleMarkers)
         dbHandler = MyDB(context!!)
         visibleMarkers.clear()
 
-        mMap.setMinZoomPreference(14f)
+        mMap!!.setMinZoomPreference(14f)
 
         if (fromBookmarkFragment) {
             for (bike in mBikeList) {
@@ -115,7 +115,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     clickedMarker = markerController.addBikeMarker(bike)
                     clickedMarker!!.tag = bike
                     adjustMapWidget(clickedMarker!!, bike, PlaceType.BIKE)
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(clickedMarker!!.position))
+                    mMap!!.moveCamera(CameraUpdateFactory.newLatLng(clickedMarker!!.position))
                 }
             }
         }
@@ -124,7 +124,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             fusedLocationClient.lastLocation.addOnSuccessListener {
                 if(it != null) {
                     if (!fromBookmarkFragment) {
-                        mMap.moveCamera(
+                        mMap!!.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
                                 LatLng(it.latitude, it.longitude),
                                 DEFAULT_ZOOM
@@ -133,17 +133,17 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     }
                     myLocation = it
                 } else {
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
+                    mMap!!.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
                 }
             }
-            mMap.isMyLocationEnabled = true
+            mMap!!.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
                 val lm = context!!.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
                 mEnableGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 if (mEnableGPS) {
                     fusedLocationClient.lastLocation.addOnSuccessListener {
                         if (it != null) {
-                            mMap.animateCamera(
+                            mMap!!.animateCamera(
                                 CameraUpdateFactory.newLatLngZoom(
                                     LatLng(it.latitude, it.longitude),
                                     DEFAULT_ZOOM
@@ -157,19 +157,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
         } else {
             //GPS 권한이 없는 경우 지도 초기 값을 건국대학교 위치로 설정
-            mMap.isMyLocationEnabled = false
+            mMap!!.isMyLocationEnabled = false
             dest_dist_text.visibility = View.GONE
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
+            mMap!!.moveCamera(CameraUpdateFactory.newLatLng(KONKUK_UNIV))
         }
 
-        mMap.setOnCameraMoveListener {
+        mMap!!.setOnCameraMoveListener {
             updateMarker(currentMarkerType, false)
         }
-        mMap.setOnCameraIdleListener {
+        mMap!!.setOnCameraIdleListener {
             updateMarker(currentMarkerType, false)
         }
 
-        mMap.setOnMarkerClickListener {
+        mMap!!.setOnMarkerClickListener {
             val clickedMarkerTag = it.tag
             clickedMarker = it
             when (clickedMarkerTag) {
@@ -178,11 +178,11 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                 is MyPark -> adjustMapWidget(it, clickedMarkerTag, PlaceType.PARK)
                 is Place -> adjustMapWidget(it, clickedMarkerTag, PlaceType.SEARCH)
             }
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(it.position))
+            mMap!!.animateCamera(CameraUpdateFactory.newLatLng(it.position))
             true
         }
 
-        mMap.setOnMapClickListener {
+        mMap!!.setOnMapClickListener {
             map_card_view.visibility = View.GONE
             dest_card_view.visibility = View.GONE
             if (clickedMarker != null)
@@ -300,18 +300,18 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
     fun updateMarker(markerType: PlaceType, clearAll: Boolean) {
         if (clearAll) {
-            mMap.clear()
+            mMap!!.clear()
             visibleMarkers.clear()
         }
 
-        val bounds = mMap.projection.visibleRegion.latLngBounds
+        val bounds = mMap!!.projection.visibleRegion.latLngBounds
 
         when (markerType) {
             PlaceType.BIKE -> {
                 for (bikeStop in mBikeList) {
                     if (bounds.contains(LatLng(bikeStop.stationLatitude, bikeStop.stationLongitude))) {
                         if (!visibleMarkers.containsKey(bikeStop.stationId)) {
-                            if (mMap.cameraPosition.zoom >= 15f) {
+                            if (mMap!!.cameraPosition.zoom >= 15f) {
                                 visibleMarkers[bikeStop.stationId] = markerController.addBikeMarker(bikeStop)
                                 visibleMarkers[bikeStop.stationId]!!.tag = bikeStop
                             } else {
@@ -321,7 +321,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                                 }
                             }
                         } else {
-                            if (mMap.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0) {
+                            if (mMap!!.cameraPosition.zoom < 15f && bikeStop.parkingBikeTotCnt == 0) {
                                 markerController.removeMarker(bikeStop.stationId)
                             }
                         }
@@ -431,6 +431,19 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    fun setGPS() {
+        if(mMap != null) {
+            if (mLocationPermissionGranted && mEnableGPS) {
+                mMap!!.isMyLocationEnabled = true
+                my_location_button.show()
+            } else {
+                mMap!!.isMyLocationEnabled = false
+                my_location_button.hide()
+            }
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
@@ -515,7 +528,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     searchedPlaceMarker = markerController.addSearchMarker(place)
                     searchedPlaceMarker!!.tag = place
                     adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
+                    mMap!!.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
 
 
                 }.addOnFailureListener {

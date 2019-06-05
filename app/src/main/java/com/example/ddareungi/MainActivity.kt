@@ -29,6 +29,7 @@ import kotlinx.android.synthetic.main.fragment_bookmark.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.util.*
 
 
@@ -133,6 +134,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 mapFragment.mEnableGPS = enabledGPS
                 bookmarkFragment.enableGPS = enabledGPS
+                mapFragment.setGPS()
             }
         }
         registerReceiver(networkReceiver, intentFilter)
@@ -152,11 +154,15 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun initLocation() {
         if (enabledGPS && networkState) {
-            var geocoder = Geocoder(this, Locale.KOREA)
-            var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-            var addr = addrList.first().getAddressLine(0).split(" ")
-            localty = addr[2]
-            neighborhood = addr[3]
+            try {
+                var geocoder = Geocoder(this, Locale.KOREA)
+                var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                var addr = addrList.first().getAddressLine(0).split(" ")
+                localty = addr[2]
+                neighborhood = addr[3]
+            } catch(e: IOException) {
+                Log.e("getFromLocation", e.toString())
+            }
         }
     }
 
