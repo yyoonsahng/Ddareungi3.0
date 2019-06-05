@@ -69,8 +69,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         }
         if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
-            dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
-            weather_image.setImageResource(mWeather.matchImage())
+            if(dust_text!=null && weather_image!=null) {
+                dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
+                weather_image.setImageResource(mWeather.matchImage())
+            }
         }
     }
 
@@ -193,6 +195,11 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
                 val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, false)
                 networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            }
+            else{
+                if (progressBar != null)
+                    progressBar.visibility = View.VISIBLE
+                initLayout()
             }
         }
         val itemTouchHelperCallback_1: ItemTouchHelper.SimpleCallback =

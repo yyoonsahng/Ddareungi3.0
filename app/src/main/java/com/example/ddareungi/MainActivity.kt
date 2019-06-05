@@ -225,12 +225,21 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun initLocation() {
-        if (enabledGPS && networkState) {
-            var geocoder = Geocoder(this, Locale.KOREA)
-            var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-            var addr = addrList.first().getAddressLine(0).split(" ")
-            localty = addr[2]
-            neighborhood = addr[3]
+        try {
+            if (enabledGPS && networkState) {
+                var geocoder = Geocoder(this, Locale.KOREA)
+                var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                var addr = addrList.first().getAddressLine(0).split(" ")
+                localty = addr[2]
+                neighborhood = addr[3]
+            }
+        }
+        catch(e:Exception){
+            mLocation.latitude = 37.540
+            mLocation.longitude = 127.07
+            localty="광진구"
+            neighborhood="화양동"
+
         }
     }
 
@@ -488,9 +497,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 for (i in result) {
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
-
-                        //네트워크 켜진 상태에서 앱 켰을 때(한 번 파싱해온 상태)
-                        if (mActivity!!.dParse.bList.size == jarray.length()) {
                             for (j in 0..jarray.length()) {
                                 val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
                                 if (dParse!!.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
@@ -498,12 +504,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                                 }
                                 mCount++
                             }
-                        }
-                        //네트워크 꺼진 상태에서 앱 켰을 때
-                        //아무 정보도 dParse에 없는 상태라서 파싱을 전부 다시 해와야함
-                        else {
-                            mActivity!!.dParse.parse(type, i)
-                        }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
