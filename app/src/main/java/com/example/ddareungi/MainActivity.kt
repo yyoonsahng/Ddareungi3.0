@@ -37,8 +37,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     companion object {
         val courseList = ArrayList<Course>()
         val courseInfoList = ArrayList<CourseInfo>()
+        var timerStr=""
     }
 
+    lateinit var timer:Timer
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     val bookmarkFragment = BookmarkFragment()
@@ -79,8 +81,33 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkNetwork()
         //init()
         readFile()
+        maketimer()
+    }
+    fun maketimer(){
+        timer=Timer()
+        timer.schedule(CustomerTimer(timerFragment),2000,60000) //1 분 간격 동작.
+        Log.v("timer","ttt")
     }
 
+    class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
+        var timer=60
+        override fun run() {
+             timer--
+             timerStr="00:"+timer.toString()
+     //       timerFragment.timerTxt.text=timerStr
+            Log.v("timer",timerStr)
+
+        }
+
+        override fun scheduledExecutionTime(): Long {
+            return super.scheduledExecutionTime()
+        }
+
+        override fun cancel(): Boolean {
+            return super.cancel()
+        }
+
+    }
     fun readFile() {
         val scan = Scanner(resources.openRawResource(R.raw.courseinfo))
         while (scan.hasNextLine()) {
