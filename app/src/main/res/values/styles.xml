@@ -23,6 +23,8 @@
     <style name="TextAppearance.BottomNavigationView.Active">
         <item name="android:textSize">10sp</item>
     </style>
+
+
     <style name="TextAppearance.BottomNavigationView.Inactive">
         <item name="android:textSize">10sp</item>
     </style>
