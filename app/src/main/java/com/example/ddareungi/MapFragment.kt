@@ -2,20 +2,24 @@ package com.example.ddareungi
 
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import com.example.ddareungi.dataClass.MyBike
 import com.example.ddareungi.dataClass.MyPark
 import com.example.ddareungi.dataClass.MyRestroom
@@ -122,7 +126,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
 
         if (mLocationPermissionGranted && mEnableGPS) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                if(it != null) {
+                if (it != null) {
                     if (!fromBookmarkFragment) {
                         mMap!!.moveCamera(
                             CameraUpdateFactory.newLatLngZoom(
@@ -138,6 +142,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             }
             mMap!!.isMyLocationEnabled = true
             my_location_button.setOnClickListener {
+                Log.i("weather", "gps버튼 클릭")
                 val lm = context!!.getSystemService(AppCompatActivity.LOCATION_SERVICE) as LocationManager
                 mEnableGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 if (mEnableGPS) {
@@ -432,8 +437,8 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     }
 
     @SuppressLint("MissingPermission")
-    fun setGPS() {
-        if(mMap != null) {
+    fun setGPSWidget() {
+        if (mMap != null) {
             if (mLocationPermissionGranted && mEnableGPS) {
                 mMap!!.isMyLocationEnabled = true
                 my_location_button.show()
@@ -447,17 +452,27 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context!!)
-        if (mLocationPermissionGranted && mEnableGPS)
-            my_location_button.show()
-        else
-            my_location_button.hide()
+        setGPSWidget()
 
         map_refresh_fab.setOnClickListener {
-            if(networkState) {
-                val mActivity=activity as MainActivity
+            if (networkState) {
+                val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+                if (progressBar != null) {
+                    progressBar.visibility = View.VISIBLE
+                }
+                val mActivity = activity as MainActivity
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
                 val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
-                networkTask.execute()
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            } else {
+                val builder = AlertDialog.Builder(context!!)
+                builder.setMessage("네트워크 연결을 확인해주세요")
+                builder.setPositiveButton("확인", object : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface?, which: Int) {
+
+                    }
+                })
+                builder.show()
             }
         }
 

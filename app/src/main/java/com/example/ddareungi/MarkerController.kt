@@ -53,6 +53,7 @@ class MarkerController(
     fun addToiletMarker(toilet: MyRestroom): Marker {
         val markerOptions = MarkerOptions()
         markerOptions.position(LatLng(toilet.wgs84_y, toilet.wgs84_x))
+        markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_toilet_marker))
 
         return mMap.addMarker(markerOptions)
     }

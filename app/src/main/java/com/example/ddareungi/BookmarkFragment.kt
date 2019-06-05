@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.DividerItemDecoration
@@ -64,8 +65,11 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
                 }
             }
         }
-        if (onUpdate)
+        if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
+            dust_text.text = "오늘의 미세먼지는\n${mDust.idex_nm}입니다"
+            weather_image.setImageResource(mWeather.matchImage())
+        }
     }
 
     fun adjustWidgets(status: Int) {
@@ -153,7 +157,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
     }
 
     override fun onClick(v: View?) {
-        if (v!!.id == R.id.network_refresh_button) {
+        if (v!!.id == R.id.network_refresh_button) { //새로고침버튼
             val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
             if (progressBar != null) {
                 adjustWidgets(3)
@@ -162,6 +166,7 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             val mActivity = activity as MainActivity
             //mActivity.checkUserState()
             if (networkState) {
+                val mActivity=activity as MainActivity
                 mActivity.initPermission()
                 mActivity.checkNetwork()
                 mActivity.isreLoad = true
@@ -178,14 +183,18 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         super.onActivityCreated(savedInstanceState)
         initLayout()
         bookmark_refresh_fab.setOnClickListener {
+            val mActivity=activity as MainActivity
+            val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+            if (progressBar != null)
+                progressBar.visibility = View.VISIBLE
             if (networkState) {
                 val mActivity = activity as MainActivity
                 val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
                 if (progressBar != null)
                     progressBar.visibility = View.VISIBLE
                 val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, false)
-                networkTask.execute()
+                val networkTask = MainActivity.NetworkTask(0, url,mActivity.dParse , mActivity, false)
+                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
             }
         }
         val itemTouchHelperCallback_1: ItemTouchHelper.SimpleCallback =
@@ -215,21 +224,6 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
             no_bookmark_text.visibility = View.GONE
             activity!!.bookmark_refresh_fab.show()
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.i("Pause", "Paused")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.i("Stop", "Stoped")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i("destroy", "destroyed")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

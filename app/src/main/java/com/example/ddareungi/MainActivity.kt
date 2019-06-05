@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
     var bList = mutableListOf<MyBike>()
+    var dList = mutableListOf<MyDust>()
     var rList = mutableListOf<MyRestroom>()
     var pList = mutableListOf<MyPark>()
     var mWeather = MyWeather(-1, -1, -1, "", -1)
@@ -77,6 +78,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkUserState()
         initPermission()
         checkNetwork()
+        //init()
         readFile()
         initFragment()
     }
@@ -134,7 +136,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 enabledGPS = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
                 mapFragment.mEnableGPS = enabledGPS
                 bookmarkFragment.enableGPS = enabledGPS
-                mapFragment.setGPS()
+                mapFragment.setGPSWidget()
             }
         }
         registerReceiver(networkReceiver, intentFilter)
@@ -177,8 +179,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             Toast.makeText(this, "네트워크연결됨", Toast.LENGTH_SHORT).show()
             initData()
         } else {
-            //네트워크에연결안되어있으면 일단그냥종료
-            //어떻게처리할지 고민해봐야겠음
             Toast.makeText(this, "네트워크 설정을 확인하세요", Toast.LENGTH_SHORT).show()
             logo_layout.visibility = View.GONE
             window.statusBarColor = resources.getColor(R.color.white, null)
@@ -191,10 +191,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     fun initData() {
         val networkTask0 = NetworkTask(0, urlStr[0], dParse, null)
-        networkTask0.execute()
+        networkTask0.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
         val networkTask2 = NetworkTask(2, urlStr[2], dParse, this)
-        networkTask2.execute()
+        networkTask2.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
 
 
         val networkTask3 = NetworkTask(3, urlStr[3], dParse, null)
@@ -330,6 +330,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 break
             }
         }
+
         if (networkState) {
             val networkTask1 = NetworkTask(1, urlStr[1] + dCode + "/" + localty, dParse, null)
             networkTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
@@ -423,6 +424,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 for (i in result) {
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
+
+                        //네트워크 켜진 상태에서 앱 켰을 때(한 번 파싱해온 상태)
+                        if (mActivity!!.dParse.bList.size == jarray.length()) {
                             for (j in 0..jarray.length()) {
                                 val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
                                 if (dParse!!.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
@@ -430,6 +434,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                                 }
                                 mCount++
                             }
+                        }
+                        //네트워크 꺼진 상태에서 앱 켰을 때
+                        //아무 정보도 dParse에 없는 상태라서 파싱을 전부 다시 해와야함
+                        else {
+                            mActivity!!.dParse.parse(type, i)
+                        }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
@@ -445,16 +455,21 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         null
                     )
                     mActivity!!.mapFragment.updateMarker(mActivity!!.mapFragment.currentMarkerType, true)
+
                 } else {
+                    mActivity!!.bookmarkFragment.setData(mActivity!!.dParse.bList, mActivity!!.dParse.mDust, mActivity!!.dParse.mWeather)
                     mActivity!!.bookmarkFragment.upDate(true)
-                    val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
-                    if (progressBar != null)
-                        progressBar.visibility = View.GONE
                 }
-            } else {
+                val progressBar = mActivity!!.findViewById<ProgressBar>(R.id.progress_circular)
+                if (progressBar != null) {
+                    progressBar.visibility = View.GONE
+                }
+            }
+            else {
                 for (i in result)
                     dParse!!.parse(type, i)
                 if (mActivity != null && type == Data.RESTROOM.type) {
+                    //    initLocation()
                     Toast.makeText(
                         mActivity!!.applicationContext,
                         "Data parsing done" + mActivity!!.localty + "의 날씨는 " + dParse!!.mWeather.wfKor,
@@ -464,6 +479,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     mActivity!!.window.statusBarColor = mActivity!!.resources.getColor(R.color.white, null)
                     mActivity!!.window.decorView.background = mActivity!!.resources.getDrawable(R.color.white, null)
                     mActivity!!.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+
                     mActivity!!.loadFragment(mActivity!!.bookmarkFragment)
 
                     mActivity!!.bookmarkFragment.setData(dParse.bList, dParse.mDust, dParse.mWeather)

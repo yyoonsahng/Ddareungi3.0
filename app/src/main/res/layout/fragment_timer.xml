@@ -22,7 +22,7 @@
         />
         <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
             <ProgressBar
-                    android:indeterminate="true"
+                     android:indeterminate="true"
                     android:indeterminateDrawable="@drawable/prgbar"
                     android:visibility="invisible"
                     android:id="@+id/timerPrgbar"
