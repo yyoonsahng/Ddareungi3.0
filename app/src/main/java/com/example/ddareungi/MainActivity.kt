@@ -19,7 +19,6 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
 import com.example.ddareungi.TimerFragment.Companion.hour
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -42,6 +41,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     lateinit var timer:Timer
+
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
     val bookmarkFragment = BookmarkFragment()
@@ -92,13 +92,19 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
         var timermin=60
+        var alarm=0
         override fun run() {
              timermin--
+              alarm++
+            if(alarm==2){
+                ringtone()
+            }
              timerStr="00:"+timermin.toString()
      //       timerFragment.timerTxt.text=timerStr
             Log.v("timer",timerStr)
 
         }
+
 
         override fun scheduledExecutionTime(): Long {
             return super.scheduledExecutionTime()
@@ -107,8 +113,11 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         override fun cancel(): Boolean {
             return super.cancel()
         }
+        fun ringtone(){
 
+        }
     }
+
     fun readFile() {
         val scan = Scanner(resources.openRawResource(R.raw.courseinfo))
         while (scan.hasNextLine()) {
