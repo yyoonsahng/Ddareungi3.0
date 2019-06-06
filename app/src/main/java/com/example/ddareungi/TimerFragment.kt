@@ -44,31 +44,34 @@ class TimerFragment : Fragment() {
     private lateinit var notification:Uri
     private  lateinit var  ring:Ringtone
 
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+
         timerBtn=activity!!.findViewById(R.id.timerBtn)
         timerTxt = activity!!.findViewById<TextView>(R.id.timerTxt)
         val spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
         spinner.onItemSelectedListener = SpinnerSelectedListener()
-        updateUI(!timerState)
+      //updateUI(!timerState)
       init()
         Log.v("timer","oncreated")
 
 
     }
+
+
     fun startSound(){
 
-        var notification: Uri
-        var  ring: Ringtone
-        notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         Log.v("timer","ring")
-        ring= RingtoneManager.getRingtone(activity?.applicationContext,notification)
+        ring= RingtoneManager.getRingtone(activity!!.applicationContext,notification)
         ring.play()
+
+
     }
     fun init(){
 
@@ -77,7 +80,14 @@ class TimerFragment : Fragment() {
             Log.v("timer",timerStr)
               timerTxt.text = MainActivity.timerStr
 
-            if(timermin==58)startSound()
+            if(timermin==58){startSound()}
+            /*    val builder= AlertDialog.Builder(activity!!.applicationContext)
+                val dialogView=layoutInflater.inflate(R.layout.dialogcustomlayout,null)
+                // val dialogtxt=dialogView.findViewById<TextView>(R.id.dialogTxt)
+                builder.setView(dialogView).setPositiveButton("알람 중지"){dialog, which ->
+                    ring.stop()
+                }.show()
+            }*/
             min++
 
             updateUI(!timerState)
@@ -94,6 +104,7 @@ class TimerFragment : Fragment() {
 
 
 
+
         timerBtn.setOnClickListener {
 
             if (timerState) {
@@ -104,6 +115,9 @@ class TimerFragment : Fragment() {
                 timerSpinner.isEnabled=false
                  timerStart=true
             } else {
+
+                if(ring.isPlaying){Log.v("timer","oooo")
+                    ring.stop()}
                 timerBtn.text = "대여시작"
                 timerState = true
                 timerTxt.text="0"+hour.toString()+":00"
