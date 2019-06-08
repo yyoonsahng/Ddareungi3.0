@@ -1,9 +1,7 @@
 package com.example.ddareungi
 
 
-import android.media.Ringtone
-import android.media.RingtoneManager
-import android.net.Uri
+import android.content.Context
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
@@ -15,9 +13,9 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
-import com.example.ddareungi.MainActivity.Companion.timerStart
-import com.example.ddareungi.MainActivity.Companion.timerStr
-import com.example.ddareungi.MainActivity.Companion.timermin
+import com.example.ddareungi.MainActivity.Companion.activitystate
+import com.example.ddareungi.MainActivity.Companion.selectHour
+import com.example.ddareungi.MainActivity.Companion.timerMin
 import kotlinx.android.synthetic.main.fragment_timer.*
 
 
@@ -33,75 +31,74 @@ private const val ARG_PARAM2 = "param2"
 class TimerFragment : Fragment() {
 
     var timerState=true//반납상태
-    companion object {
-        var hour=0//시간
-        var min=0
 
-    }
+
     lateinit var timer:CountDownTimer
     lateinit var timerBtn: Button
     lateinit var timerTxt:TextView
+    var hour=0
+    /*
     private lateinit var notification:Uri
     private  lateinit var  ring:Ringtone
+*/
+    lateinit var onTimePickerSetListener:OnTimePickerSetListener
+
+
+    //fragment->MainActivity 대여시간 선택 전달
+
+    interface OnTimePickerSetListener{
+        fun onTimePickerSet(hour:Int);
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+          activitystate=true
         super.onActivityCreated(savedInstanceState)
-
-
         timerBtn=activity!!.findViewById(R.id.timerBtn)
         timerTxt = activity!!.findViewById<TextView>(R.id.timerTxt)
         val spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
         spinner.onItemSelectedListener = SpinnerSelectedListener()
-      //updateUI(!timerState)
-      init()
+       // updateUI(!timerState)
+        init()
         Log.v("timer","oncreated")
 
 
     }
 
-
-    fun startSound(){
-
-        notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        Log.v("timer","ring")
-        ring= RingtoneManager.getRingtone(activity!!.applicationContext,notification)
-        ring.play()
-
-
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        onTimePickerSetListener=context as OnTimePickerSetListener
     }
+
+
+
+
+
     fun init(){
 
         timer = object : CountDownTimer(3600000, 1000) {//1시간짜리
         override fun onTick(millisUntilFinished: Long) {
-            Log.v("timer",timerStr)
-              timerTxt.text = MainActivity.timerStr
 
-            if(timermin==58){startSound()}
-            /*    val builder= AlertDialog.Builder(activity!!.applicationContext)
-                val dialogView=layoutInflater.inflate(R.layout.dialogcustomlayout,null)
-                // val dialogtxt=dialogView.findViewById<TextView>(R.id.dialogTxt)
-                builder.setView(dialogView).setPositiveButton("알람 중지"){dialog, which ->
-                    ring.stop()
-                }.show()
-            }*/
-            min++
 
-            updateUI(!timerState)
+            updateUI(!timerState,selectHour)
+
+
 
         }
 
 
             override fun onFinish() {
+                activitystate=false
                 Log.v("timerstate", "onfinish")
                 // timerTxt.text=MainActivity.timerStr
                 timerTxt.text = "00:00"
+                Log.i("tim_onFinish","00:00")
             }
         }
-
 
 
 
@@ -111,17 +108,16 @@ class TimerFragment : Fragment() {
 
                 timerBtn.text = "반납 완료"
                 timerState = false
+               timerMin=59
                 timer.start()
                 timerSpinner.isEnabled=false
-                 timerStart=true
+              //  timerStart=true
             } else {
-
-                if(ring.isPlaying){Log.v("timer","oooo")
-                    ring.stop()}
                 timerBtn.text = "대여시작"
                 timerState = true
-                timerTxt.text="0"+hour.toString()+":00"
-                timermin=59
+                //timerTxt.text="0"+hour.toString()+":00"
+                Log.i("tim_btnclick",timerTxt.text.toString())
+              //  timermin=59
                 timer.cancel()
                 timerSpinner.isEnabled=true
             }
@@ -130,15 +126,22 @@ class TimerFragment : Fragment() {
         }
     }
 
-    fun updateUI(state:Boolean){
+    fun updateUI(state:Boolean,selectHour:Boolean){
+        var h=hour-1
+        if(!selectHour)
+              h++
+
+        Log.v("timer updateUI",h.toString())
         if(state){//실행 중
             timerBtn.text = "반납 완료"
-            val h=(hour-1).toString()
-            timerStr="0"+h+":"+timermin
+            val timerStr="0"+h.toString()+":"+timerMin
             timerTxt.text =timerStr
-       }else {
+            Log.i("tim_updateUI실행중",timerTxt.text.toString())
+        }else {
             timerBtn.text = "대여시작"
-           timerTxt.text="0"+hour.toString()+":00"
+            h++
+             timerTxt.text="0"+h.toString()+":00"
+            Log.i("tim_updateUI반납",timerTxt.text.toString())
         }
     }
     override fun onDetach() {
@@ -154,7 +157,7 @@ class TimerFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateUI(!timerState)
+        updateUI(!timerState,selectHour)
     }
 
     inner class SpinnerSelectedListener: AdapterView.OnItemSelectedListener{
@@ -163,8 +166,10 @@ class TimerFragment : Fragment() {
             if(spinnerStr.length>3){
                 Log.v("timer","대여시간을 선택하세요")
             }else{
+                selectHour=true
                 hour=spinnerStr.substring(0,1).toInt()
-                timerTxt.text="0"+hour.toString()+":00"
+                 onTimePickerSetListener.onTimePickerSet(spinnerStr.substring(0,1).toInt())
+
             }
         }
 

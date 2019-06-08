@@ -8,7 +8,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.media.Ringtone
+import android.media.RingtoneManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.AsyncTask
@@ -32,20 +32,28 @@ import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
+class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener,TimerFragment.OnTimePickerSetListener{
+
 
     companion object {
         val courseList = ArrayList<Course>()
         val courseInfoList = ArrayList<CourseInfo>()
-        var timerStr=""
-            //지금 수정
-        var timermin=60
-        var timerStart=false
+        var timerMin=59
+        var selectHour=false
+        var ringFlag=true
+        var activitystate=false
+
     }
 
 
-    lateinit var timer:Timer
 
+   lateinit var timer:Timer
+    var timerHour=1 //대여 시간
+
+    override fun onTimePickerSet(hour: Int) {
+        timerHour=hour            //스피너에서 선택한 시간을 전달한다.
+        Log.v("spinner",timerHour.toString())
+    }
 
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
@@ -53,6 +61,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     val mapFragment = MapFragment()
     val timerFragment = TimerFragment()
     val courseFragment = CourseFragment()
+
+
 
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -83,44 +93,67 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        selectHour=false
+        ringFlag=true
         checkUserState()
         initPermission()
         checkNetwork()
         //init()
         readFile()
+        startTimer()
 
-        timer=Timer()
-        timer.schedule(CustomerTimer(timerFragment), 2000, 60000) //1 분 간격 동작.
 
     }
-    /*
-    fun maketimer(){
-        timer=Timer()
-        if(TimerFragment.hour ==1) {
-            timer.schedule(CustomerTimer(timerFragment), 2000, 60000) //1 분 간격 동작.
-        }
-        else{
 
-            timer.schedule(CustomerTimer(timerFragment), 2000, 120000)
-            Log.v("timer","2hour")
-        }
+
+    fun startTimer(){
+        timer=Timer()
+        timer.schedule(CustomerTimer(timerFragment,timerHour), 2000, 6000) //1 분 간격 동작.
+    }
+
+    fun finishTimer(){
+        timer.cancel()
+        timerMin=59//timer 초기화
 
     }
-*/
 
+    class CustomerTimer(val timerFragment: TimerFragment,val timerHour:Int):TimerTask(){
 
-    class CustomerTimer(val timerFragment: TimerFragment):TimerTask(){
-            //지금수정
-        //timermin=3600
-        var timercount=0
-        //maketimer()
+        fun startSound(){
+            val notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val  ring= RingtoneManager.getRingtone(timerFragment.context, notification)
+            Log.v("timer","ring")
+            ring.play()
+            ringFlag=false
+        }
         override fun run() {
 
-            timermin--
-            timerStr = timermin.toString()
+           //1분동안 반복할 동작  -> 카운트 다운
+            if(timerMin>0){
+                timerMin--
 
-            //       timerFragment.timerTxt.text=timerStr
-            Log.v("timer", timerStr)
+                Log.v("timer_감소중인 timerMin",timerMin.toString())
+                Log.v("timeracti", activitystate.toString())
+                Log.v("timerselect",selectHour.toString())
+                Log.v("timerrigt",ringFlag.toString())
+                //val fragment=supportFragmentManager.findFragmentById(R.id.fragment_container)
+                if(selectHour&&activitystate&&TimerFragment().activity!=null&& timerMin==15&&MainActivity.ringFlag){
+                   startSound()
+                }
+
+
+
+
+            }
+            else if(timerHour==2){
+                timerMin=59
+                Log.v("timer_timerMin 2시간2",timerMin.toString())
+            }
+            else{
+                Log.v("timer","timer stopped")
+                return
+            }
+
 
 
         }
@@ -133,20 +166,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             return super.cancel()
         }
 
-        }
-
-
-
-
-/*
-        fun maketimer(){
-            timer=Timer()
-            timer.schedule(CustomerTimer(timerFragment),2000,60000) //1 분 간격 동작.
-            val t=hour
-            Log.v("timer",hour.toString())
-        }*/
-
-
+    }
 
 
 
@@ -225,21 +245,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun initLocation() {
-        try {
-            if (enabledGPS && networkState) {
-                var geocoder = Geocoder(this, Locale.KOREA)
-                var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                var addr = addrList.first().getAddressLine(0).split(" ")
-                localty = addr[2]
-                neighborhood = addr[3]
-            }
-        }
-        catch(e:Exception){
-            mLocation.latitude = 37.540
-            mLocation.longitude = 127.07
-            localty="광진구"
-            neighborhood="화양동"
-
+        if (enabledGPS && networkState) {
+            var geocoder = Geocoder(this, Locale.KOREA)
+            var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+            var addr = addrList.first().getAddressLine(0).split(" ")
+            localty = addr[2]
+            neighborhood = addr[3]
         }
     }
 
@@ -497,6 +508,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 for (i in result) {
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
+
+                        //네트워크 켜진 상태에서 앱 켰을 때(한 번 파싱해온 상태)
+                        if (mActivity!!.dParse.bList.size == jarray.length()) {
                             for (j in 0..jarray.length()) {
                                 val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
                                 if (dParse!!.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
@@ -504,6 +518,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                                 }
                                 mCount++
                             }
+                        }
+                        //네트워크 꺼진 상태에서 앱 켰을 때
+                        //아무 정보도 dParse에 없는 상태라서 파싱을 전부 다시 해와야함
+                        else {
+                            mActivity!!.dParse.parse(type, i)
+                        }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
@@ -572,4 +592,3 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     }
 }
-
