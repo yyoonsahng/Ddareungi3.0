@@ -66,8 +66,10 @@ class BookmarkFragment : Fragment(), RecyclerItemTouchHelper.RecyclerItemTouchHe
         }
         if (onUpdate) {
             bookmarkAdapter.notifyDataSetChanged()
-            dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
-            weather_image.setImageResource(mWeather.matchImage())
+            if(dust_text != null && weather_image != null){
+                dust_text.text = "${neighbor}의 미세먼지는\n${mDust.idex_nm}입니다"
+                weather_image.setImageResource(mWeather.matchImage())
+            }
         }
     }
 
