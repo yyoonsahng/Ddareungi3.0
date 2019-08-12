@@ -9,9 +9,9 @@
             android:id="@+id/timerView">
 
         <Spinner
-                android:spinnerMode="dropdown"
+                android:spinnerMode="dialog"
                 android:background="@drawable/timerspinnerlayout"
-
+                android:prompt="@string/spin_prompt"
                 android:textAlignment="center"
                 android:entries="@array/spin_arr"
                 android:layout_width="360dp"
@@ -21,25 +21,31 @@
                 android:id="@+id/timerSpinner"
                 android:layout_marginTop="30dp"
         />
-        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-            <ProgressBar
-                     android:indeterminate="true"
-                    android:indeterminateDrawable="@drawable/prgbar"
-                    android:visibility="invisible"
-                    android:id="@+id/timerPrgbar"
-                    android:layout_width="360dp" android:layout_height="360dp" android:layout_gravity="center"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                      android:id="@+id/timerTxt" android:textSize="70sp" android:textColor="#222222"
-                      android:layout_gravity="center" />
-        </FrameLayout>
 
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent" android:layout_marginLeft="50dp" android:layout_marginRight="50dp" android:layout_marginTop="20dp" android:layout_marginBottom="20dp"
+                android:layout_height="wrap_content">
+                <TextView
+                        android:text="00" android:layout_weight="1" android:gravity="center"
+                        android:layout_width="0dp" android:textSize="20sp"
+                        android:layout_height="wrap_content" android:id="@+id/textHour"/>
+                <TextView
+                        android:text=":" android:gravity="center"
+                        android:layout_width="0dp"  android:textSize="20sp"
+                        android:layout_height="wrap_content" android:id="@+id/textView2" android:layout_weight="0.3"/>
+                <TextView
+                        android:text="00"
+                        android:layout_width="0dp" android:textSize="20sp" android:gravity="center"
+                        android:layout_height="wrap_content" android:id="@+id/textMin" android:layout_weight="1"/>
+        </LinearLayout>
         <Button
                 android:background="@drawable/btnlayout"
                 android:layout_gravity="center_horizontal"
                 android:layout_width="140dp"
                 android:layout_height="65dp"
                 android:id="@+id/timerBtn"
-                android:text="대여 시작"
+                android:text=""
                 android:textColor="#fff"
         />
 

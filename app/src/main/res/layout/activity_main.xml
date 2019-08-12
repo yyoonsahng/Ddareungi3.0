@@ -85,6 +85,14 @@
                 android:layout_width="wrap_content" android:background="@color/colorLoadingBackground"
                 android:layout_height="wrap_content" app:srcCompat="@drawable/ic_loading_logo"
                 android:id="@+id/imageView"/>
+        <TextView
+                android:text="황영숙을 위한 따릉이3.0"  android:fontFamily="@font/spoqahansansbold"
+                android:layout_width="match_parent" android:textColor="@color/white" android:gravity="center"
+                android:layout_height="wrap_content" android:id="@+id/textView"/>
+        <TextView
+                android:text="사랑하는 엄마를 위해 승연이가 만듦" android:textColor="@color/white" android:gravity="center"
+                android:layout_width="match_parent"   android:fontFamily="@font/spoqahansansbold"
+                android:layout_height="wrap_content" android:id="@+id/textView3"/>
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

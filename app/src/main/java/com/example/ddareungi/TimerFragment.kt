@@ -1,7 +1,9 @@
 package com.example.ddareungi
 
 
-import android.content.Context
+import android.media.Ringtone
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
@@ -13,9 +15,9 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
-import com.example.ddareungi.MainActivity.Companion.activitystate
-import com.example.ddareungi.MainActivity.Companion.selectHour
-import com.example.ddareungi.MainActivity.Companion.timerMin
+import com.example.ddareungi.MainActivity.Companion.timerStart
+import com.example.ddareungi.MainActivity.Companion.timerStr
+import com.example.ddareungi.MainActivity.Companion.timermin
 import kotlinx.android.synthetic.main.fragment_timer.*
 
 
@@ -29,148 +31,96 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class TimerFragment : Fragment() {
-
-    var timerState=true//반납상태
-
-
-    lateinit var timer:CountDownTimer
-    lateinit var timerBtn: Button
-    lateinit var timerTxt:TextView
-    var hour=0
-    /*
-    private lateinit var notification:Uri
-    private  lateinit var  ring:Ringtone
-*/
-    lateinit var onTimePickerSetListener:OnTimePickerSetListener
-
-
-    //fragment->MainActivity 대여시간 선택 전달
-
-    interface OnTimePickerSetListener{
-        fun onTimePickerSet(hour:Int);
-    }
-
-
+    var mode="01"
+    var count=60
+    var isTimer=false
+    var nowHour:String?=null
+    //lateinit var nowHour:Int="01" //디폴트값이 1시간
+    var nowMin:String?=null
+    var isReload:Boolean?=null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-          activitystate=true
         super.onActivityCreated(savedInstanceState)
-        timerBtn=activity!!.findViewById(R.id.timerBtn)
-        timerTxt = activity!!.findViewById<TextView>(R.id.timerTxt)
-        val spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
-        spinner.onItemSelectedListener = SpinnerSelectedListener()
-       // updateUI(!timerState)
-        init()
-        Log.v("timer","oncreated")
 
-
-    }
-
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        onTimePickerSetListener=context as OnTimePickerSetListener
-    }
-
-
-
-
-
-    fun init(){
-
-        timer = object : CountDownTimer(3600000, 1000) {//1시간짜리
-        override fun onTick(millisUntilFinished: Long) {
-
-
-            updateUI(!timerState,selectHour)
-
-
-
-        }
-
-
-            override fun onFinish() {
-                activitystate=false
-                Log.v("timerstate", "onfinish")
-                // timerTxt.text=MainActivity.timerStr
-                timerTxt.text = "00:00"
-                Log.i("tim_onFinish","00:00")
-            }
-        }
-
-
-
+        val mActivity=activity as MainActivity
+        Log.i("timer","onActivityCreated에서 initlayout 실행")
+        initLayout()
+        timerSpinner.onItemSelectedListener = SpinnerSelectedListener()
         timerBtn.setOnClickListener {
-
-            if (timerState) {
-
-                timerBtn.text = "반납 완료"
-                timerState = false
-               timerMin=59
-                timer.start()
-                timerSpinner.isEnabled=false
-              //  timerStart=true
-            } else {
-                timerBtn.text = "대여시작"
-                timerState = true
-                //timerTxt.text="0"+hour.toString()+":00"
-                Log.i("tim_btnclick",timerTxt.text.toString())
-              //  timermin=59
-                timer.cancel()
-                timerSpinner.isEnabled=true
+            if(!isTimer){ //타이머 실행
+                mActivity.runTimer(true,count)
+                timerBtn.text="반납 완료"
+                isTimer=true
             }
-
-
+            else{
+                mActivity.runTimer(false,count)
+                nowHour="00"
+                nowMin="00"
+                timerBtn.text="대여 시작"
+                isTimer=false
+            }
         }
     }
+    fun initLayout(){
+        val mActivity=activity as MainActivity
 
-    fun updateUI(state:Boolean,selectHour:Boolean){
-        var h=hour-1
-        if(!selectHour)
-              h++
-
-        Log.v("timer updateUI",h.toString())
-        if(state){//실행 중
+        if(isTimer) {
             timerBtn.text = "반납 완료"
-            val timerStr="0"+h.toString()+":"+timerMin
-            timerTxt.text =timerStr
-            Log.i("tim_updateUI실행중",timerTxt.text.toString())
-        }else {
-            timerBtn.text = "대여시작"
-            h++
-             timerTxt.text="0"+h.toString()+":00"
-            Log.i("tim_updateUI반납",timerTxt.text.toString())
         }
+        else {
+            timerBtn.text = "대여 시작"
+        }
+         if(mActivity.tCount<=0){
+            mActivity.runTimer(false,count)
+            nowMin="00"
+            nowHour=mode
+        }
+        Log.i("timer",nowHour+ " "+ nowMin)
+        textHour.text = nowHour
+        textMin.text = nowMin
+
     }
+    fun setData(flag:Boolean,s1:String, s2: String){
+        if(flag)
+        isReload=true
+        nowHour=s1
+        nowMin=s2
+    }
+
     override fun onDetach() {
         super.onDetach()
-        Log.v("timer","onDetache")
-        if(timerState){//타이머 상관없엉
-            Log.v("timer","타이머 상관없어용")
-        }else{//타이머 작동 중
-            Log.v("timer","타이머 작동 중")
-
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        updateUI(!timerState,selectHour)
     }
 
     inner class SpinnerSelectedListener: AdapterView.OnItemSelectedListener{
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            var spinnerStr=parent?.getItemAtPosition(position).toString()
-            if(spinnerStr.length>3){
-                Log.v("timer","대여시간을 선택하세요")
-            }else{
-                selectHour=true
-                hour=spinnerStr.substring(0,1).toInt()
-                 onTimePickerSetListener.onTimePickerSet(spinnerStr.substring(0,1).toInt())
-
+            val mActivity=activity as MainActivity
+            if(position==0){
+                Log.i("timer","selectmode/ pos 0 에서 initlayout 실행")
+                mode="01"
+                if(isReload==null){ //isReload에 값이 있음 -> reLoad 되었다는 의미 -> 1 보이면 안됨
+                    nowHour="01"
+                    nowMin="00"
+                }
+                count=5 //원래 60 인데 임의값
             }
+            else{
+                Log.i("timer","selectmode/ pos 2 에서 initlayout 실행")
+                mode="02"
+                if(isReload==null){
+                    nowHour="02"
+                    nowMin="00"
+                }
+                count=7
+            }
+
+            initLayout()
         }
 
         override fun onNothingSelected(parent: AdapterView<*>?) {
