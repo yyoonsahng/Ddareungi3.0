@@ -11,7 +11,6 @@
         <Spinner
                 android:spinnerMode="dropdown"
                 android:background="@drawable/timerspinnerlayout"
-
                 android:textAlignment="center"
                 android:entries="@array/spin_arr"
                 android:layout_width="360dp"
@@ -21,17 +20,11 @@
                 android:id="@+id/timerSpinner"
                 android:layout_marginTop="30dp"
         />
-        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-            <ProgressBar
-                     android:indeterminate="true"
-                    android:indeterminateDrawable="@drawable/prgbar"
-                    android:visibility="invisible"
-                    android:id="@+id/timerPrgbar"
-                    android:layout_width="360dp" android:layout_height="360dp" android:layout_gravity="center"/>
+
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                      android:layout_marginVertical="130dp"
                       android:id="@+id/timerTxt" android:textSize="70sp" android:textColor="#222222"
                       android:layout_gravity="center" />
-        </FrameLayout>
 
         <Button
                 android:background="@drawable/btnlayout"

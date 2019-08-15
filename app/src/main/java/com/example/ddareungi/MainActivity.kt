@@ -1,5 +1,7 @@
 package com.example.ddareungi
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,13 +10,15 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.media.RingtoneManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -32,7 +36,7 @@ import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener,TimerFragment.OnTimePickerSetListener{
+class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener{
 
 
     companion object {
@@ -43,17 +47,41 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         var ringFlag=true
         var activitystate=false
 
+
+    }
+
+    //channel 생성 (createNotificationChannel)
+
+    private fun createNotificationChannel(context: Context,importance:Int,showBadge:Boolean,name:String,description:String){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val channelId="${context.packageName}-$name"
+            val channel=NotificationChannel(channelId,name,importance)
+            channel.description=description
+            channel.setShowBadge(showBadge)
+
+            val notificationManager=context.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    //헤드업 알림(builder 생셩)
+    val CHANNEL_ID="TimerChannel"
+
+    var builder= NotificationCompat.Builder(this,CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_ddareungi_logo)
+        .setContentTitle("반납 시간 15분 전입니다.")
+        .setContentText("15분 이내 근처 대여소에 따릉이를 반납해주세요.")
+        .setPriority(NotificationCompat.PRIORITY_MAX)
+
+
+    fun createNotificationBuilder(){
+        val NOTIFICATION_ID=1001;
+        val notificationManager=NotificationManagerCompat.from(this)
+        notificationManager.notify(NOTIFICATION_ID,builder.build())
     }
 
 
 
-   lateinit var timer:Timer
-    var timerHour=1 //대여 시간
-
-    override fun onTimePickerSet(hour: Int) {
-        timerHour=hour            //스피너에서 선택한 시간을 전달한다.
-        Log.v("spinner",timerHour.toString())
-    }
 
     val MY_LOCATION_REQUEST = 99
     var locationPermissionGranted = false
@@ -93,6 +121,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Log.v("noti","${this.packageName}")
         selectHour=false
         ringFlag=true
         checkUserState()
@@ -100,74 +129,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         checkNetwork()
         //init()
         readFile()
-        startTimer()
-
 
     }
-
-
-    fun startTimer(){
-        timer=Timer()
-        timer.schedule(CustomerTimer(timerFragment,timerHour), 2000, 6000) //1 분 간격 동작.
-    }
-
-    fun finishTimer(){
-        timer.cancel()
-        timerMin=59//timer 초기화
-
-    }
-
-    class CustomerTimer(val timerFragment: TimerFragment,val timerHour:Int):TimerTask(){
-
-        fun startSound(){
-            val notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            val  ring= RingtoneManager.getRingtone(timerFragment.context, notification)
-            Log.v("timer","ring")
-            ring.play()
-            ringFlag=false
-        }
-        override fun run() {
-
-           //1분동안 반복할 동작  -> 카운트 다운
-            if(timerMin>0){
-                timerMin--
-
-                Log.v("timer_감소중인 timerMin",timerMin.toString())
-                Log.v("timeracti", activitystate.toString())
-                Log.v("timerselect",selectHour.toString())
-                Log.v("timerrigt",ringFlag.toString())
-                //val fragment=supportFragmentManager.findFragmentById(R.id.fragment_container)
-                if(selectHour&&activitystate&&TimerFragment().activity!=null&& timerMin==15&&MainActivity.ringFlag){
-                   startSound()
-                }
-
-
-
-
-            }
-            else if(timerHour==2){
-                timerMin=59
-                Log.v("timer_timerMin 2시간2",timerMin.toString())
-            }
-            else{
-                Log.v("timer","timer stopped")
-                return
-            }
-
-
-
-        }
-
-        override fun scheduledExecutionTime(): Long {
-            return super.scheduledExecutionTime()
-        }
-
-        override fun cancel(): Boolean {
-            return super.cancel()
-        }
-
-    }
-
 
 
     fun readFile() {
@@ -175,16 +138,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         while (scan.hasNextLine()) {
 
             val title = scan.nextLine()
-            Log.v("scan", title)
             val subtitle = scan.nextLine()
-            Log.v("scan", subtitle)
             val bikestop = scan.nextLine()
             val location = scan.nextLine()
             val open = scan.nextLine()
             val tel = scan.nextLine()
             val data = CourseInfo(title, subtitle, bikestop, location, tel, open)
             courseInfoList.add(data)
-            Log.v("scan", courseInfoList.size.toString())
         }
 
         val scan0 = Scanner(resources.openRawResource(R.raw.coursename))
@@ -196,7 +156,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             val time = scan0.nextLine()
             val data = Course(title, subtitle, length, time)
             courseList.add(data)
-            Log.v("scan1", courseList.size.toString())
         }
 
         initFragment()
