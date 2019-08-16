@@ -262,10 +262,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         }
     }
 
-    override fun changeBookmarkToMa
-
-
-    p(rentalOffice: String) {
+    override fun changeBookmarkToMap(rentalOffice: String) {
         mapFragment.setData(locationPermissionGranted, enabledGPS, bList, rList, pList, rentalOffice)
         bottom_navigation.menu.findItem(R.id.map).setChecked(true)
         loadFragment(mapFragment)
@@ -527,7 +524,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         break
                     count++
                 }
-
                 return rList
             }
             if (type == Data.WEATHER.type) {
