@@ -1,12 +1,11 @@
 package com.example.ddareungi
 
 
-import android.media.Ringtone
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,9 +14,8 @@ import android.widget.AdapterView
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
-import com.example.ddareungi.MainActivity.Companion.timerStart
-import com.example.ddareungi.MainActivity.Companion.timerStr
-import com.example.ddareungi.MainActivity.Companion.timermin
+import com.example.ddareungi.MainActivity.Companion.activitystate
+import com.example.ddareungi.MainActivity.Companion.selectHour
 import kotlinx.android.synthetic.main.fragment_timer.*
 
 
@@ -31,96 +29,124 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class TimerFragment : Fragment() {
-    var mode="01"
-    var count=60
-    var isTimer=false
-    var nowHour:String?=null
-    //lateinit var nowHour:Int="01" //디폴트값이 1시간
-    var nowMin:String?=null
-    var isReload:Boolean?=null
+
+    var timerState=true//반납상태
+
+
+    lateinit var timer:CountDownTimer
+    lateinit var timerBtn: Button
+    lateinit var timerTxt:TextView
+    lateinit var spinner:Spinner
+    var hour:Long=0L
+    var secondsremaining:Long=0
+    lateinit var oDialog: AlertDialog.Builder
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
+
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        activitystate=true
         super.onActivityCreated(savedInstanceState)
+        timerBtn=activity!!.findViewById(R.id.timerBtn)
+        timerTxt = activity!!.findViewById<TextView>(R.id.timerTxt)
+        spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
+        spinner.onItemSelectedListener = SpinnerSelectedListener()
+        init()
 
-        val mActivity=activity as MainActivity
-        Log.i("timer","onActivityCreated에서 initlayout 실행")
-        initLayout()
-        timerSpinner.onItemSelectedListener = SpinnerSelectedListener()
-        timerBtn.setOnClickListener {
-            if(!isTimer){ //타이머 실행
-                mActivity.runTimer(true,count)
-                timerBtn.text="반납 완료"
-                isTimer=true
+    }
+
+    fun init(){
+
+        oDialog=AlertDialog.Builder(this.requireContext(),android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        oDialog.setIcon(R.drawable.ddareungimark).setTitle("반납 안내").setMessage("대여 시간 15분 전입니다.").setPositiveButton("확인",null)
+
+       timerBtn.setOnClickListener {
+
+            if (timerState) {
+                timerBtn.text = "반납 완료"
+                timerState = false
+                startTimer(hour)
+                timerSpinner.isEnabled=false
+            } else {
+                timerBtn.text = "대여시작"
+                timerState = true
+                //timerTxt.text="0"+hour.toString()+":00"
+                Log.i("tim_btnclick",timerTxt.text.toString())
+                timer.cancel()
+                timerSpinner.isEnabled=true
             }
-            else{
-                mActivity.runTimer(false,count)
-                nowHour="00"
-                nowMin="00"
-                timerBtn.text="대여 시작"
-                isTimer=false
-            }
+
+
         }
     }
-    fun initLayout(){
-        val mActivity=activity as MainActivity
 
-        if(isTimer) {
+    fun startTimer(rhour:Long){
+        timer = object : CountDownTimer(3600000*rhour, 1000) {//rhour시간짜리
+        override fun onTick(millisUntilFinished: Long) {
+            secondsremaining=millisUntilFinished/1000
+            updateUI(!timerState,selectHour)
+            if(secondsremaining==3580L) {
+                Log.i("alert", secondsremaining.toString())
+                oDialog.show()
+            }
+        }
+
+
+            override fun onFinish() {
+                activitystate=false
+                timerTxt.text = "00:00"
+            }
+        }.start()
+    }
+
+    fun alarm(){
+        val notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val  ring= RingtoneManager.getRingtone(this.context, notification)
+        Log.i("timer","ring")
+        ring.play()
+
+    }
+    fun updateUI(state:Boolean,selectHour:Boolean){
+        var h=hour-1
+        if(!selectHour)
+            h++
+
+        if(state){
             timerBtn.text = "반납 완료"
+            val hourUntilFinished=secondsremaining/3600
+            val minutesUntilFinished=(secondsremaining-hourUntilFinished*3600)/60
+            val minsStr=minutesUntilFinished.toString()
+            timerTxt.text ="0$hourUntilFinished:${if(minsStr.length==2) minsStr else "0"+minsStr}"
+            Log.i("tim_updateUI실행중",timerTxt.text.toString())
+        }else {
+            timerBtn.text = "대여시작"
+            h++
+            timerTxt.text="0"+h.toString()+":00"
+            Log.i("tim_updateUI반납",timerTxt.text.toString())
         }
-        else {
-            timerBtn.text = "대여 시작"
-        }
-         if(mActivity.tCount<=0){
-            mActivity.runTimer(false,count)
-            nowMin="00"
-            nowHour=mode
-        }
-        Log.i("timer",nowHour+ " "+ nowMin)
-        textHour.text = nowHour
-        textMin.text = nowMin
 
-    }
-    fun setData(flag:Boolean,s1:String, s2: String){
-        if(flag)
-        isReload=true
-        nowHour=s1
-        nowMin=s2
-    }
 
-    override fun onDetach() {
-        super.onDetach()
-    }
+}
 
     override fun onResume() {
         super.onResume()
+        updateUI(!timerState,selectHour)
     }
 
     inner class SpinnerSelectedListener: AdapterView.OnItemSelectedListener{
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            val mActivity=activity as MainActivity
-            if(position==0){
-                Log.i("timer","selectmode/ pos 0 에서 initlayout 실행")
-                mode="01"
-                if(isReload==null){ //isReload에 값이 있음 -> reLoad 되었다는 의미 -> 1 보이면 안됨
-                    nowHour="01"
-                    nowMin="00"
-                }
-                count=5 //원래 60 인데 임의값
-            }
-            else{
-                Log.i("timer","selectmode/ pos 2 에서 initlayout 실행")
-                mode="02"
-                if(isReload==null){
-                    nowHour="02"
-                    nowMin="00"
-                }
-                count=7
-            }
+            var spinnerStr=parent?.getItemAtPosition(position).toString()
+            if(spinnerStr.length>3){
+                timerTxt.text="00:00"
 
-            initLayout()
+            }else{
+                selectHour=true
+                hour=spinnerStr.substring(0,1).toLong()
+                timerTxt.text="0"+hour.toString()+":00"
+            }
         }
 
         override fun onNothingSelected(parent: AdapterView<*>?) {

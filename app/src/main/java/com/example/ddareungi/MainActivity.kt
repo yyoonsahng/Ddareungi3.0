@@ -1,5 +1,7 @@
 package com.example.ddareungi
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,48 +10,77 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
-import android.media.Ringtone
 import android.net.ConnectivityManager
 import android.net.Uri
-import android.os.*
+import android.os.AsyncTask
+import android.os.Build
+import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.app.NotificationCompat
+import android.support.v4.app.NotificationManagerCompat
 import android.support.v4.content.ContextCompat
-import android.support.v4.content.ContextCompat.getSystemService
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
-import android.widget.Toast
-import com.example.ddareungi.MainActivity.Companion.courseInfoList
 import com.example.ddareungi.dataClass.*
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.libraries.places.internal.it
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_bookmark.*
-import kotlinx.android.synthetic.main.fragment_timer.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener {
+class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener{
+
 
     companion object {
         val courseList = ArrayList<Course>()
         val courseInfoList = ArrayList<CourseInfo>()
-        var timerStr=""
-            //지금 수정
-        var timermin=60
-        var timerStart=false
+        var timerMin=59
+        var selectHour=false
+        var ringFlag=true
+        var activitystate=false
+
+
+    }
+
+    //channel 생성 (createNotificationChannel)
+
+    private fun createNotificationChannel(context: Context,importance:Int,showBadge:Boolean,name:String,description:String){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            val channelId="${context.packageName}-$name"
+            val channel=NotificationChannel(channelId,name,importance)
+            channel.description=description
+            channel.setShowBadge(showBadge)
+
+            val notificationManager=context.getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    //헤드업 알림(builder 생셩)
+    val CHANNEL_ID="TimerChannel"
+
+    var builder= NotificationCompat.Builder(this,CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_ddareungi_logo)
+        .setContentTitle("반납 시간 15분 전입니다.")
+        .setContentText("15분 이내 근처 대여소에 따릉이를 반납해주세요.")
+        .setPriority(NotificationCompat.PRIORITY_MAX)
+
+
+    fun createNotificationBuilder(){
+        val NOTIFICATION_ID=1001;
+        val notificationManager=NotificationManagerCompat.from(this)
+        notificationManager.notify(NOTIFICATION_ID,builder.build())
     }
 
 
-    lateinit var timer:Timer
 
 
     val MY_LOCATION_REQUEST = 99
@@ -58,6 +89,8 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     val mapFragment = MapFragment()
     val timerFragment = TimerFragment()
     val courseFragment = CourseFragment()
+
+
 
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -70,12 +103,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var dParse = dataParser(bList, mDust, rList, pList, mWeather)
     lateinit var localty: String
     lateinit var neighborhood: String
-    var tCount:Int=60
-    var nowFragment="bookmark"
     var enabledGPS = false  //GPS 켜져 있는지
     var networkState = false       //네트워크 켜져 있는지
     var isreLoad = false //네트워크 재연결 검사 후 켜져 있을 때 true
-    var isSchedule=false
 
 
 
@@ -91,80 +121,14 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        Log.v("noti","${this.packageName}")
+        selectHour=false
+        ringFlag=true
         checkUserState()
         initPermission()
         checkNetwork()
         //init()
         readFile()
-
-
-    }
-    fun runTimer(flag:Boolean,count:Int){
-        tCount=count
-
-        if(flag){
-            timer=Timer()
-            timer.schedule(CustomerTimer(this), 2000, 2500) //60000 1분
-            isSchedule=true
-        }
-        else{
-            tCount=count
-            if(isSchedule){
-                timer.cancel() //아예 타이머를 처음킨 것 처럼
-                timerFragment.setData(false,timerFragment.mode,"00")
-
-            }
-            timerFragment.isTimer=false
-            Log.i("timer", "run timer에서 flag가 false일 때  실행")
-            timerFragment.initLayout()
-        }
-
-    }
-    class CustomerTimer(val context: Context):TimerTask(){
-
-        override fun run() {
-
-            var mCount=(context as MainActivity).tCount
-            mCount--
-            if(mCount<0){
-
-            }
-            (context as MainActivity).tCount=mCount
-            Log.i("timer","run에서 tCount값"+(context as MainActivity).tCount.toString())
-            if(mCount==0) { //타이머 종료
-                Log.i("timer","타이머가 종료됩니다.")
-
-            }
-
-            if((context as MainActivity).nowFragment=="timer"){
-                var s1=""
-                var s2=""
-                if(mCount<=60){
-                    if(mCount==60){
-                        s1="01"
-                        s2="00"
-                    }
-                    else{
-                        s1="00"
-                        s2=mCount.toString()
-                    }
-                }
-                else{
-                    if(mCount==120){
-                        s1="02"
-                        s2="00"
-                    }
-                    else{
-                        s1="01"
-                        s2=(mCount-60).toString()
-                    }
-                }
-                Log.i("timer", "customer timer 스케쥴해서 run에서  실행")
-                (context as MainActivity).timerFragment.setData(false, s1,s2)
-                (context as MainActivity).timerFragment.initLayout()
-            }
-        }
-
 
     }
 
@@ -174,16 +138,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         while (scan.hasNextLine()) {
 
             val title = scan.nextLine()
-            Log.v("scan", title)
             val subtitle = scan.nextLine()
-            Log.v("scan", subtitle)
             val bikestop = scan.nextLine()
             val location = scan.nextLine()
             val open = scan.nextLine()
             val tel = scan.nextLine()
             val data = CourseInfo(title, subtitle, bikestop, location, tel, open)
             courseInfoList.add(data)
-            Log.v("scan", courseInfoList.size.toString())
         }
 
         val scan0 = Scanner(resources.openRawResource(R.raw.coursename))
@@ -195,7 +156,6 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
             val time = scan0.nextLine()
             val data = Course(title, subtitle, length, time)
             courseList.add(data)
-            Log.v("scan1", courseList.size.toString())
         }
 
         initFragment()
@@ -244,21 +204,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     }
 
     fun initLocation() {
-        try {
-            if (enabledGPS && networkState) {
-                var geocoder = Geocoder(this, Locale.KOREA)
-                var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                var addr = addrList.first().getAddressLine(0).split(" ")
-                localty = addr[2]
-                neighborhood = addr[3]
-            }
-        }
-        catch(e:Exception){
-            mLocation.latitude = 37.540
-            mLocation.longitude = 127.07
-            localty="광진구"
-            neighborhood="화양동"
-
+        if (enabledGPS && networkState) {
+            var geocoder = Geocoder(this, Locale.KOREA)
+            var addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+            var addr = addrList.first().getAddressLine(0).split(" ")
+            localty = addr[2]
+            neighborhood = addr[3]
         }
     }
 
@@ -311,56 +262,18 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
         //바텀 메뉴 클릭했을 때 메뉴 별 fragment 생성
         bottom_navigation.setOnNavigationItemSelectedListener {
-            var flag=false
-            if(nowFragment=="timer" && timerFragment.isTimer==true) //타이머 프레그먼트에서 타이머가 돌아갔는지 확인
-                flag=true
             when (it.itemId) {
                 R.id.bookmark -> {
-                    nowFragment="bookmark"
                     loadFragment(bookmarkFragment)
                 }
                 R.id.map -> {
-                    nowFragment="map"
                     mapFragment.mLocationPermissionGranted = locationPermissionGranted
                     loadFragment(mapFragment)
                 }
                 R.id.timer -> {
-
-//                    var s1=""
-//                    var s2=""
-//                    if(tCount>=60){
-//                        if(tCount==60){
-//                            s1="01"
-//                            s2="00"
-//                        }
-//                        else{
-//                            s1="00"
-//                            s2=tCount.toString()
-//                        }
-//                    }
-//                    else{
-//                        if(tCount==120){
-//                            s1="02"
-//                            s2="00"
-//                        }
-//                        else{
-//                            s1="01"
-//                            s2=(tCount-60).toString()
-//                        }
-//                    }
-//                    if(flag){ //타이머가 돌아간 상태에서 다른 프레그먼트를 눌렀다가 다시 타이머 프레그를 누른 경우
-//                        timerFragment.setData(true,s1,s2)
-//                    }
-//                    else{
-//                        timerFragment.setData(false,s1,s2)
-//                    }
-
-               //     loadFragment(timerFragment)
-                    Toast.makeText(this, "준비중입니다",Toast.LENGTH_SHORT).show()
-                    nowFragment="timer"
+                    loadFragment(timerFragment)
                 }
                 R.id.course -> {
-                    nowFragment="course"
                     loadFragment(courseFragment)
                 }
             }
@@ -524,6 +437,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                         break
                     count++
                 }
+
                 return rList
             }
             if (type == Data.WEATHER.type) {
@@ -553,6 +467,9 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                 for (i in result) {
                     try {
                         var jarray: JSONArray = JSONObject(i).getJSONObject("rentBikeStatus").getJSONArray("row")
+
+                        //네트워크 켜진 상태에서 앱 켰을 때(한 번 파싱해온 상태)
+                        if (mActivity!!.dParse.bList.size == jarray.length()) {
                             for (j in 0..jarray.length()) {
                                 val mParkingBikeTotCnt: Int = jarray.getJSONObject(j).optInt("parkingBikeTotCnt")
                                 if (dParse!!.bList[mCount].parkingBikeTotCnt != mParkingBikeTotCnt) {
@@ -560,6 +477,12 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                                 }
                                 mCount++
                             }
+                        }
+                        //네트워크 꺼진 상태에서 앱 켰을 때
+                        //아무 정보도 dParse에 없는 상태라서 파싱을 전부 다시 해와야함
+                        else {
+                            mActivity!!.dParse.parse(type, i)
+                        }
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
@@ -628,4 +551,3 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
     }
 }
-
