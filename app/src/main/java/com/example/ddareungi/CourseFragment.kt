@@ -138,11 +138,13 @@ class CourseFragment : Fragment() {
             for (i in 0..jarray.length()-1) {
                 var jObject = jarray.getJSONObject(i)
                 val contentid: Int = jObject.optInt("contentid")
+                var imgOrigin:String=jObject.optString("firstimage")
+                var imgThumb:String=jObject.optString("firstimage2")
                 val mapX:Double=jObject.optDouble("mapx")
                 val mapY:Double=jObject.optDouble("mapy")
                 val title:String=jObject.optString("title")
                 sList.add(
-                    MySpot(contentid,mapX,mapY,title,"tel","homepage","overview")
+                    MySpot(contentid,imgOrigin,imgThumb,mapX,mapY,title,"tel","homepage","overview")
                 )
 
             }
