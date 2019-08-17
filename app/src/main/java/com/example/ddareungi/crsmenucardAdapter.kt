@@ -28,8 +28,12 @@ class crsmenucardAdapter( var items: ArrayList<Course>, val activity: FragmentAc
 
         p0.crsmenucardtitle.text=items.get(p1).subtitle
         p0.crsmenucardsubtitle.text=items.get(p1).title
-        p0.crsmenucardimg.setImageResource(drawableTypeArray.getResourceId(p1*5,-1))
-
+        try {
+            p0.crsmenucardimg.setImageResource(drawableTypeArray.getResourceId(p1 * 5, -1))
+        }
+        catch(e:Exception){
+            p0.crsmenucardimg.setImageResource(R.drawable.crs53)
+        }
 
     }
     inner class ViewHolder(itemView:View):RecyclerView.ViewHolder(itemView){
