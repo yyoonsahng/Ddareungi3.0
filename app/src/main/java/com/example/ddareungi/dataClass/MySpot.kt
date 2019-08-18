@@ -23,6 +23,6 @@ package com.example.ddareungi.dataClass
 * 주변 따릉이 대여소 정보
 *
 *  */
-data class MySpot(val contentid:Int, val mapX:Double, val mapY:Double, val title:String, var tel:String, var homepage:String, var overview:String/*주변 대여소 ,val bikeStop:ArrayList<MyBike> */) {
+data class MySpot(val contentid:Int, var imgOrigin:String, var imgThumb:String, val mapX:Double, val mapY:Double, val title:String, var tel:String, var homepage:String, var overview:String/*주변 대여소 ,val bikeStop:ArrayList<MyBike> */) {
 
 }
