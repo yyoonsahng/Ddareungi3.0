@@ -1,7 +1,6 @@
 package com.example.ddareungi
 
 
-import android.app.Activity
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -11,7 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.example.ddareungi.dataClass.MySpot
+import com.example.ddareungi.data.Spot
+import com.example.ddareungi.util.RequestHttpURLConnection
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.temp_courslayout.*
 import org.json.JSONArray
@@ -30,7 +30,7 @@ import org.json.JSONObject
 class CourseFragment : Fragment() {
 
     val zone= mutableMapOf<Int,String>(1 to "강남구",2 to "강동구", 3 to "강북구", 4 to "강서구", 5 to "관악구", 6 to "광진구", 7 to "구로구", 8 to "금천구", 9 to "노원구", 10 to "도봉구", 11 to "동대문구", 12 to "동작구", 13 to " 마포구", 14 to "서대문구", 15  to "서초구", 16 to "성동구", 17 to "성북구", 18 to "송파구", 19 to "양천구", 20 to "영등포구", 21 to "용산구", 22 to "은평구", 23 to "종로구", 24 to "중구", 25 to "중랑구")
-    var sList=mutableListOf<MySpot>()
+    var sList=mutableListOf<Spot>()
     lateinit var jarray:JSONArray
     var num:Int=0
     /*numOfRows*/
@@ -85,7 +85,7 @@ class CourseFragment : Fragment() {
         super.onCreate(savedInstanceState)
         activity!!.appbar_title.text = "추천 코스"
     }
-    class NetworkTask(var code:Int,var sList:MutableList<MySpot>,var num:Int,var mActivity:FragmentActivity?) : AsyncTask<Unit, Unit, String>(){
+    class NetworkTask(var code:Int, var sList:MutableList<Spot>, var num:Int, var mActivity:FragmentActivity?) : AsyncTask<Unit, Unit, String>(){
 
         var url=arrayOf(
             "http://api.visitkorea.or.kr/openapi/service/rest/KorService/areaBasedList?ServiceKey=cBjFR2LOycFyN6y%2FoSOb9jqx0YXqt1UBL5cjKWV8zPmenCK%2BfBuboT88uCRofXgQbKdQNC5yMBed%2FYHA7j9JNw%3D%3D&areaCode=1&contentTypeId=12&MobileOS=AND&MobileApp=Ddareungi3.0&_type=json&sigunguCode=",
@@ -104,7 +104,7 @@ class CourseFragment : Fragment() {
                 parsingSpotList(result)
             }
             Log.i("api",num.toString())
-            spotData=RequestHttpURLConnection().request(url[1]+sList[num].contentid)
+            spotData= RequestHttpURLConnection().request(url[1]+sList[num].contentid)
 
             return spotData
         }
@@ -144,7 +144,7 @@ class CourseFragment : Fragment() {
                 val mapY:Double=jObject.optDouble("mapy")
                 val title:String=jObject.optString("title")
                 sList.add(
-                    MySpot(contentid,imgOrigin,imgThumb,mapX,mapY,title,"tel","homepage","overview")
+                    Spot(contentid,imgOrigin,imgThumb,mapX,mapY,title,"tel","homepage","overview")
                 )
 
             }

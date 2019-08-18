@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.example.ddareungi.dataClass.Course
+import com.example.ddareungi.data.Course
 
 class crsmenucardAdapter( var items: ArrayList<Course>, val activity: FragmentActivity) : RecyclerView.Adapter<crsmenucardAdapter.ViewHolder>() {
 

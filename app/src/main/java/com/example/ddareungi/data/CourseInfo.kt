@@ -1,4 +1,4 @@
-package com.example.ddareungi.dataClass
+package com.example.ddareungi.data
 /*
 * mainTitle: 코스 타이틀
 * subtitle: 코스 설명

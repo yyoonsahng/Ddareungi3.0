@@ -1,4 +1,4 @@
-package com.example.ddareungi
+package com.example.ddareungi.map
 
 import android.app.Activity
 import android.content.Context
@@ -9,9 +9,10 @@ import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.ddareungi.dataClass.MyBike
-import com.example.ddareungi.dataClass.MyPark
-import com.example.ddareungi.dataClass.MyRestroom
+import com.example.ddareungi.R
+import com.example.ddareungi.data.Bike
+import com.example.ddareungi.data.Park
+import com.example.ddareungi.data.Toilet
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.model.Place
@@ -26,7 +27,7 @@ class MarkerController(
     private val mMap = googleMap
     private val mVisibleMarkers = visibleMarkers
 
-    fun addBikeMarker(bike: MyBike): Marker {
+    fun addBikeMarker(bike: Bike): Marker {
         val markerOptions = MarkerOptions()
         //marker의 위치 정보 설정
         markerOptions.position(LatLng(bike.stationLatitude, bike.stationLongitude))
@@ -51,7 +52,7 @@ class MarkerController(
         return mMap.addMarker(markerOptions)
     }
 
-    fun addToiletMarker(toilet: MyRestroom): Marker {
+    fun addToiletMarker(toilet: Toilet): Marker {
         val markerOptions = MarkerOptions()
         markerOptions.position(LatLng(toilet.wgs84_y, toilet.wgs84_x))
         markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_toilet_marker))
@@ -59,7 +60,7 @@ class MarkerController(
         return mMap.addMarker(markerOptions)
     }
 
-    fun addParkMarker(park: MyPark): Marker {
+    fun addParkMarker(park: Park): Marker {
         val markerOptions = MarkerOptions()
         markerOptions.position(LatLng(park.latitude, park.longitude))
         markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_marker_park))

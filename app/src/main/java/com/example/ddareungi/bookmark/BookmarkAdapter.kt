@@ -1,4 +1,4 @@
-package com.example.ddareungi.dataClass
+package com.example.ddareungi.bookmark
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
 import com.example.ddareungi.R
+import com.example.ddareungi.data.Bookmark
 
-class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<BookmarkAdapter.ViewHolder>() {
+class BookmarkAdapter(var items: ArrayList<Bookmark>) : RecyclerView.Adapter<BookmarkAdapter.ViewHolder>() {
 
 
     interface OnItemClickListener {
-        fun OnItemClick(holder: ViewHolder, view: View, data: Bookmark, position: Int)
+        fun onItemClick(holder: ViewHolder, view: View, data: Bookmark, position: Int)
     }
     var itemClickListener: OnItemClickListener? = null
 
@@ -21,9 +22,9 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
         notifyItemRemoved(pos)
     }
 
-    override fun onCreateViewHolder(p0: ViewGroup, p1: Int): BookmarkAdapter.ViewHolder {
+    override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
         val v = LayoutInflater.from(p0.context)
-            .inflate(R.layout.bookmarklist_layout, p0, false)
+            .inflate(R.layout.bookmark_single_item, p0, false)
         return ViewHolder(v)
     }
 
@@ -31,7 +32,7 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
         return items.size
     }
 
-    override fun onBindViewHolder(p0: BookmarkAdapter.ViewHolder, p1: Int) {
+    override fun onBindViewHolder(p0: ViewHolder, p1: Int) {
         p0.rentalName.text = items[p1].rentalOffice
         val leftBike = items[p1].leftBike.toString() + "대"
         p0.leftBike.text = leftBike
@@ -50,7 +51,7 @@ class BookmarkAdapter(val items: ArrayList<Bookmark>) : RecyclerView.Adapter<Boo
             viewBackground = itemView.findViewById(R.id.backgroundView)
             itemView.setOnClickListener{
                 val position = adapterPosition
-                itemClickListener?.OnItemClick(this, it, items[position], position)
+                itemClickListener?.onItemClick(this, it, items[position], position)
             }
 
         }

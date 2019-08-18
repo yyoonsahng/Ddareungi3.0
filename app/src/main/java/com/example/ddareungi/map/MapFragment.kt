@@ -1,4 +1,4 @@
-package com.example.ddareungi
+package com.example.ddareungi.map
 
 
 import android.annotation.SuppressLint
@@ -19,10 +19,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import com.example.ddareungi.dataClass.Bookmark
-import com.example.ddareungi.dataClass.MyBike
-import com.example.ddareungi.dataClass.MyPark
-import com.example.ddareungi.dataClass.MyRestroom
+import com.example.ddareungi.MainActivity
+import com.example.ddareungi.MyDB
+import com.example.ddareungi.R
+import com.example.ddareungi.data.Bookmark
+import com.example.ddareungi.data.Bike
+import com.example.ddareungi.data.Park
+import com.example.ddareungi.data.Toilet
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -40,7 +43,7 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter
-import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.android.synthetic.main.map_frag.*
 import java.net.URLEncoder
 import java.util.*
 
@@ -55,9 +58,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     lateinit var fusedLocationClient: FusedLocationProviderClient   //휴대폰이 마지막으로 얻은 내 위치를 얻어오기 위한 객체
     private val KONKUK_UNIV = LatLng(37.540, 127.07)
     private val DEFAULT_ZOOM = 16f
-    val mBikeList = mutableListOf<MyBike>()
-    val mToiletList = mutableListOf<MyRestroom>()
-    val mParkList = mutableListOf<MyPark>()
+    val mBikeList = mutableListOf<Bike>()
+    val mToiletList = mutableListOf<Toilet>()
+    val mParkList = mutableListOf<Park>()
     val visibleMarkers = mutableMapOf<String, Marker>()
     lateinit var markerController: MarkerController
     var searchedPlaceMarker: Marker? = null
@@ -75,9 +78,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     fun setData(
         locationPermissionGranted: Boolean,
         enableGPS: Boolean,
-        bikeList: MutableList<MyBike>,
-        toiletList: MutableList<MyRestroom>,
-        parkList: MutableList<MyPark>,
+        bikeList: MutableList<Bike>,
+        toiletList: MutableList<Toilet>,
+        parkList: MutableList<Park>,
         sentBikeName: String?
     ) {
         mLocationPermissionGranted = locationPermissionGranted
@@ -95,7 +98,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_map, container, false)
+        val view = inflater.inflate(R.layout.map_frag, container, false)
         mapView = view.findViewById(R.id.mapView)
         mapView!!.onCreate(savedInstanceState)
         mapView!!.getMapAsync(this)
@@ -176,10 +179,14 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             val clickedMarkerTag = it.tag
             clickedMarker = it
             when (clickedMarkerTag) {
-                is MyBike -> adjustMapWidget(it, clickedMarkerTag, PlaceType.BIKE)
-                is MyRestroom -> adjustMapWidget(it, clickedMarkerTag, PlaceType.TOILET)
-                is MyPark -> adjustMapWidget(it, clickedMarkerTag, PlaceType.PARK)
-                is Place -> adjustMapWidget(it, clickedMarkerTag, PlaceType.SEARCH)
+                is Bike -> adjustMapWidget(it, clickedMarkerTag, PlaceType.BIKE)
+                is Toilet -> adjustMapWidget(it, clickedMarkerTag,
+                    PlaceType.TOILET
+                )
+                is Park -> adjustMapWidget(it, clickedMarkerTag, PlaceType.PARK)
+                is Place -> adjustMapWidget(it, clickedMarkerTag,
+                    PlaceType.SEARCH
+                )
             }
             mMap!!.animateCamera(CameraUpdateFactory.newLatLng(it.position))
             true
@@ -202,12 +209,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
     }
 
 
-    private fun adjustMapWidget(marker: Marker, content: Any?, markerType: MapFragment.PlaceType) {
+    private fun adjustMapWidget(marker: Marker, content: Any?, markerType: PlaceType) {
         lateinit var widgetContent: Any
 
         when (markerType) {
-            MapFragment.PlaceType.BIKE -> {
-                widgetContent = content as MyBike
+            PlaceType.BIKE -> {
+                widgetContent = content as Bike
                 map_refresh_fab.hide()
                 map_place_fab.hide()
                 dest_card_view.visibility = View.GONE
@@ -231,10 +238,10 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     )
                 }
                 bookmark_button.setOnClickListener {
-                    if (dbHandler!!.findOffice((widgetContent as MyBike).stationName) == 0) {
+                    if (dbHandler!!.findOffice((widgetContent as Bike).stationName) == 0) {
                         val rental = Bookmark("", 0, 0, "")
                         val success: Boolean
-                        rental.rentalOffice = (widgetContent as MyBike).stationName
+                        rental.rentalOffice = (widgetContent as Bike).stationName
                         rental.bookmarked = 1
                         success = dbHandler!!.addUser(rental)
                         if (success) {
@@ -244,12 +251,12 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                                     null
                                 )
                             )
-                            (widgetContent as MyBike).bookmarked = 1
+                            (widgetContent as Bike).bookmarked = 1
                         }
                     } else {
                         val rental = Bookmark("", 0, 1, "")
 
-                        rental.delete = (widgetContent as MyBike).stationName
+                        rental.delete = (widgetContent as Bike).stationName
                         rental.bookmarked = 0
                         dbHandler!!.deleteUser(rental)
                         bookmark_button.setImageDrawable(
@@ -258,15 +265,15 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                                 null
                             )
                         )
-                        (widgetContent as MyBike).bookmarked = 1
+                        (widgetContent as Bike).bookmarked = 1
                     }
                 }
             }
-            MapFragment.PlaceType.TOILET -> {
+            PlaceType.TOILET -> {
                 marker.showInfoWindow()
             }
-            MapFragment.PlaceType.PARK -> {
-                widgetContent = content as MyPark
+            PlaceType.PARK -> {
+                widgetContent = content as Park
                 map_refresh_fab.hide()
                 map_place_fab.hide()
                 map_card_view.visibility = View.GONE
@@ -282,7 +289,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     dest_dist_text.text = distStr
                 }
             }
-            MapFragment.PlaceType.SEARCH -> {
+            PlaceType.SEARCH -> {
                 widgetContent = content as Place
                 map_refresh_fab.hide()
                 map_place_fab.hide()
@@ -360,7 +367,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         }
     }
 
-    private fun findClosetBike(place: Place?, park: MyPark?): MyBike {
+    private fun findClosetBike(place: Place?, park: Park?): Bike {
 
         val dest = Location("dest")
         if (place != null) {
@@ -370,7 +377,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             dest.latitude = park!!.latitude
             dest.longitude = park.longitude
         }
-        var closestBike: MyBike = mBikeList[0]
+        var closestBike: Bike = mBikeList[0]
         var dist = Float.MAX_VALUE
 
         for (bike in mBikeList) {
@@ -397,7 +404,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             //선택된 마커의 위치 및 태그를 이용하여 도착지 위도, 경도 및 이름을 가져옴
             dlat = clickedMarker!!.position.latitude
             dlng = clickedMarker!!.position.longitude
-            dname = URLEncoder.encode((clickedMarker!!.tag as MyBike).stationName, "UTF-8")
+            dname = URLEncoder.encode((clickedMarker!!.tag as Bike).stationName, "UTF-8")
             //네이버 지도 앱으로 연결하기 위한 url
             url =
                 "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
@@ -409,7 +416,7 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             dlng = searchedPlaceMarker!!.position.longitude
             dname = URLEncoder.encode((searchedPlaceMarker!!.tag as Place).name, "UTF-8")
 
-            //findClosetBike함수를 사용하여 경유지로 설정할 따릉이 정류소에 대한 MyBike 객체를 구함
+            //findClosetBike함수를 사용하여 경유지로 설정할 따릉이 정류소에 대한 Bike 객체를 구함
             val closetBike = findClosetBike(searchedPlaceMarker!!.tag as Place, null)
             val vlat = closetBike.stationLatitude
             val vlng = closetBike.stationLongitude
@@ -422,9 +429,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
             //목적지에 대해 길찾기를 하는 경우와 동일하게 정보를 가져옴
             dlat = clickedMarker!!.position.latitude
             dlng = clickedMarker!!.position.longitude
-            dname = URLEncoder.encode((clickedMarker!!.tag as MyPark).name, "UTF-8")
+            dname = URLEncoder.encode((clickedMarker!!.tag as Park).name, "UTF-8")
 
-            val closetBike = findClosetBike(null, clickedMarker!!.tag as MyPark)
+            val closetBike = findClosetBike(null, clickedMarker!!.tag as Park)
             val vlat = closetBike.stationLatitude
             val vlng = closetBike.stationLongitude
             val vname = URLEncoder.encode(closetBike.stationName, "UTF-8")
@@ -467,24 +474,24 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
         setGPSWidget()
 
         map_refresh_fab.setOnClickListener {
-            if (networkState) {
-                val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
-                if (progressBar != null) {
-                    progressBar.visibility = View.VISIBLE
-                }
-                val mActivity = activity as MainActivity
-                val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
-                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
-                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-            } else {
-                val builder = AlertDialog.Builder(context!!)
-                builder.setMessage("네트워크 연결을 확인해주세요")
-                builder.setPositiveButton("확인", object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface?, which: Int) {
-                    }
-                })
-                builder.show()
-            }
+//            if (networkState) {
+//                val progressBar = activity!!.findViewById<ProgressBar>(R.id.progress_circular)
+//                if (progressBar != null) {
+//                    progressBar.visibility = View.VISIBLE
+//                }
+//                val mActivity = activity as MainActivity
+//                val url = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
+//                val networkTask = MainActivity.NetworkTask(0, url, mActivity.dParse, mActivity, true)
+//                networkTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+//            } else {
+//                val builder = AlertDialog.Builder(context!!)
+//                builder.setMessage("네트워크 연결을 확인해주세요")
+//                builder.setPositiveButton("확인", object : DialogInterface.OnClickListener {
+//                    override fun onClick(dialog: DialogInterface?, which: Int) {
+//                    }
+//                })
+//                builder.show()
+//            }
         }
 
         path_button.setOnClickListener(this)
@@ -553,7 +560,9 @@ class MapFragment : Fragment(), OnMapReadyCallback, View.OnClickListener {
                     //해당 Place 객체로부터 위치 및 장소 이름 등의 정보를 이용하여 지도에 마커 생성
                     searchedPlaceMarker = markerController.addSearchMarker(place)
                     searchedPlaceMarker!!.tag = place
-                    adjustMapWidget(searchedPlaceMarker!!, place, PlaceType.SEARCH)
+                    adjustMapWidget(searchedPlaceMarker!!, place,
+                        PlaceType.SEARCH
+                    )
                     mMap!!.animateCamera(CameraUpdateFactory.newLatLng(searchedPlaceMarker!!.position))
 
 

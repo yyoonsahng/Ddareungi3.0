@@ -1,4 +1,4 @@
-package com.example.ddareungi.dataClass
+package com.example.ddareungi.data
 /*
 * title: 테마 타이틀
 * subtitle: 테마 설명
