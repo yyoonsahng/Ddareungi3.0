@@ -1,7 +1,6 @@
 package com.example.ddareungi
 
 
-import android.app.Activity
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -153,6 +152,7 @@ class CourseFragment : Fragment() {
         fun showSpot(){
             val spotText=mActivity!!.findViewById<TextView>(R.id.spotText)
             spotText.text=sList[num].title+"\n"+sList[num].tel+"\n"+sList[num].overview
+
         }
     }
 }
