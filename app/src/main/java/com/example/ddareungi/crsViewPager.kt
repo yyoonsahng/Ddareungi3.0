@@ -19,7 +19,7 @@ class crsViewPager(fm:FragmentManager,var index:Int):FragmentPagerAdapter(fm) {
         bundle.putInt("index",index)
         val fragment:Fragment=when(p0){
 
-            1->{crsVP1Fragment()}
+            //1->{crsVP1Fragment()}
             2->{crsVP2Fragment() }
             3->{crsVP3Fragment()}
             4->{crsVP4Fragment()}

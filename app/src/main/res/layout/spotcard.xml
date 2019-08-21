@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="400dp"
+              android:layout_width="380dp"
               android:layout_height="wrap_content"
               android:orientation="vertical"
               android:background="#fff"
@@ -24,15 +24,15 @@
                 android:layout_gravity="center"
                 android:layout_marginRight="3dp"
                 android:backgroundTint="#fff"
-                android:id="@+id/spotMoreBtn"
+
                 android:src="@drawable/ic_expand_more_black_24dp"
         />
     </LinearLayout>
 
     <ImageView
             android:id="@+id/spotImg"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_width="300dp"
+            android:layout_height="400dp"
             android:scaleType="center"
 
     />

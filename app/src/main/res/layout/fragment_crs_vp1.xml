@@ -15,49 +15,81 @@ android:background="@color/white"
                     android:layout_height="match_parent"
                     android:layout_width="match_parent"
                     android:scaleType="fitXY"
-                    android:id="@+id/crsvp1_titleimg"/>
+                    android:id="@+id/spotImgView"/>
 
             <ImageView
                     android:layout_height="50dp"
                     android:layout_width="50dp"
-                    android:id="@+id/crsvp1_preicon"
+                    android:id="@+id/spotPreBtn"
                     android:src="@drawable/ic_chevron_left_black_24dp"
                     android:layout_marginLeft="5dp"
                     android:layout_marginTop="17dp"/>
 
+            <ImageView
+                    android:layout_height="50dp"
+                    android:layout_width="50dp"
+                    android:id="@+id/spotNextBtn"
+                    android:src="@drawable/ic_chevron_right_black_24dp"
+                    android:layout_marginLeft="365dp"
+                    android:layout_marginTop="17dp"/>
 
-            <LinearLayout android:layout_height="wrap_content" android:layout_width="match_parent" android:orientation="vertical" android:layout_marginTop="300dp" android:paddingLeft="30dp">
 
-                <TextView android:layout_height="wrap_content"
-                          android:layout_width="wrap_content"
-                          android:id="@+id/crsvp1_mainTitle"
-                          android:textColor="#fff"
-                          android:textSize="30sp"
-                          android:textStyle="bold"
-                          />
 
-                <TextView android:layout_height="wrap_content"
-                          android:layout_width="wrap_content"
-                          android:id="@+id/crsvp1_subTitle"
-                          android:layout_marginTop="5dp"
-                          android:textColor="#fff"
-                          android:textSize="16sp"
-                          />
 
-            </LinearLayout>
 
         </FrameLayout>
+
+        <TextView android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:layout_width="wrap_content"
+                  android:id="@+id/spotTitle"
+                  android:textColor="#013F36"
+                  android:textSize="25sp"
+                  android:textStyle="bold"
+                  android:layout_marginLeft="20dp"
+
+                  android:gravity="center_vertical"
+
+        />
 
 
         <LinearLayout android:layout_height="0dp" android:layout_weight="1"
                       android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android"
                       android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
 
-            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon21" android:src="@drawable/ic_bike_button"/>
+
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/spotBikeImg" android:src="@drawable/ic_bike_button"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="270dp"
+                      android:id="@+id/spotBikeTxt"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+            <Button
+                    android:id="@+id/spotPathBtn"
+                    android:layout_width="90dp"
+                    android:layout_height="40dp"
+                    android:layout_marginVertical="3dp"
+                    android:background="@drawable/popuplayout"
+                    android:layout_marginTop="4dp"
+                    android:drawableStart="@drawable/ic_baseline_directions_18px"
+                    android:text="@string/card_path_button_text"
+                    android:drawablePadding="8dp"
+                    android:gravity="center"
+
+            />
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/spotHomeImg" android:src="@drawable/ic_business_black_24dp"/>
 
             <TextView android:layout_height="wrap_content"
                       android:layout_width="match_parent"
-                      android:id="@+id/crsvp1_busstop"
+                      android:id="@+id/spotHomeTxt"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>
 
@@ -66,41 +98,32 @@ android:background="@color/white"
 
         <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
 
-            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/crsInfoIcon22" android:src="@drawable/ic_place_black_24dp"/>
+
 
             <TextView android:layout_height="wrap_content"
-                      android:layout_width="match_parent"                      android:id="@+id/crsvp1_location"
+                      android:layout_width="match_parent"
+                      android:id="@+id/spotTelTxt"
+                      android:drawableStart="@drawable/ic_phone_black_24dp"
                       android:paddingLeft="5dp"
                       android:textSize="15sp"/>
 
         </LinearLayout>
 
 
-        <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+        <LinearLayout
+                android:id="@+id/telLayout"
+                android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal"  android:gravity="center">
 
-            <ImageView android:layout_height="30dp"
-                       android:layout_width="30dp"
-                       android:id="@+id/crsInfoIcon23"
-                       android:src="@drawable/ic_access_time_black_24dp"/>
-
-            <TextView android:layout_height="wrap_content"
-                      android:layout_width="match_parent"
-                      android:id="@+id/crsvp1_time"
-                      android:paddingLeft="5dp"
-                      android:textSize="15sp"/>
-
-        </LinearLayout>
-
-
-        <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
-
-            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:layout_marginBottom="7dp" android:id="@+id/crsInfoIcon24" android:src="@drawable/ic_phone_black_24dp"/>
-
-            <TextView android:layout_height="wrap_content"
-                      android:layout_width="match_parent"
-                      android:id="@+id/crsvp1_tel"
-                      android:paddingLeft="5dp"
-                      android:textSize="15sp"/>
+            <Button
+                    android:id="@+id/spotMoreBtn"
+                    android:layout_gravity="center"
+                    android:background="@drawable/rent_button_style"
+                    android:backgroundTint="#eee"
+                    android:textAlignment="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="more"
+            />
 
         </LinearLayout>
 

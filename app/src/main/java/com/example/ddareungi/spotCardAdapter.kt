@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.example.ddareungi.dataClass.MySpot
 
 class spotCardAdapter (var items: MutableList<MySpot>, val activity: FragmentActivity?) : RecyclerView.Adapter<spotCardAdapter.ViewHolder>() {
@@ -24,7 +25,15 @@ class spotCardAdapter (var items: MutableList<MySpot>, val activity: FragmentAct
         p0.spotTel.text=items.get(p1).tel
         p0.spotHome.text=items.get(p1).homepage
 
+        //image
+        Glide.with(activity!!.applicationContext)
+            .load(items.get(p1).imgOrigin)
+            .into(p0.spotImg)
 
+        /*
+        val url="http://tong.visitkorea.or.kr/cms/resource/57/2031357_image2_1.jpg"
+        Glide.with(this.applicationContext).load(url).into(testImg)
+        */
     }
 
     override fun getItemCount(): Int {
