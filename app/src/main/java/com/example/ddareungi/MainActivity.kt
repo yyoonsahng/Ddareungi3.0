@@ -128,38 +128,10 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         initPermission()
         checkNetwork()
         //init()
-        readFile()
-
-    }
-
-
-    fun readFile() {
-        val scan = Scanner(resources.openRawResource(R.raw.courseinfo))
-        while (scan.hasNextLine()) {
-
-            val title = scan.nextLine()
-            val subtitle = scan.nextLine()
-            val bikestop = scan.nextLine()
-            val location = scan.nextLine()
-            val open = scan.nextLine()
-            val tel = scan.nextLine()
-            val data = CourseInfo(title, subtitle, bikestop, location, tel, open)
-            courseInfoList.add(data)
-        }
-
-        val scan0 = Scanner(resources.openRawResource(R.raw.coursename))
-        while (scan0.hasNextLine()) {
-
-            val subtitle = scan0.nextLine()
-            val title = scan0.nextLine()
-            val length = scan0.nextLine()
-            val time = scan0.nextLine()
-            val data = Course(title, subtitle, length, time)
-            courseList.add(data)
-        }
-
         initFragment()
+
     }
+
 
     //GPS나 네트워크 켜져 있는지 broadcast receiver로 확인
     //상태 바뀌면 플래그 변수 값 바꿔서 프래그먼트로 넘겨줌

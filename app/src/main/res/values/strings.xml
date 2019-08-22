@@ -17,37 +17,34 @@
     <string name="park_fab_text">공원</string>
     <string name="delete">DELETE</string>
 
-    <array name="drawable">
-        <item>@drawable/banpo</item>
-        <item>@drawable/crs11</item>
-        <item>@drawable/crs12</item>
-        <item>@drawable/crs13</item>
-        <item>@drawable/crs14</item>
-        <item>@drawable/yangjae</item>
-        <item>@drawable/crs20</item>
-        <item>@drawable/crs22</item>
-        <item>@drawable/crs21</item>
-        <item>@drawable/crs24</item>
-        <item>@drawable/crs30</item>
-        <item>@drawable/crs31</item>
-        <item>@drawable/crs32</item>
-        <item>@drawable/crs33</item>
-        <item>@drawable/crs34</item>
-        <item>@drawable/crs40</item>
-        <item>@drawable/crs41</item>
-        <item>@drawable/crs42</item>
-        <item>@drawable/crs43</item>
-        <item>@drawable/crs50</item>
-        <item>@drawable/crs50</item>
-        <item>@drawable/crs51</item>
-        <item>@drawable/crs52</item>
-        <item>@drawable/crs53</item>
-        <item>@drawable/crs54</item>
-        <item>@drawable/crs60</item>
-        <item>@drawable/crs61</item>
-        <item>@drawable/crs62</item>
-        <item>@drawable/crs63</item>
-        <item>@drawable/crs64</item>
+    <array name="button">
+
+        <item>@id/gu1</item>
+        <item>@id/gu2</item>
+        <item>@id/gu3</item>
+        <item>@id/gu4</item>
+        <item>@id/gu5</item>
+        <item>@id/gu6</item>
+        <item>@id/gu7</item>
+        <item>@id/gu8</item>
+        <item>@id/gu9</item>
+        <item>@id/gu10</item>
+        <item>@id/gu11</item>
+        <item>@id/gu12</item>
+        <item>@id/gu13</item>
+        <item>@id/gu14</item>
+        <item>@id/gu15</item>
+        <item>@id/gu16</item>
+        <item>@id/gu17</item>
+        <item>@id/gu18</item>
+        <item>@id/gu19</item>
+        <item>@id/gu20</item>
+        <item>@id/gu21</item>
+        <item>@id/gu22</item>
+        <item>@id/gu23</item>
+        <item>@id/gu24</item>
+        <item>@id/gu25</item>
+
 
     </array>
 </resources>

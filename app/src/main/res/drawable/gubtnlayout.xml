@@ -3,16 +3,17 @@
 
     <item android:state_pressed="true">
         <shape>
+
             <padding android:bottom="3dp" android:top="3dp" android:left="3dp" android:right="3dp"/>
-            <corners  android:radius="2dp"/>
-            <solid android:color="@color/colorPrimaryRipple"/>
+            <corners  android:radius="50dp"/>
+            <solid android:color="@color/colorPrimaryDark"/>
         </shape>
     </item>
     <item android:state_pressed="false">
         <shape>
             <padding android:bottom="3dp" android:top="3dp" android:left="3dp" android:right="3dp"/>
-            <corners  android:radius="2dp"/>
-            <stroke android:color="@color/colorLoadingBackground" android:width="2dp" />
+            <corners  android:radius="50dp"/>
+
         </shape>
     </item>
 

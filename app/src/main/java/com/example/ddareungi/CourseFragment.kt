@@ -1,24 +1,15 @@
 package com.example.ddareungi
 
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentActivity
-import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import android.widget.Button
 import com.example.ddareungi.dataClass.MySpot
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.fragment_crs_vp1.*
 import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 
 /*
 *  구 선택 -> 해당 구ㅇ에 있는 관광지 목록 파싱 -> 첫 번쨰 관광지에 대한 내용 파싱 -> 보여주기 형식
@@ -36,6 +27,7 @@ class CourseFragment : Fragment() {
     var sList=mutableListOf<MySpot>()
     lateinit var jarray:JSONArray
     var num:Int=0
+    val btnArray=arrayListOf<Button>()
 
     /*numOfRows*/
 
@@ -45,222 +37,48 @@ class CourseFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_crs_vp1, container, false)
+        return inflater.inflate(R.layout.spotmenu_gu, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         init()
-       // val spot1=activity!!.findViewById<Button>(R.id.spot1)
-
-        /*spot1.setOnClickListener {
-
-            sList.clear()
-            num=0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
-            val networkTask0 = NetworkTask(1,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            if(networkTask0.getStatus() != AsyncTask.Status.FINISHED)
-            num++
-            if(num==sList.size) {
-                num = 0
-            }
-      }*/
-        /*
-        btn_gu2.setOnClickListener {
-            sList.clear()
-            num=0
-            val networkTask0 = NetworkTask(18,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            num++
-            if(num==sList.size) {
-                num = 0
-            }
-        }  */
-        spotPreBtn.setOnClickListener {
-            Log.i("btnpre_p","$num")
-
-            val networkTask0 = NetworkTask(-1,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            num--
-            if(num<0) {
-                    num = 0
-            }
-            Log.i("btnpre_n","$num")
-
-        }
-        spotNextBtn.setOnClickListener { //옆으로 넘겼다는건 이미 관광 게시물을 하나 봤다는 의미니까 sList에 데이터 존재함
-            Log.i("btnnext_p","$num")
-
-            val networkTask0 = NetworkTask(-1,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            num++
-            if(num==sList.size) {
-                num = 0
-            }
-            Log.i("btnnext_n","$num")
-
-        }
-
-        spotMoreBtn.setOnClickListener {
-            Log.i("btnmore_p","$num")
-            var flag=true
-            if(num>0&&flag) {
-                num--
-                flag=false
-            }
-            val networkTask0 = NetworkTask(-1,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            val str=sList[num].overview
-            popup(str)
-            Log.i("btnmore_n","$num")
-            if(!flag){
-                num++
-            }
-        }
-
 
     }
-
-    fun popup(n:String){
-        val popupView=layoutInflater.inflate(R.layout.spotdetailpopup,null)
-        val popupWindow=PopupWindow(popupView,LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT)
-        popupWindow.isFocusable=true
-        popupWindow.showAtLocation(popupView,Gravity.CENTER,0,0)
-        val spotDetailTxt=popupView.findViewById<TextView>(R.id.spotDetailTxt)
-        //if(sList.isNotEmpty()){
-            spotDetailTxt.text=n
-            Log.i("popup",n)
-        //}
-        val closeBtn=popupView.findViewById<Button>(R.id.spotClsBtn)
-        closeBtn.setOnClickListener {
-            popupWindow.dismiss()
-        }
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activity!!.appbar_title.text = "추천 코스"
+        activity!!.appbar_title.text = "추천 관광지"
     }
+
+    var index=0
 
 
     fun init(){
+        val idTypeArray= resources.obtainTypedArray(R.array.button)
 
-        sList.clear()
-        num=0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
-        val networkTask0 = NetworkTask(1,sList,num,activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-        networkTask0.execute()
-        if(networkTask0.getStatus() != AsyncTask.Status.FINISHED)
-            num++
-        if(num==sList.size) {
-            num = 0
+        for(i in 0..24){
+            var view=activity!!.findViewById<Button>(idTypeArray.getResourceId(i,0))
+            view.setOnClickListener {
+                val bundle=Bundle()
+                index=i+1
+                bundle.putInt("index",index)
+                val fragment=spotDetailFragment()
+                fragment.arguments=bundle
+                loadFragment(fragment)
+            }
         }
+
+
+
     }
-    class NetworkTask(var code:Int,var sList:MutableList<MySpot>,var num:Int,var mActivity:FragmentActivity?) : AsyncTask<Unit, Unit, String>() {
 
-        var url = arrayOf(
-            "http://api.visitkorea.or.kr/openapi/service/rest/KorService/areaBasedList?ServiceKey=cBjFR2LOycFyN6y%2FoSOb9jqx0YXqt1UBL5cjKWV8zPmenCK%2BfBuboT88uCRofXgQbKdQNC5yMBed%2FYHA7j9JNw%3D%3D&areaCode=1&contentTypeId=12&MobileOS=AND&MobileApp=Ddareungi3.0&_type=json&sigunguCode=",
-            "http://api.visitkorea.or.kr/openapi/service/rest/KorService/detailCommon?ServiceKey=cBjFR2LOycFyN6y%2FoSOb9jqx0YXqt1UBL5cjKWV8zPmenCK%2BfBuboT88uCRofXgQbKdQNC5yMBed%2FYHA7j9JNw%3D%3D&defaultYN=Y&overviewYN=Y&MobileOS=AND&MobileApp=TestApp&_type=json&contentId="
-        )
 
-        override fun doInBackground(vararg params: Unit?): String {
-            var spotData = ""
-            if (sList.size == 0) { //처음 클릭할 때
-                var res = RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=0")
-                Log.i("api", res)
-                var jobj = JSONObject(res).getJSONObject("response").getJSONObject("body")
-                var totalCount = jobj.optInt("totalCount")
-
-                var result =
-                    RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=" + totalCount.toString())
-                parsingSpotList(result)
-            }
-            Log.i("api", num.toString())
-            spotData = RequestHttpURLConnection().request(url[1] + sList[num].contentid)
-
-            return spotData
+        fun loadFragment(fragment: Fragment) {
+            activity!!.supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit()
         }
 
-        override fun onPostExecute(result: String?) {
-            super.onPostExecute(result)
-
-            var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body").getJSONObject("items")
-               .getJSONObject("item")
-          // var jobja = JSONObject(result).getJSONObject("response").getJSONObject("body").getJSONObject("items")
-
-
-
-                   try {
-                       sList[num].tel = jobj.optString("tel")
-                   } catch (e: JSONException) {
-                       sList[num].tel = "정보 없음"
-                   }
-
-                   try {
-                       sList[num].homepage =
-                           jobj.optString("homepage").substringAfter("http://").substringBefore("/<", "정보 없음")
-                       Log.i("apihome", "$num" + sList[num].homepage)
-                   } catch (e: JSONException) {
-                       sList[num].homepage = "정보없음"
-                   }
-
-                   sList[num].overview = jobj.optString("overview")
-                   Log.i("apioverview", "$num" + sList[num].overview)
-
-                    showSpot()
-
-        }
-        fun parsingSpotList(data:String){
-            var jarray= JSONObject(data).getJSONObject("response").getJSONObject("body").getJSONObject("items").getJSONArray("item")
-
-            for (i in 0..jarray.length()-1) {
-                var jObject = jarray.getJSONObject(i)
-                val contentid: Int = jObject.optInt("contentid")
-                var imgOrigin:String=jObject.optString("firstimage")
-                var imgThumb:String=jObject.optString("firstimage2")
-                val mapX:Double=jObject.optDouble("mapx")
-                val mapY:Double=jObject.optDouble("mapy")
-                val title:String=jObject.optString("title")
-                //val homepage:String=jObject.optString("homepage").substringAfter("http://").substringBefore("/","정보 없음")
-                //val homepage:String=jObject.optString("homepage")
-                //Log.i("postExecute_home", homepage)
-
-                //Log.i("api_home",homepage)
-                //val overview:String=jObject.optString("overview")
-                //Log.i("execute",overview.substring(0,2))
-                sList.add(
-                    MySpot(contentid,imgOrigin,imgThumb,mapX,mapY,title,"tel","homepage","overview")
-                )
-
-            }
-        }
-
-        fun showSpot(){
-            val spotImgView=mActivity!!.findViewById<ImageView>(R.id.spotImgView)
-            val spotTitle=mActivity!!.findViewById<TextView>(R.id.spotTitle)
-            val spotTelTxt=mActivity!!.findViewById<TextView>(R.id.spotTelTxt)
-            val spotHomeTxt=mActivity!!.findViewById<TextView>(R.id.spotHomeTxt)
-
-
-            Glide.with(mActivity!!.applicationContext)
-                .load(sList[num].imgOrigin)
-                .apply(RequestOptions().placeholder(R.drawable.ic_sync_black_24dp))
-                .into(spotImgView)
-
-
-            spotTitle.text=sList[num].title
-            spotHomeTxt.text=sList[num].homepage
-            if(sList[num].tel.length>4){
-                spotTelTxt.visibility=View.VISIBLE
-                spotTelTxt.text=sList[num].tel
-            }
-            else{
-                spotTelTxt.visibility=View.GONE
-            }
-
-
-
-        }
-    }
 }
