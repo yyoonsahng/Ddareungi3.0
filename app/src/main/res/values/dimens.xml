@@ -3,4 +3,5 @@
     <dimen name="activity_padding_horizontal">16dp</dimen>
     <dimen name="padd_10">10dp</dimen>
     <dimen name="ic_delete">30dp</dimen>
+    <dimen name="bottom_nav_bar_size">48dp</dimen>
 </resources>

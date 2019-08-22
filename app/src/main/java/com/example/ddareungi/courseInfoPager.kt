@@ -1,7 +1,6 @@
 package com.example.ddareungi
 
 import android.os.Bundle
-import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 
@@ -21,9 +20,7 @@ class courseInfoPager : AppCompatActivity() {
         window.decorView.background = resources.getDrawable(R.color.white, null)
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
-        val pagerAdapter = crsViewPager(supportFragmentManager, index)
-        val pager = findViewById<ViewPager>(R.id.container)
-        pager.adapter = pagerAdapter
+
 
     }
 }

@@ -1,19 +1,21 @@
 package com.example.ddareungi
 
 
-import android.media.Ringtone
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
+import android.widget.Button
+import android.widget.Spinner
+import android.widget.TextView
+import com.example.ddareungi.MainActivity.Companion.activitystate
+import com.example.ddareungi.MainActivity.Companion.selectHour
 import kotlinx.android.synthetic.main.fragment_timer.*
 
 
@@ -28,198 +30,130 @@ private const val ARG_PARAM2 = "param2"
  */
 class TimerFragment : Fragment() {
 
-    var timerView: View? = null
-    var hour=1
-    var btnState=true //시작 버튼 (반납 상태)
-    enum class TimerState{
-        Stopped,Paused,Running
-    }
+    var timerState=true//반납상태
 
-    private lateinit var timer: CountDownTimer
-    private var timerLengthSeconds=0L
-    private var timerState=TimerState.Stopped
-    private var secondsRemaining=0L
-    private var minsRemaining=0L
-    private lateinit var notification: Uri
-    private lateinit var  ringtone: Ringtone
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
 
+    lateinit var timer:CountDownTimer
+    lateinit var timerBtn: Button
+    lateinit var timerTxt:TextView
+    lateinit var spinner:Spinner
+    var hour:Long=0L
+    var secondsremaining:Long=0
+    lateinit var oDialog: AlertDialog.Builder
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_timer, container, false)
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.v("status", "onStart")
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.v("status", "onDetach")
-    }
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity!!.appbar_title.text = "타이머"
-    }
     override fun onActivityCreated(savedInstanceState: Bundle?) {
+        activitystate=true
         super.onActivityCreated(savedInstanceState)
+        timerBtn=activity!!.findViewById(R.id.timerBtn)
+        timerTxt = activity!!.findViewById<TextView>(R.id.timerTxt)
+        spinner = activity!!.findViewById<Spinner>(R.id.timerSpinner)
+        spinner.onItemSelectedListener = SpinnerSelectedListener()
+        init()
 
+    }
 
+    fun init(){
 
-        timerSpinner.onItemSelectedListener=SpinnerSelectedListener()
-        timerBtn.setOnClickListener {
-            if(btnState) { //시작버튼 클릭
+        oDialog=AlertDialog.Builder(this.requireContext(),android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        oDialog.setIcon(R.drawable.ddareungimark).setTitle("반납 안내").setMessage("대여 시간 15분 전입니다.").setPositiveButton("확인",null)
 
-                startTimer()
-                timerState = TimerState.Running
-                btnState=false
-                timerBtn.text="반납 완료"
-                timerPrgbar.visibility=View.VISIBLE
-            }else{//반납완료 버튼 클릭
+       timerBtn.setOnClickListener {
+
+            if (timerState) {
+                timerBtn.text = "반납 완료"
+                timerState = false
+                startTimer(hour)
+                timerSpinner.isEnabled=false
+            } else {
+                timerBtn.text = "대여시작"
+                timerState = true
+                //timerTxt.text="0"+hour.toString()+":00"
+                Log.i("tim_btnclick",timerTxt.text.toString())
                 timer.cancel()
-                finishTimer()
-                btnState=true
-                timerBtn.text="대여 시작"
-                // timerBtn.setBackgroundResource(R.drawable.btn11)
-                timerPrgbar.visibility=View.INVISIBLE
+                timerSpinner.isEnabled=true
             }
+
+
         }
     }
+
+    fun startTimer(rhour:Long){
+        timer = object : CountDownTimer(3600000*rhour, 1000) {//rhour시간짜리
+        override fun onTick(millisUntilFinished: Long) {
+            secondsremaining=millisUntilFinished/1000
+            updateUI(!timerState,selectHour)
+            if(secondsremaining==3580L) {
+                Log.i("alert", secondsremaining.toString())
+                oDialog.show()
+            }
+        }
+
+
+            override fun onFinish() {
+                activitystate=false
+                timerTxt.text = "00:00"
+            }
+        }.start()
+    }
+
+    fun alarm(){
+        val notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val  ring= RingtoneManager.getRingtone(this.context, notification)
+        Log.i("timer","ring")
+        ring.play()
+
+    }
+    fun updateUI(state:Boolean,selectHour:Boolean){
+        var h=hour-1
+        if(!selectHour)
+            h++
+
+        if(state){
+            timerBtn.text = "반납 완료"
+            val hourUntilFinished=secondsremaining/3600
+            val minutesUntilFinished=(secondsremaining-hourUntilFinished*3600)/60
+            val minsStr=minutesUntilFinished.toString()
+            timerTxt.text ="0$hourUntilFinished:${if(minsStr.length==2) minsStr else "0"+minsStr}"
+            Log.i("tim_updateUI실행중",timerTxt.text.toString())
+        }else {
+            timerBtn.text = "대여시작"
+            h++
+            timerTxt.text="0"+h.toString()+":00"
+            Log.i("tim_updateUI반납",timerTxt.text.toString())
+        }
+
+
+}
 
     override fun onResume() {
         super.onResume()
-        initTimer()
-        Log.v("status", "onResume")
-    }
-
-    override fun onPause() {
-        //옆 프레그먼트로 이동할 때
-        super.onPause()
-        Log.v("status", "onPause")
-        if(timerState==TimerState.Running){
-            timer.cancel()
-        }
-        PrefUtil.setPreviousTimerLengthSeconds(timerLengthSeconds,activity!!.applicationContext)
-        PrefUtil.setSecondsRemaining(secondsRemaining,activity!!.applicationContext)
-        PrefUtil.setTimerState(timerState,activity!!.applicationContext)
-
-    }
-
-    private fun initTimer(){
-
-        timerState= PrefUtil.getTimerState(activity!!.applicationContext)
-        if(timerState==TimerState.Stopped)
-            setNewTimerLength()
-        else
-            setPreviousTimerLength()
-        secondsRemaining=if(timerState==TimerState.Running)
-            PrefUtil.getSecondsRemaining(activity!!.applicationContext)
-        else
-            timerLengthSeconds
-
-        if(timerState==TimerState.Running)
-            startTimer()
-
-    }
-
-    private fun finishTimer(){
-        timerState=TimerState.Stopped
-        setNewTimerLength()
-        timerPrgbar.progress=0
-        PrefUtil.setSecondsRemaining(timerLengthSeconds,activity!!.applicationContext)
-        secondsRemaining=timerLengthSeconds
-        //updateCountdownUI()
-        timerTxt.text="00:00"
-
-    }
-    private  fun startTimer() {
-        timerState = TimerState.Running
-        timer = object : CountDownTimer(secondsRemaining * 60000, 60000) {
-            override fun onFinish() = finishTimer()
-
-            override fun onTick(millisUntilFinished: Long) {
-                secondsRemaining = millisUntilFinished / 1000 //남은 초
-                //  minsRemaining=secondsRemaining/60
-                updateCountdownUI()
-                Log.v("timer",secondsRemaining.toString())
-                if(secondsRemaining.toInt()==3539){//50분남은거
-                    Toast.makeText(activity!!.applicationContext,"onTick15", Toast.LENGTH_SHORT).show()
-                    alramPlay()
-                }
-            }
-        }.start()
-
-    }
-    fun setNewTimerLength(){
-
-        val lengthMin= PrefUtil.getTimerLength(activity!!.applicationContext,hour)
-        Log.v("lengthMin",lengthMin.toString())
-        timerLengthSeconds=(lengthMin*60L)
-        timerPrgbar.max=timerLengthSeconds.toInt()
-
-    }
-    fun setPreviousTimerLength(){
-        timerLengthSeconds= PrefUtil.getPreviousTimerLengthSeconds(activity!!.applicationContext)
-        timerPrgbar.max=timerLengthSeconds.toInt()
-
-    }
-    fun updateCountdownUI(){
-        /*val minUntilFinish=secondsRemaining/60-secondsRemaining*60
-        val secUntilFinish=secondsRemaining-minUntilFinish*60
-        val hourStr=minUntilFinish/60
-        val minUntilFinishStr=secondsRemaining/60-hourStr*60
-        val minStr=minUntilFinishStr.toString()*/
-        Log.v("secondsRemaining",secondsRemaining.toString())
-        var secUntilFinish=secondsRemaining.toInt()
-        val hour=(secUntilFinish/3600).toInt()
-        secUntilFinish-=hour*3600
-        val hourStr=hour.toString()
-        val min=(secUntilFinish/60).toInt()
-        minsRemaining=min.toLong()
-        secUntilFinish-=min*60
-        val minStr=min.toString()
-
-        /* val secStr=secUntilFinish.toString()
-         timerTxt.text="$minUntilFinish:${
-         if(secStr.length==2)secStr
-         else "0"+secStr}"*/
-
-        // timerTxt.text="0"+"$hourStr:${if(minStr.length==2)minStr
-        //else{"0"+minStr}}"
-
-        timerTxt.text="0"+"$hourStr:${
-        if(minStr.length>=2)minStr
-        else "0"+minStr}"
-
-        timerPrgbar.progress=(timerLengthSeconds-secondsRemaining).toInt()
-
-
+        updateUI(!timerState,selectHour)
     }
 
     inner class SpinnerSelectedListener: AdapterView.OnItemSelectedListener{
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-        }
-
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            val str=parent?.getItemAtPosition(position).toString()
-            if(str.length>3)hour=1
-            else {
-                hour = parent?.getItemAtPosition(position).toString().substring(0, 1).toInt()
+            var spinnerStr=parent?.getItemAtPosition(position).toString()
+            if(spinnerStr.length>3){
+                timerTxt.text="00:00"
+
+            }else{
+                selectHour=true
+                hour=spinnerStr.substring(0,1).toLong()
+                timerTxt.text="0"+hour.toString()+":00"
             }
-            timerTxt.text="0"+hour+":00"
-            initTimer()
+        }
+
+        override fun onNothingSelected(parent: AdapterView<*>?) {
+            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
 
-    fun alramPlay(){
-        Log.v("alarm","50")
-        notification= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        ringtone= RingtoneManager.getRingtone(activity!!.applicationContext,notification)
-        ringtone.play()
-    }
+
+
 }

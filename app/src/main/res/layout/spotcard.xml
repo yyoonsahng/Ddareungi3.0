@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="380dp"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:background="#fff"
+              android:layout_gravity="center_horizontal"
+
+>
+
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"  android:paddingLeft="10dp">
+        <TextView
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/spotTitle"
+                android:text="창덕궁"
+                android:textSize="30sp"
+        />
+
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginRight="3dp"
+                android:backgroundTint="#fff"
+
+                android:src="@drawable/ic_expand_more_black_24dp"
+        />
+    </LinearLayout>
+
+    <ImageView
+            android:id="@+id/spotImg"
+            android:layout_width="300dp"
+            android:layout_height="400dp"
+            android:scaleType="center"
+
+    />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="vertical">
+        <TextView
+                android:id="@+id/spotDetail"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="45dp" android:orientation="horizontal">
+
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_bike_button"
+                    android:layout_gravity="center"
+            />
+            <TextView
+                    android:id="@+id/spotBStop"
+                    android:layout_width="0dp"
+                    android:layout_weight="5"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="안국역"
+            />
+            <Button
+                    android:id="@+id/spotPathBtn"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="5dp"
+                    android:layout_marginVertical="3dp"
+                    android:background="@drawable/rent_button_style"
+                    android:backgroundTint="@color/colorPrimaryLight"
+                    android:layout_marginTop="4dp"
+                    android:drawableStart="@drawable/ic_baseline_directions_18px"
+                    android:text="@string/card_path_button_text"
+                    android:drawablePadding="8dp"
+                    android:gravity="center"
+            />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/spotTelView" android:layout_width="match_parent" android:layout_height="45dp" android:orientation="horizontal" android:gravity="center_vertical" >
+
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_phone_black_24dp"
+                    android:layout_gravity="center"
+            />
+            <TextView
+                    android:id="@+id/spotTel"
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="02-936-6673"
+            />
+
+        </LinearLayout>
+        <LinearLayout android:id="@+id/spotHomeView" android:layout_width="match_parent" android:layout_height="45dp" android:orientation="horizontal" android:gravity="center_vertical" >
+
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_business_black_24dp"
+                    android:layout_gravity="center"
+            />
+            <TextView
+                    android:id="@+id/spotHome"
+                    android:layout_width="0dp"
+                    android:layout_weight="4"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="www.konkuk.ac.kr"
+            />
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

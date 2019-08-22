@@ -5,12 +5,13 @@
              android:id="@+id/bike_marker">
 
     <TextView android:id="@+id/bike_marker_num_textView"
-              android:layout_width="match_parent" android:layout_height="match_parent"
-              android:background="@drawable/ic_marker_high"
-              android:gravity="center"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/ic_simple_marker_high"
+              android:gravity="center_horizontal"
               android:fontFamily="@font/spoqahansansbold"
-              android:textSize="14sp"
-              android:paddingTop="4dp"
+              android:textSize="18sp"
+              android:paddingTop="9dp"
               android:textColor="@color/quantum_white_text"/>
 
 </FrameLayout>
