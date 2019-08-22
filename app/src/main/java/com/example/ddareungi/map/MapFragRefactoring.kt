@@ -68,6 +68,7 @@ class MapFragRefactoring() : Fragment(), MapContract.View, OnMapReadyCallback, F
 
     lateinit var fusedLocationClient: FusedLocationProviderClient
     lateinit var markerController: MarkerController
+    var searchMarker: Marker? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -248,12 +249,15 @@ class MapFragRefactoring() : Fragment(), MapContract.View, OnMapReadyCallback, F
     }
 
     private fun showSearchMarker(place: Place) {
-        val searchMarker = markerController.addSearchMarker(place)
+        if(searchMarker != null) {
+            markerController.removeMarker(searchMarker!!.title)
+        }
+        searchMarker = markerController.addSearchMarker(place)
         presenter.currentClickedMarker = searchMarker
         presenter.currentClickedMarkerType = PlaceType.SEARCH
-        moveCamera(searchMarker.position, DEFAUT_ZOOM)
+        moveCamera(searchMarker!!.position, DEFAUT_ZOOM)
 
-        showClickedMarkerCardView(searchMarker)
+        showClickedMarkerCardView(searchMarker!!)
     }
 
     private fun hideMarkerCardView() {
@@ -369,10 +373,16 @@ class MapFragRefactoring() : Fragment(), MapContract.View, OnMapReadyCallback, F
             parkCardView.visibility = View.GONE
             destCardView.visibility = View.GONE
 
+            refreshBtn.show()
+            placeTypeBtn.show()
+
             return true
-        } else {
+        } else if(searchMarker != null) {
+            markerController.removeMarker(searchMarker!!.title)
+            searchMarker = null
+            return true
+        } else
             return false
-        }
     }
 
     private fun showDdareungiWebPage() {
@@ -395,7 +405,6 @@ class MapFragRefactoring() : Fragment(), MapContract.View, OnMapReadyCallback, F
         super.onResume()
         mapView.onResume()
         (activity as AppCompatActivity).supportActionBar!!.hide()
-        presenter.start()
     }
 
 
@@ -412,6 +421,7 @@ class MapFragRefactoring() : Fragment(), MapContract.View, OnMapReadyCallback, F
     override fun onDestroy() {
         super.onDestroy()
         mapView.onDestroy()
+        (activity as AppCompatActivity).supportActionBar!!.show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

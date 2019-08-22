@@ -86,6 +86,8 @@ class MarkerController(val context: Context, val googleMap: GoogleMap) {
 
         val marker = googleMap.addMarker(markerOptions)
         marker!!.tag = place
+        marker.title = place.name
+        visibleMarkers[place.name!!] = marker
         return marker
     }
 

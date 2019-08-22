@@ -52,13 +52,9 @@ interface MapContract {
 
         var currentClickedMarkerType: PlaceType
 
-        fun start()
-
         fun initCameraPosition()
 
         fun updateMarkers(bounds: LatLngBounds, zoomLevel: Float, clearAll: Boolean)
-
-        fun addSearchMarker(place: Place)
 
         fun updateClickedMarkerCardView(marker: Marker)
 

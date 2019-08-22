@@ -27,7 +27,6 @@ class MapPresenter(val dataRepository: DataRepository, val mapView: MapContract.
     init {
         mapView.presenter = this
     }
-    override fun start() {}
 
     override fun initCameraPosition() {
         if(fromBookmarkFrag) {
@@ -98,10 +97,6 @@ class MapPresenter(val dataRepository: DataRepository, val mapView: MapContract.
             else -> {}
         }
         mapView.showMarkerOnCurrentMap(markersToShow, showKeyList, removeKeyList)
-    }
-
-    override fun addSearchMarker(place: Place) {
-
     }
 
     override fun updateClickedMarkerCardView(marker: Marker) {
