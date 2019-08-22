@@ -16,9 +16,11 @@ import com.example.ddareungi.bookmark.BookmarkFragment
 import com.example.ddareungi.bookmark.BookmarkPresenter
 import com.example.ddareungi.data.*
 import com.example.ddareungi.data.source.DataRepository
-import com.example.ddareungi.map.MapFragment
+import com.example.ddareungi.map.MapFragRefactoring
+import com.example.ddareungi.map.MapPresenter
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.example.ddareungi.util.setupActionBar
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
@@ -69,7 +71,6 @@ class MainActivity : AppCompatActivity(){
         notificationManager.notify(NOTIFICATION_ID,builder.build())
     }
 
-    val mapFragment = MapFragment()
     val timerFragment = TimerFragment()
     val courseFragment = CourseFragment()
 
@@ -98,10 +99,9 @@ class MainActivity : AppCompatActivity(){
             startActivity(webIntent)
         }
 
-        //구글맵 로드 속도 개선 위해서 dummy map 실행
-        val dummyMapsInitializer = SupportMapFragment()
-        supportFragmentManager.beginTransaction().attach(dummyMapsInitializer).commit()
-        dummyMapsInitializer.getMapAsync {}
+        val dummyMapInitializer = SupportMapFragment.newInstance()
+        supportFragmentManager.beginTransaction().attach(dummyMapInitializer).commit()
+        dummyMapInitializer.getMapAsync {  }
 
         //로딩 해온 데이터 및 위치 권한 받음
         val holderId = intent.getStringExtra(DATA_REPOSITORY_ID)
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(){
 
         //기본 fragment로 bookmarkFragment 생성
         val bookmarkFragment = BookmarkFragment.newInstance().also { fragment ->
-            replaceFragmentInActivity(fragment, R.id.fragment_container)
+            replaceFragmentInActivity(fragment, R.id.fragment_container, "즐겨찾기")
         }
         bookmarkPresenter = BookmarkPresenter(dataRepository, bookmarkFragment, locationPermissionGranted)
 
@@ -181,13 +181,18 @@ class MainActivity : AppCompatActivity(){
                 R.id.bookmark -> {
                     if(fragment !is BookmarkFragment) {
                         val bookmarkFragment = BookmarkFragment.newInstance().also { bookmarkFragment ->
-                            replaceFragmentInActivity(bookmarkFragment, R.id.fragment_container)
+                            replaceFragmentInActivity(bookmarkFragment, R.id.fragment_container, "즐겨찾기")
                         }
                         bookmarkPresenter = BookmarkPresenter(dataRepository, bookmarkFragment, locationPermissionGranted)
                     }
                 }
                 R.id.map -> {
-                    loadFragment(mapFragment)
+                    if(fragment !is MapFragRefactoring) {
+                        val mapFragment = MapFragRefactoring().also {
+                            replaceFragmentInActivity(it, R.id.fragment_container, "")
+                        }
+                        val mapPresenter = MapPresenter(dataRepository, mapFragment, false ,"")
+                    }
                 }
                 R.id.timer -> {
                     loadFragment(timerFragment)
@@ -197,6 +202,16 @@ class MainActivity : AppCompatActivity(){
                 }
             }
             true
+        }
+    }
+
+    override fun onBackPressed() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if(fragment is MapFragRefactoring) {
+            if(!fragment.onBackButtonPressed())
+                super.onBackPressed()
+        } else {
+            super.onBackPressed()
         }
     }
 

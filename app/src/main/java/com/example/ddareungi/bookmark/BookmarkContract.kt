@@ -23,7 +23,7 @@ interface BookmarkContract {
 
         fun showClickedBookmarkInMapFrag(dataRepository: DataRepository, clickedRentalOffice: String)
 
-        fun initLocation(locationPermissionGranted: Boolean)
+        fun initLocation()
 
     }
 

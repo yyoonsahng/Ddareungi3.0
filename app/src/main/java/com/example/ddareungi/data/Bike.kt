@@ -23,6 +23,8 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
     companion object {
         private const val baseUrl = "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/"
 
+        fun newInstance() = Bike("", "", 0, 0, 0, 0.0, 0.0, 0)
+
         fun loadBike(bikeList: ArrayList<Bike>, callback: DataSource.ApiListener){
             var totalBikeNum = 0
 

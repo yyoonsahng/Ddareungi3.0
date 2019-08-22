@@ -17,8 +17,6 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
     }
 
     override fun start() {
-        dataRepository.addBookmarkToDatabase("108. 서교동 사거리")
-        dataRepository.addBookmarkToDatabase("729. 서부식자재마트 건너편")
         bookmarks = dataRepository.bookmarkDataBase.getAllUser()
         loadData()
         firstLoad = false
@@ -47,7 +45,7 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
         else
         {
             //지역 정보 업데이트
-            bookmarkView.initLocation(locationPermissionGranted)
+            bookmarkView.initLocation()
             //외부 데이터를 한 번은 정상적으로 받아왔을 때
             if(isReposInit) {
                 bookmarkView.showLoadingIndicator(true, false)

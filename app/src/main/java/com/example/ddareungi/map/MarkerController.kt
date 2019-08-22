@@ -18,73 +18,87 @@ import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.model.Place
 import kotlinx.android.synthetic.main.bike_marker.view.*
 
-class MarkerController(
-    context: Context,
-    googleMap: GoogleMap,
-    visibleMarkers: MutableMap<String, Marker>
-) {
-    private val mContext = context
-    private val mMap = googleMap
-    private val mVisibleMarkers = visibleMarkers
+class MarkerController(val context: Context, val googleMap: GoogleMap) {
+    val visibleMarkers = mutableMapOf<String, Marker>()
 
-    fun addBikeMarker(bike: Bike): Marker {
-        val markerOptions = MarkerOptions()
-        //marker의 위치 정보 설정
-        markerOptions.position(LatLng(bike.stationLatitude, bike.stationLongitude))
+    fun addBikeMarker(markersToShow: MutableMap<String, Bike>, showKeyList: MutableList<String>, removeKeyList: MutableList<String>) {
+        for(key in showKeyList) {
+            val bike = markersToShow[key]
+            val markerOptions = MarkerOptions()
+            val markerView = LayoutInflater.from(context).inflate(R.layout.bike_marker, null)
+            //marker의 위치 정보 설정
+            markerOptions.position(LatLng(bike!!.stationLatitude, bike.stationLongitude))
 
-        //marker에 해당하는 뷰 객체 얻어옴
-        val markerView = LayoutInflater.from(mContext).inflate(R.layout.bike_marker, null)
+            //markerView의 textView에 자전거 수 표시
+            markerView.bike_marker_num_textView.text = bike.parkingBikeTotCnt.toString()
 
-        //markerView의 textView에 자전거 수 표시
-        markerView.bike_marker_num_textView.text = bike.parkingBikeTotCnt.toString()
+            //자전거 수 별 다른 아이콘 이미지 설정, 자전거가 많을 수록 zIndex 값을 높게 설정해서 우선적으로 보이게 함
+            if (bike.parkingBikeTotCnt == 0) {
+                markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_simple_marker_low)
+            } else if (bike.parkingBikeTotCnt < 10) {
+                markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_simple_marker_middle)
+                markerOptions.zIndex(1.0f)
+            } else {
+                markerOptions.zIndex(2.0f)
+            }
+            //뷰를 drawable로 만들어서 마커의 아이콘으로 설정
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(context, markerView)))
 
-        //자전거 수 별 다른 아이콘 이미지 설정, 자전거가 많을 수록 zIndex 값을 높게 설정해서 우선적으로 보이게 함
-        if (bike.parkingBikeTotCnt == 0) {
-            markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_marker_zero)
-        } else if (bike.parkingBikeTotCnt < 10) {
-            markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_marker_low)
-            markerOptions.zIndex(1.0f)
-        } else {
-            markerOptions.zIndex(2.0f)
+            visibleMarkers[key] = (googleMap.addMarker(markerOptions))
+            visibleMarkers[key]!!.tag = bike
         }
-        //뷰를 drawable로 만들어서 마커의 아이콘으로 설정
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(mContext, markerView)))
-        return mMap.addMarker(markerOptions)
+
+        for(key in removeKeyList) {
+            removeMarker(key)
+        }
     }
 
-    fun addToiletMarker(toilet: Toilet): Marker {
-        val markerOptions = MarkerOptions()
-        markerOptions.position(LatLng(toilet.wgs84_y, toilet.wgs84_x))
-        markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_toilet_marker))
+    fun addToiletMarker(markersToShow: MutableMap<String, Toilet>, keyList: MutableList<String>) {
+        for(key in keyList) {
+            val toilet = markersToShow[key]
+            val markerOptions = MarkerOptions()
 
-        return mMap.addMarker(markerOptions)
+            markerOptions.position(LatLng(toilet!!.wgs84_y, toilet.wgs84_x))
+            markerOptions.icon(bitmapDescriptorFromVector(context, R.drawable.ic_toilet_marker))
+
+            visibleMarkers[key] = googleMap.addMarker(markerOptions)
+            visibleMarkers[key]!!.tag = toilet
+            visibleMarkers[key]!!.title = toilet.fName
+        }
     }
 
-    fun addParkMarker(park: Park): Marker {
-        val markerOptions = MarkerOptions()
-        markerOptions.position(LatLng(park.latitude, park.longitude))
-        markerOptions.icon(bitmapDescriptorFromVector(mContext, R.drawable.ic_marker_park))
+    fun addParkMarker(markersToShow: MutableMap<String, Park>, keyList: MutableList<String>) {
+        for(key in keyList) {
+            val park = markersToShow[key]
+            val markerOptions = MarkerOptions()
 
-        return mMap.addMarker(markerOptions)
+            markerOptions.position(LatLng(park!!.latitude, park.longitude))
+            markerOptions.icon(bitmapDescriptorFromVector(context, R.drawable.ic_marker_park))
+
+            visibleMarkers[key] = googleMap.addMarker(markerOptions)
+            visibleMarkers[key]!!.tag = park
+        }
     }
 
     fun addSearchMarker(place: Place): Marker {
         val markerOptions = MarkerOptions()
         markerOptions.position(place.latLng!!)
 
-        return mMap.addMarker(markerOptions)
+        val marker = googleMap.addMarker(markerOptions)
+        marker!!.tag = place
+        return marker
     }
 
     fun removeMarker(markerKey: String) {
-        mVisibleMarkers[markerKey]!!.remove()
-        mVisibleMarkers.remove(markerKey)
+        visibleMarkers[markerKey]!!.remove()
+        visibleMarkers.remove(markerKey)
     }
 
     /*
         marker를 View 형태로 만들어서 textView에 자전거 수를 표시하게 함.
         marker 아이콘은 비트맵 형태로 사용해야 되므로 View를 비트맵으로 바꿔줘야 함
      */
-    fun createDrawableFromView(context: Context, view: View): Bitmap {
+    private fun createDrawableFromView(context: Context, view: View): Bitmap {
         val displayMetrics = DisplayMetrics()
         (context as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
         view.layoutParams =
@@ -100,7 +114,7 @@ class MarkerController(
         return bitmap
     }
 
-    fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
         val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
         vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
         val bitmap =

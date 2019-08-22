@@ -16,21 +16,25 @@
 package com.example.ddareungi.util
 
 
+import android.content.pm.PackageManager
 import android.support.annotation.IdRes
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentTransaction
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
 /**
  * The `fragment` is added to the container view with id `frameId`. The operation is
  * performed by the `fragmentManager`.
  */
-fun AppCompatActivity.replaceFragmentInActivity(fragment: Fragment, @IdRes frameId: Int) {
+fun AppCompatActivity.replaceFragmentInActivity(fragment: Fragment, @IdRes frameId: Int, appbarTitle: String) {
     supportFragmentManager.transact {
         replace(frameId, fragment)
     }
+    appbar_title.text = appbarTitle
 }
 
 /**
@@ -48,6 +52,19 @@ fun AppCompatActivity.setupActionBar(@IdRes toolbarId: Int, action: ActionBar.()
     supportActionBar?.run {
         action()
     }
+}
+
+fun Fragment.checkLocationPermission(): Boolean {
+    val requestPermission = (arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))
+    val requestResult = BooleanArray(requestPermission.size)
+    for (i in requestResult.indices) {
+        requestResult[i] =
+            ContextCompat.checkSelfPermission(requireContext(), requestPermission[i]) == PackageManager.PERMISSION_GRANTED
+        if (!requestResult[i]) {
+            return false
+        }
+    }
+    return true
 }
 
 /**

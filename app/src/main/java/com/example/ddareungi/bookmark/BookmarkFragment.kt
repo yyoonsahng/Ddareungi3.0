@@ -16,18 +16,16 @@ import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.example.ddareungi.R
 import com.example.ddareungi.data.Bookmark
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.map.MapFragRefactoring
+import com.example.ddareungi.map.MapPresenter
 import com.example.ddareungi.util.RecyclerItemTouchHelper
+import com.example.ddareungi.util.checkLocationPermission
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.places.internal.it
-import kotlinx.android.synthetic.main.bookmark_frag.*
 import java.util.*
 
 class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
@@ -88,8 +86,10 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     }
 
     override fun showWeatherView(dustText: String, imageId: Int) {
-        dust_text.text = dustText
-        weather_image.setImageResource(imageId)
+        with(requireActivity()) {
+            findViewById<TextView>(R.id.dust_text).text = dustText
+            findViewById<ImageView>(R.id.weather_image).setImageResource(imageId)
+        }
     }
 
     override fun showBookmarkedList(bookmarks: ArrayList<Bookmark>) {
@@ -139,24 +139,23 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     }
 
     override fun showClickedBookmarkInMapFrag(dataRepository: DataRepository, clickedRentalOffice: String) {
-//        requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view).apply {
-//            menu.findItem(R.id.map)
-//                .setChecked(true)
-//        }
-//        MapFragment().also {
-//            (requireActivity() as AppCompatActivity).replaceFragmentInActivity(it, R.id.container)
-//        }
-
+        requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view).apply {
+            menu.findItem(R.id.map)
+                .setChecked(true)
+        }
+        val mapFragment = MapFragRefactoring().also {
+            (requireActivity() as AppCompatActivity).replaceFragmentInActivity(it, R.id.fragment_container, "")
+        }
+        val mapPresenter = MapPresenter(dataRepository, mapFragment, true, clickedRentalOffice)
     }
 
-    @SuppressLint("MissingPermission")
-    override fun initLocation(locationPermissionGranted: Boolean) {
+    override fun initLocation() {
         var mLocation = Location("initLocation")
         val res = requireContext().resources
         mLocation.latitude = 37.540
         mLocation.longitude = 127.07
 
-        if(locationPermissionGranted) {
+        if(checkLocationPermission()) {
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
             fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                 mLocation = it

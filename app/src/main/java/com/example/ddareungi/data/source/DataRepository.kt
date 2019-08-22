@@ -178,7 +178,15 @@ class DataRepository(
         deleteBookmarkInDatabase(name)
     }
 
-    private fun deleteBookmarkInDatabase(name: String) {
+    fun updateBookmarkInDatabase(name: String) {
+        if(findBookmarkInDatabase(name)) {
+            addBookmarkToDatabase(name)
+        } else {
+            deleteBookmarkInDatabase(name)
+        }
+    }
+
+    fun deleteBookmarkInDatabase(name: String) {
         bookmarkDataBase.deleteUser(Bookmark("", 0, 1, name))
     }
 
