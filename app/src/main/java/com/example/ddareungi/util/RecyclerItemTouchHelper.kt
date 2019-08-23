@@ -1,9 +1,9 @@
-package com.example.ddareungi
+package com.example.ddareungi.util
 
 import android.graphics.Canvas
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import com.example.ddareungi.dataClass.BookmarkAdapter
+import com.example.ddareungi.bookmark.BookmarkAdapter
 
 class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
     interface RecyclerItemTouchHelperListener {
