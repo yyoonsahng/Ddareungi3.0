@@ -40,8 +40,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
 
 
     companion object {
-        val courseList = ArrayList<Course>()
-        val courseInfoList = ArrayList<CourseInfo>()
+
         var timerMin=59
         var selectHour=false
         var ringFlag=true
@@ -107,7 +106,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
     var networkState = false       //네트워크 켜져 있는지
     var isreLoad = false //네트워크 재연결 검사 후 켜져 있을 때 true
 
-
+    val CALL_REQUEST=1234
 
     var urlStr = arrayOf(
         "http://openapi.seoul.go.kr:8088/746c776f61627a7437376b49567a68/json/bikeList/", //대여소 1531개 있음 , 1000씩 나눠서 호출해야함
@@ -313,6 +312,7 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
                     //finish()
                 }
             }
+
         }
     }
 
@@ -328,6 +328,13 @@ class MainActivity : AppCompatActivity(), BookmarkFragment.BookmarkToMapListener
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
+        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE))){
+
+        }else{
+            askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
+
+        }
+
 
         val wResult = loadWeatherFile(R.raw.weather)
         val wArray = JSONArray(wResult)
