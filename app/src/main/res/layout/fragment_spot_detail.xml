@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FrameLayout android:layout_height="match_parent" android:layout_width="match_parent" xmlns:tools="http://schemas.android.com/tools"
+             xmlns:android="http://schemas.android.com/apk/res/android"
+             android:background="@color/white"
+>
+
+
+    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="vertical">
+
+
+        <FrameLayout android:layout_height="0dp"  android:layout_weight="7" android:layout_width="match_parent" android:layout_marginTop="1dp">
+
+            <ImageView
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:scaleType="fitXY"
+                    android:id="@+id/spotImgView"/>
+
+            <ImageView
+                    android:layout_height="50dp"
+                    android:layout_width="50dp"
+                    android:id="@+id/spotPreBtn"
+                    android:src="@drawable/ic_chevron_left_black_24dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="17dp"/>
+
+            <ImageView
+                    android:layout_height="50dp"
+                    android:layout_width="50dp"
+                    android:id="@+id/spotNextBtn"
+                    android:src="@drawable/ic_chevron_right_black_24dp"
+                    android:layout_marginLeft="365dp"
+                    android:layout_marginTop="17dp"/>
+
+
+
+
+
+        </FrameLayout>
+
+        <TextView android:layout_height="0dp"
+                  android:layout_weight="1"
+                  android:layout_width="match_parent"
+                  android:id="@+id/spotTitle"
+                  android:textColor="#01332C"
+                  android:textSize="14sp"
+                  android:textStyle="bold"
+                  android:layout_marginLeft="20dp"
+                  android:maxLines="1"
+                  android:autoSizeTextType="uniform"
+                  android:gravity="center_vertical"
+
+        />
+
+
+        <LinearLayout android:layout_height="0dp" android:layout_weight="1"
+                      android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android"
+                      android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/spotBikeImg" android:src="@drawable/ic_bike_button"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="270dp"
+                      android:id="@+id/spotBikeTxt"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+            <Button
+                    android:paddingHorizontal="13dp"
+                    android:id="@+id/spotPathBtn"
+                    android:layout_width="90dp"
+                    android:layout_height="40dp"
+                    android:layout_marginVertical="3dp"
+                    android:background="@drawable/popuplayout"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/card_path_button_text"
+                    android:drawableStart="@drawable/ic_baseline_directions_18px"
+
+            />
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+            <ImageView android:layout_height="30dp" android:layout_width="30dp" android:id="@+id/spotHomeImg" android:src="@drawable/ic_business_black_24dp"/>
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="match_parent"
+                      android:id="@+id/spotHomeTxt"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal" android:paddingLeft="10dp" android:gravity="center_vertical">
+
+
+
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="match_parent"
+                      android:id="@+id/spotTelTxt"
+                      android:drawableStart="@drawable/ic_phone_black_24dp"
+                      android:paddingLeft="5dp"
+                      android:textSize="15sp"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+                android:id="@+id/telLayout"
+                android:layout_height="0dp" android:layout_weight="1" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" android:orientation="horizontal"  android:gravity="center">
+
+            <Button
+                    android:id="@+id/spotMoreBtn"
+                    android:layout_gravity="center"
+                    android:background="@drawable/rent_button_style"
+                    android:backgroundTint="#eee"
+                    android:textAlignment="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2dp"
+                    android:text="더 보기"
+            />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

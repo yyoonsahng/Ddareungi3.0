@@ -13,8 +13,6 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.example.ddareungi.bookmark.BookmarkFragment
 import com.example.ddareungi.bookmark.BookmarkPresenter
-import com.example.ddareungi.data.Course
-import com.example.ddareungi.data.CourseInfo
 import com.example.ddareungi.data.DataRepositoryHolder
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.map.MapFragment
@@ -23,15 +21,13 @@ import com.example.ddareungi.util.replaceFragmentInActivity
 import com.example.ddareungi.util.setupActionBar
 import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 
 
 class MainActivity : AppCompatActivity(){
 
 
     companion object {
-        val courseList = ArrayList<Course>()
-        val courseInfoList = ArrayList<CourseInfo>()
+
         var timerMin=59
         var selectHour=false
         var ringFlag=true
@@ -39,6 +35,7 @@ class MainActivity : AppCompatActivity(){
 
         const val DATA_REPOSITORY_ID = "DATA_REPOSITORY_ID"
         const val LOCATION_PERMISSION_ID = "LOCATION_PERMISSION_ID"
+
     }
 
     //channel 생성 (createNotificationChannel)

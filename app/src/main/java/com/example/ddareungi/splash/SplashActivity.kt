@@ -22,6 +22,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
     var locationPermissionGranted = false
+    val CALL_REQUEST=1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,6 +88,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                     locationPermissionGranted = false
                 }
             }
+
         }
     }
 
@@ -94,6 +96,12 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
+        }
+        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE))){
+
+        }else{
+            askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
+
         }
     }
 }
