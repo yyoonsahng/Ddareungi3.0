@@ -39,7 +39,7 @@ class spotDetailFragment : Fragment() {
     var sList = mutableListOf<Spot>()
     lateinit var jarray: JSONArray
     var num: Int = 0
-    var indexx = 0
+    var index = 0
     var preclk=false
 
 
@@ -53,14 +53,14 @@ class spotDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        indexx = this.getArguments()!!.getInt("index")
+        index = this.getArguments()!!.getInt("index")
 
         return inflater.inflate(R.layout.fragment_spot_detail, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        init(indexx)
+        init(index)
 
 
     }
@@ -208,9 +208,6 @@ class spotDetailFragment : Fragment() {
 
             var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body").getJSONObject("items")
                 .getJSONObject("item")
-            // var jobja = JSONObject(result).getJSONObject("response").getJSONObject("body").getJSONObject("items")
-
-
             try {
                 sList[num].tel = jobj.optString("tel")
             } catch (e: JSONException) {
@@ -218,17 +215,14 @@ class spotDetailFragment : Fragment() {
             }
 
             try {
-
                    sList[num].homepage =
                     jobj.optString("homepage").substringAfterLast("http://").substringBefore("&").substringBefore("<").substringBefore("/","정보 없음")
-
-
             } catch (e: JSONException) {
                 sList[num].homepage = "정보없음"
             }
 
-            sList[num].overview = jobj.optString("overview")
-
+            sList[num].overview=jobj.optString("overview")
+            sList[num].deleteTag()
             showSpot()
 
         }

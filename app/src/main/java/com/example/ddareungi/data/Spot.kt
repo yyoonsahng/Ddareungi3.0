@@ -25,4 +25,16 @@ package com.example.ddareungi.data
 *  */
 data class Spot(val contentid:Int, var imgOrigin:String, var imgThumb:String, val mapX:Double, val mapY:Double, val title:String, var tel:String, var homepage:String, var overview:String/*주변 대여소 ,val bikeStop:ArrayList<Bike> */) {
 
+    fun deleteTag(){ //overview 태그 없애는 클래스
+        this.overview=this.overview
+            .replace("<br />","\n")
+            .replace("&lt;","")
+            .replace("<br>","\n")
+            .replace("<strong>","")
+            .replace("</strong>","")
+            .replace("&gt;","")
+            .replace("<b>","")
+            .replace("</b>","")
+            .replace("&middot;","∙")
+    }
 }

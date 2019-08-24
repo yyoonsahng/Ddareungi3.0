@@ -70,8 +70,6 @@ class CourseFragment : Fragment() {
             }
         }
 
-
-
     }
 
 
