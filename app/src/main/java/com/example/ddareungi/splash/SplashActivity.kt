@@ -65,11 +65,13 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         }
         locationPermissionGranted = true
         fusedLocationClient.lastLocation.addOnSuccessListener {
-            if(it != null)
+            if(it != null) {
                 mLocation = it
+            }
+            splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
         }
         //사용자가 권한 체크한 후에 데이터 파싱
-        splashPresenter.initDataRepository()
+
         return true
     }
 

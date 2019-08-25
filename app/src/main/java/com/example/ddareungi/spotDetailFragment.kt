@@ -66,11 +66,10 @@ class spotDetailFragment : Fragment() {
     }
 
     fun init(code: Int) {
-
         sList.clear()
         num = 0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
         val networkTask0 =
-            spotDetailFragment.NetworkTask(code, sList, num, activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+            spotDetailFragment.NetworkTask(code, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
         networkTask0.execute()
         if (networkTask0.getStatus() != AsyncTask.Status.FINISHED)
@@ -107,7 +106,7 @@ class spotDetailFragment : Fragment() {
 
 
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             num--
             if (num < 0) {
@@ -123,7 +122,7 @@ class spotDetailFragment : Fragment() {
 
 
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             num++
             if (num == sList.size) {
@@ -142,7 +141,7 @@ class spotDetailFragment : Fragment() {
                 num++
             }
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, activity) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             val str = sList[num].overview
             popup(str)
@@ -177,7 +176,7 @@ class spotDetailFragment : Fragment() {
     }
 
 
-    class NetworkTask(var code: Int, var sList: MutableList<Spot>, var num: Int, var mActivity: FragmentActivity?) :
+    class NetworkTask(var code: Int, var sList: MutableList<Spot>, var num: Int, var mFrag: spotDetailFragment) :
         AsyncTask<Unit, Unit, String>() {
 
         var url = arrayOf(
@@ -248,31 +247,32 @@ class spotDetailFragment : Fragment() {
         }
 
         fun showSpot() {
-            val spotImgView = mActivity!!.findViewById<ImageView>(R.id.spotImgView)
-            val spotTitle = mActivity!!.findViewById<TextView>(R.id.spotTitle)
-            val spotTelTxt = mActivity!!.findViewById<TextView>(R.id.spotTelTxt)
-            val spotHomeTxt = mActivity!!.findViewById<TextView>(R.id.spotHomeTxt)
-            val spotBikeTxt=mActivity!!.findViewById<TextView>(R.id.spotBikeTxt)
+            if(mFrag.isAdded()&&mFrag!=null) {
+                val spotImgView = mFrag.activity!!.findViewById<ImageView>(R.id.spotImgView)
+                val spotTitle = mFrag.activity!!.findViewById<TextView>(R.id.spotTitle)
+                val spotTelTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotTelTxt)
+                val spotHomeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotHomeTxt)
+                val spotBikeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotBikeTxt)
 
-            Glide.with(mActivity!!.applicationContext)
-                .load(sList[num].imgOrigin)
-                .apply(RequestOptions().placeholder(R.drawable.ic_directions_bike_black_24dp))
-                .into(spotImgView)
+                Glide.with(mFrag.activity!!.applicationContext)
+                    .load(sList[num].imgOrigin)
+                    .apply(RequestOptions().placeholder(R.drawable.ic_directions_bike_black_24dp))
+                    .into(spotImgView)
 
 
-            spotTitle.text = sList[num].title
+                spotTitle.text = sList[num].title
 
-             //***근처 따릉이 대여소!!***
-            //spotBikeTxt.text=
+                //***근처 따릉이 대여소!!***
+                //spotBikeTxt.text=
 
-            spotHomeTxt.text = sList[num].homepage
-            if (sList[num].tel.length > 4) {
-                spotTelTxt.visibility = View.VISIBLE
-                spotTelTxt.text = sList[num].tel
-            } else {
-                spotTelTxt.visibility = View.GONE
+                spotHomeTxt.text = sList[num].homepage
+                if (sList[num].tel.length > 4) {
+                    spotTelTxt.visibility = View.VISIBLE
+                    spotTelTxt.text = sList[num].tel
+                } else {
+                    spotTelTxt.visibility = View.GONE
+                }
             }
-
 
         }
     }

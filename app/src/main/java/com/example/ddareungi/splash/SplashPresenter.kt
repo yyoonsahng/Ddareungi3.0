@@ -17,7 +17,6 @@ class SplashPresenter(val dataRepository: DataRepository, val splashView: Splash
             override fun onNetworkNotAvailable() {
                 splashView.showBookmarkActivity(dataRepository)
             }
-
         })
     }
 

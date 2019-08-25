@@ -85,10 +85,14 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     }
 
     override fun showWeatherView(neighborhoodText: String, dustText: String, imageId: Int) {
-        with(requireActivity()) {
-            findViewById<TextView>(R.id.neighborhood_text).text = neighborhoodText
-            findViewById<TextView>(R.id.dust_text).text = dustText
-            findViewById<ImageView>(R.id.weather_image).setImageResource(imageId)
+
+        if(isAdded()&&this!=null) {
+            with(requireActivity()) {
+                findViewById<TextView>(R.id.neighborhood_text).text = neighborhoodText
+                findViewById<TextView>(R.id.dust_text).text = dustText
+                findViewById<ImageView>(R.id.weather_image).setImageResource(imageId)
+
+            }
         }
     }
 
@@ -157,9 +161,18 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
         if(checkLocationPermission()) {
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                mLocation = it
+
+                fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                    try {
+                        mLocation = it
+                    }
+                    catch(e:Exception){
+                        mLocation.latitude = 37.540
+                        mLocation.longitude = 127.07
+                    }
             }
+
+
         }
         val geocoder = Geocoder(context, Locale.KOREA)
         val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
