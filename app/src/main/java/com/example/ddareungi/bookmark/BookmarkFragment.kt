@@ -86,7 +86,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
     override fun showWeatherView(neighborhoodText: String, dustText: String, imageId: Int) {
 
-        if(isAdded()&&this!=null) {
+        if(isAdded()) {
             with(requireActivity()) {
                 findViewById<TextView>(R.id.neighborhood_text).text = neighborhoodText
                 findViewById<TextView>(R.id.dust_text).text = dustText

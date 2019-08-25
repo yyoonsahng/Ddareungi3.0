@@ -12,12 +12,6 @@ interface MapContract {
     interface View {
         var presenter: Presenter
 
-        interface GpsStateListener {
-            fun onGpsTurnOn()
-
-            fun onGpsTurnOff()
-        }
-
         fun showMarkerOnCurrentMap(markersToShow: MutableMap<String, Any>, showKeyList: MutableList<String>, removeKeyList: MutableList<String>)
 
         fun showUpdatedBikeMarker()
@@ -32,7 +26,7 @@ interface MapContract {
 
         fun showPathInNaverMap(url: String)
 
-        fun moveCameraToUser()
+        fun moveCameraToUser(init: Boolean)
 
         fun moveCameraByPos(lat: Double, lng: Double)
 
@@ -40,7 +34,9 @@ interface MapContract {
 
         fun showLoadingDataFailedDialog()
 
-        fun showNoGpsDialog()
+        fun showNoGpsPermissionDialog()
+
+        fun showLoadingIndicator(active: Boolean)
     
    }
 

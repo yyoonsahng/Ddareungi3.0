@@ -46,7 +46,7 @@ class MapPresenter(val dataRepository: DataRepository, val mapView: MapContract.
             mapView.moveCameraByPos(clickedStation.stationLatitude, clickedStation.stationLongitude)
             mapView.showBikeCardView(name, bikeNumText, bookmarked)
         } else {
-            mapView.moveCameraToUser()
+            mapView.moveCameraToUser(init = true)
         }
     }
 
@@ -233,12 +233,16 @@ class MapPresenter(val dataRepository: DataRepository, val mapView: MapContract.
     }
 
     override fun requestBikeDataUpdate() {
+        mapView.showLoadingIndicator(active = true)
+
         dataRepository.refreshBike(object : DataSource.LoadDataCallback {
             override fun onDataLoaded() {
+                mapView.showLoadingIndicator(active = false)
                 mapView.showUpdatedBikeMarker()
             }
 
             override fun onNetworkNotAvailable() {
+                mapView.showLoadingIndicator(active = false)
                 mapView.showLoadingDataFailedDialog()
             }
 

@@ -18,12 +18,14 @@ package com.example.ddareungi.util
 
 import android.content.pm.PackageManager
 import android.support.annotation.IdRes
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentTransaction
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.ActionBar
 import android.support.v7.app.AppCompatActivity
+import com.example.ddareungi.splash.SplashActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**
@@ -65,6 +67,31 @@ fun Fragment.checkLocationPermission(): Boolean {
         }
     }
     return true
+}
+
+fun AppCompatActivity.requestLocationPermission() {
+    val requestPermission = (arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))
+    val requestCode = SplashActivity.MY_LOCATION_REQUEST
+    ActivityCompat.requestPermissions(this, requestPermission, requestCode)
+}
+
+fun Fragment.checkCallPermission(): Boolean {
+    val requestPermission = (arrayOf(android.Manifest.permission.CALL_PHONE))
+    val requestResult = BooleanArray(requestPermission.size)
+    for (i in requestResult.indices) {
+        requestResult[i] =
+            ContextCompat.checkSelfPermission(requireContext(), requestPermission[i]) == PackageManager.PERMISSION_GRANTED
+        if (!requestResult[i]) {
+            return false
+        }
+    }
+    return true
+}
+
+fun AppCompatActivity.requestCallPermission() {
+    val requestPermission = (arrayOf(android.Manifest.permission.CALL_PHONE))
+    val requestCode = SplashActivity.CALL_REQUEST
+    ActivityCompat.requestPermissions(this, requestPermission, requestCode)
 }
 
 /**

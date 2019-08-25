@@ -19,11 +19,8 @@ import java.util.*
 
 class SplashActivity : AppCompatActivity(), SplashContract.View {
     lateinit var splashPresenter: SplashPresenter
-    val MY_LOCATION_REQUEST = 99
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
-    var locationPermissionGranted = false
-    val CALL_REQUEST=1234
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +39,6 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         val intent = Intent(this, MainActivity::class.java).apply {
             val holderId = DataRepositoryHolder.putDataRepository(dataRepository)
             putExtra(MainActivity.DATA_REPOSITORY_ID, holderId)
-            putExtra(MainActivity.LOCATION_PERMISSION_ID, locationPermissionGranted)
         }
         startActivity(intent)
     }
@@ -54,7 +50,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
     }
 
-    private fun checkAppPermission(requestPermission: Array<String>,isLocation:Boolean): Boolean {
+    private fun checkAppPermission(requestPermission: Array<String>): Boolean {
         val requestResult = BooleanArray(requestPermission.size)
         for (i in requestResult.indices) {
             requestResult[i] =
@@ -62,16 +58,6 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
             if (!requestResult[i]) {
                 return false
             }
-        }
-        if(isLocation) {
-            locationPermissionGranted = true
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (it != null) {
-                    mLocation = it
-                }
-                splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
-            }
-            //사용자가 권한 체크한 후에 데이터 파싱
         }
         return true
     }
@@ -85,10 +71,15 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
-                if (checkAppPermission(permissions,false)) {
-                    //
+                if (checkAppPermission(permissions)) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener {
+                        if(it != null)
+                            mLocation = it
+                        splashPresenter.initDataRepository()
+                    }
+
                 } else {
-                    locationPermissionGranted = false
+
                 }
             }
 
@@ -96,14 +87,19 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     }
 
     private fun initPermission() {
-        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),true)) {
+        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                if(it != null)
+                    mLocation = it
+                splashPresenter.initDataRepository()
+            }
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
-        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE),false)){
+    }
 
-        }else{
-            askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
-        }
+    companion object {
+        const val MY_LOCATION_REQUEST = 99
+        const val CALL_REQUEST=1234
     }
 }

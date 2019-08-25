@@ -110,7 +110,6 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
 
     override fun deleteBookmark(deletedBookmarkPosition: Int) {
         dataRepository.deleteBookmarkInDatabase(deletedBookmarkPosition)
-        //bookmarks.removeAt(deletedBookmarkPosition)
 
         if(bookmarks.isEmpty()) {
             bookmarkView.showNoBookmark(bookmarks)
@@ -125,7 +124,7 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
 
     fun setWeatherViews() {
         val neighborhoodText = "현재 ${dataRepository.weather.neighborhood}은"
-        val dustText = "${dataRepository.weather.temp}℃ \n미세먼지는 ${dataRepository.dust.idex_nm}입니다"
+        val dustText = "${dataRepository.weather.temp}℃  ${dataRepository.weather.wfKor}\n미세먼지는 ${dataRepository.dust.idex_nm}입니다"
         val imageId = dataRepository.weather.matchImage()
 
         bookmarkView.showWeatherView(neighborhoodText, dustText, imageId)
