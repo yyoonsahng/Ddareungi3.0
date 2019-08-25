@@ -28,7 +28,7 @@
             android:id="@+id/spotClsBtn"
             android:layout_width="100dp"
             android:layout_height="40dp"
-            android:background="@drawable/popuplayout"
+            android:background="@drawable/ripplebtnlayout"
             android:text="닫기"
     />
 
