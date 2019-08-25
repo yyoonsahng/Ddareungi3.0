@@ -35,7 +35,6 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         mLocation.latitude = 37.540
         mLocation.longitude = 127.07
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
         initPermission()
     }
 
@@ -55,7 +54,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
     }
 
-    private fun checkAppPermission(requestPermission: Array<String>): Boolean {
+    private fun checkAppPermission(requestPermission: Array<String>,isLocation:Boolean): Boolean {
         val requestResult = BooleanArray(requestPermission.size)
         for (i in requestResult.indices) {
             requestResult[i] =
@@ -64,15 +63,16 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 return false
             }
         }
-        locationPermissionGranted = true
-        fusedLocationClient.lastLocation.addOnSuccessListener {
-            if(it != null) {
-                mLocation = it
+        if(isLocation) {
+            locationPermissionGranted = true
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    mLocation = it
+                }
+                splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
             }
-            splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
+            //사용자가 권한 체크한 후에 데이터 파싱
         }
-        //사용자가 권한 체크한 후에 데이터 파싱
-
         return true
     }
 
@@ -85,7 +85,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
-                if (checkAppPermission(permissions)) {
+                if (checkAppPermission(permissions,false)) {
                     //
                 } else {
                     locationPermissionGranted = false
@@ -96,15 +96,14 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     }
 
     private fun initPermission() {
-        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
+        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),true)) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
-        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE))){
+        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE),false)){
 
         }else{
             askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
-
         }
     }
 }
