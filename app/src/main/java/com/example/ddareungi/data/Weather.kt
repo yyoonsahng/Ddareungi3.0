@@ -23,6 +23,7 @@ data class Weather(var temp: Int, var sky: Int, var pty: Int, var wfKor: String,
         fun loadWeather(weather: Weather, callback: DataSource.ApiListener) {
             val locationTask = NetworkTask(weather, DataFilterType.LOCATION_CODE, codeUrl + weather.code + ".json.txt",
                 object : DataRepository.LocationCodeApiListener {
+
                     override fun onDataLoaded(dataFilterType: DataFilterType, locationCode: String) {
                         if(locationCode != "") {
                             weather.code = locationCode

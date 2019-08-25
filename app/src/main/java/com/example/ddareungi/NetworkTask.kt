@@ -1,6 +1,7 @@
 package com.example.ddareungi
 
 import android.os.AsyncTask
+import android.util.Log
 import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.data.*
 import com.example.ddareungi.data.source.DataFilterType
