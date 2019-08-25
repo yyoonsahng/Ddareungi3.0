@@ -170,14 +170,15 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                         mLocation.latitude = 37.540
                         mLocation.longitude = 127.07
                     }
+                    val geocoder = Geocoder(context, Locale.KOREA)
+                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                    val addr = addrList.first().getAddressLine(0).split(" ")
+                    presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
             }
 
 
         }
-        val geocoder = Geocoder(context, Locale.KOREA)
-        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-        val addr = addrList.first().getAddressLine(0).split(" ")
-        presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+
     }
 
     companion object {
