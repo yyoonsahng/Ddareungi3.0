@@ -1,5 +1,6 @@
 package com.example.ddareungi.util
 
+import android.util.Log
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -11,18 +12,17 @@ import java.net.URL
 class RequestHttpURLConnection {
 
     fun request(_url: String): String {
-        val urlConn: HttpURLConnection? = null
+        var urlConn: HttpURLConnection? = null
         try {
             var url: URL = URL(_url)
-            var urlConn = url.openConnection() as HttpURLConnection
+            urlConn = url.openConnection() as HttpURLConnection
             urlConn.requestMethod = "GET"
             urlConn.setRequestProperty("Accept-Charset", "UTF-8")
             urlConn.setRequestProperty("Accept", "application/json")
 
-            if (urlConn.getResponseCode() != HttpURLConnection.HTTP_OK)
+            if (urlConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 return urlConn.getResponseCode().toString() + "  " + urlConn.responseMessage
-            //읽어온 결과물 리턴.
-            // 요청한 URL의 출력물을 BufferedReader로 받는다.
+            }
             var reader = BufferedReader(InputStreamReader(urlConn.getInputStream(), "UTF-8"))
             var page = ""
             while (true) {
@@ -38,8 +38,8 @@ class RequestHttpURLConnection {
         } catch (e: IOException) { // for openConnection()
             e.printStackTrace()
         } finally {
-            if (urlConn != null)
-                urlConn.disconnect();
+            urlConn!!.disconnect()
+
         }
         return "ERROR"
     }

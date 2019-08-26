@@ -13,15 +13,22 @@ import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
 import com.example.ddareungi.data.DataRepositoryHolder
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.data.source.DataSource
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.util.*
 
 class SplashActivity : AppCompatActivity(), SplashContract.View {
     lateinit var splashPresenter: SplashPresenter
+
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
+    var locationPermissionGranted = false
 
+    companion object {
+        const val MY_LOCATION_REQUEST = 99
+        const val CALL_REQUEST=1234
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -39,18 +46,29 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         val intent = Intent(this, MainActivity::class.java).apply {
             val holderId = DataRepositoryHolder.putDataRepository(dataRepository)
             putExtra(MainActivity.DATA_REPOSITORY_ID, holderId)
+            putExtra(MainActivity.LOCATION_PERMISSION_ID, locationPermissionGranted)
         }
         startActivity(intent)
     }
 
-    override fun initLocation() {
+    override fun initLocation(dataRepository: DataRepository) {
         val geocoder = Geocoder(this, Locale.KOREA)
         val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
         val addr = addrList.first().getAddressLine(0).split(" ")
         splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
+
+        dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
+            override fun onDataLoaded() {
+                showBookmarkActivity(dataRepository)
+            }
+
+            override fun onNetworkNotAvailable() {
+                showBookmarkActivity(dataRepository)
+            }
+        })
     }
 
-    private fun checkAppPermission(requestPermission: Array<String>): Boolean {
+    private fun checkAppPermission(requestPermission: Array<String>,isLocation:Boolean): Boolean {
         val requestResult = BooleanArray(requestPermission.size)
         for (i in requestResult.indices) {
             requestResult[i] =
@@ -59,6 +77,18 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 return false
             }
         }
+        if(isLocation) {
+            locationPermissionGranted = true
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    mLocation = it
+                }
+                splashPresenter.initWeatherRepository()
+            }
+            splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
+                        //사용자가 권한 체크한 후에 데이터 파싱
+        }
+
         return true
     }
 
@@ -71,15 +101,10 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
-                if (checkAppPermission(permissions)) {
-                    fusedLocationClient.lastLocation.addOnSuccessListener {
-                        if(it != null)
-                            mLocation = it
-                        splashPresenter.initDataRepository()
-                    }
-
+                if (checkAppPermission(permissions,true)) {
+                    //
                 } else {
-
+                    locationPermissionGranted = false
                 }
             }
 
@@ -87,19 +112,15 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     }
 
     private fun initPermission() {
-        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))) {
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                if(it != null)
-                    mLocation = it
-                splashPresenter.initDataRepository()
-            }
+        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),true)) {
         } else {
             askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
         }
+        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE),false)){
+
+        }else{
+            askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
+        }
     }
 
-    companion object {
-        const val MY_LOCATION_REQUEST = 99
-        const val CALL_REQUEST=1234
-    }
 }

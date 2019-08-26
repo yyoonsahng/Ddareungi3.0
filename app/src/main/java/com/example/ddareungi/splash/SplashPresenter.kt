@@ -8,20 +8,20 @@ class SplashPresenter(val dataRepository: DataRepository, val splashView: Splash
     SplashContract.Presenter {
 
     override fun initDataRepository() {
-        splashView.initLocation()
-        if(dataRepository.isReposInit) {
-            splashView.showBookmarkActivity(dataRepository)
-        } else {
-            dataRepository.initRepository(object : DataSource.LoadDataCallback {
-                override fun onDataLoaded() {
-                    splashView.showBookmarkActivity(dataRepository)
-                }
 
-                override fun onNetworkNotAvailable() {
-                    splashView.showBookmarkActivity(dataRepository)
-                }
-            })
-        }
+        dataRepository.initRepository(object : DataSource.LoadDataCallback {
+            override fun onDataLoaded() {
+                splashView.showBookmarkActivity(dataRepository)
+            }
+
+            override fun onNetworkNotAvailable() {
+                splashView.showBookmarkActivity(dataRepository)
+            }
+        })
+    }
+
+    override fun initWeatherRepository() {
+        splashView.initLocation(dataRepository)
     }
 
     override fun processLocation(locality: String, neighborhood: String, weatherFile: Scanner, dustFile: Scanner) {

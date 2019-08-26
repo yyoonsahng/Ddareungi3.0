@@ -19,6 +19,7 @@ import android.widget.*
 import com.example.ddareungi.R
 import com.example.ddareungi.data.Bookmark
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.data.source.DataSource
 import com.example.ddareungi.map.MapFragment
 import com.example.ddareungi.map.MapPresenter
 import com.example.ddareungi.util.RecyclerItemTouchHelper
@@ -153,7 +154,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
         val mapPresenter = MapPresenter(dataRepository, mapFragment, true, clickedRentalOffice)
     }
 
-    override fun initLocation() {
+    override fun initLocation(dataRepository: DataRepository) {
         var mLocation = Location("initLocation")
         val res = requireContext().resources
         mLocation.latitude = 37.540
@@ -174,6 +175,17 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                     val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
                     val addr = addrList.first().getAddressLine(0).split(" ")
                     presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+                    dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
+                        override fun onDataLoaded() {
+                            presenter.setWeatherViews()
+                            showLoadingIndicator(false, false)
+                        }
+
+                        override fun onNetworkNotAvailable() {
+                            showLoadingIndicator(false, false)
+                            showLoadDataError()
+                        }
+                    } )
             }
 
 

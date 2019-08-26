@@ -1,6 +1,7 @@
 package com.example.ddareungi.data.source
 
 import android.content.Context
+import android.util.Log
 import com.example.ddareungi.data.*
 import org.json.JSONArray
 import java.util.*
@@ -12,15 +13,45 @@ class DataRepository(
 ) : DataSource {
 
     var isReposInit = false
+    var isWeatherInit=false
+    var isBikeInit=false
+    var isDustInit=false
+    var isParkInit=false
+    var isToiletInit=false
+
+    override fun refreshWeather(callback: DataSource.LoadDataCallback) {
+        class ApiListener : DataSource.ApiListener {
+            private var networkState = true
+
+            override fun onDataLoaded(dataFilterType: DataFilterType) {
+                isWeatherInit = true
+                if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
+                    isReposInit = true
+                    callback.onDataLoaded()
+                }
+            }
+            override fun onFailure(dataFilterType: DataFilterType) {
+                //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
+                //onFailure 호출이 여러번 되도 onNetworkNotAvailable은 한번만 호출
+                if(networkState) {
+                    networkState = false
+                    callback.onNetworkNotAvailable()
+                }
+            }
+        }
+        val apiListener = ApiListener()
+
+        Weather.loadWeather(weather, apiListener)
+    }
 
     //외부로부터 받아와야 하는 데이터 모두 불러올 때
     override fun initRepository(callback: DataSource.LoadDataCallback) {
         class ApiListener: DataSource.ApiListener {
-            private var bikeLoaded = false
-            private var toiletLoaded = false
-            private var parkLoaded = false
-            private var weatherLoaded = false
-            private var dustLoaded = false
+//            private var bikeLoaded = false
+//            private var toiletLoaded = false
+//            private var parkLoaded = false
+//            private var weatherLoaded = false
+//            private var dustLoaded = false
             private var bikeCallCount = 0
             private var toiletCallCount = 0
             private var networkState = true
@@ -28,22 +59,21 @@ class DataRepository(
             //각각 데이터가 성공적으로 불러와 질 때마다 callback 실행
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 when(dataFilterType) {
-                    DataFilterType.PARK -> parkLoaded = true
-                    DataFilterType.WEATHER -> weatherLoaded = true
-                    DataFilterType.DUST -> dustLoaded = true
+                    DataFilterType.PARK ->  isParkInit= true
+                    DataFilterType.DUST -> isDustInit = true
                     DataFilterType.BIKE -> {
                         bikeCallCount--
-                        if(bikeCallCount == 0)  bikeLoaded = true
+                        if(bikeCallCount == 0)  isBikeInit = true
                     }
                     DataFilterType.TOILET -> {
                         toiletCallCount--
-                        if(toiletCallCount == 0) toiletLoaded = true
+                        if(toiletCallCount == 0) isToiletInit = true
                     }
                     DataFilterType.BIKE_NUM -> bikeCallCount++
                     DataFilterType.TOILET_NUM -> toiletCallCount++
                 }
                 
-                if(bikeLoaded && toiletLoaded && parkLoaded && weatherLoaded && dustLoaded) {
+                if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
                     isReposInit = true
                     callback.onDataLoaded()
                 }
@@ -64,7 +94,6 @@ class DataRepository(
         Park.loadPark(parkList, apiListener)
         Toilet.loadToilet(toiletList, apiListener)
         Dust.loadDust(dust, apiListener)
-        Weather.loadWeather(weather, apiListener)
     }
 
     //MapFragment에서 자전거 관련 정보 받아와야 할 때
@@ -98,6 +127,8 @@ class DataRepository(
 
         Bike.loadBike(bikeList, apiListener)
     }
+
+
 
     //BookmarkFragment에서 날씨, 자전거 관련 정보 다시 받아올 때
     override fun refreshForBookmarkFrag(callback: DataSource.LoadDataCallback) {
@@ -134,7 +165,7 @@ class DataRepository(
 
         Bike.loadBike(bikeList, apiListener)
         Dust.loadDust(dust, apiListener)
-        Weather.loadWeather(weather, apiListener)
+        //Weather.loadWeather(weather, apiListener)
     }
 
     //날씨 api / 구에 따른 지역코드 파싱

@@ -417,7 +417,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     private fun showDdareungiWebPage() {
-        val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
+        val ddareungiHome = Uri.parse("https://www.bikeseoul.com/app/station/moveStationRealtimeStatus.do?searchParameter=GU")
         val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
         startActivity(webIntent)
     }
