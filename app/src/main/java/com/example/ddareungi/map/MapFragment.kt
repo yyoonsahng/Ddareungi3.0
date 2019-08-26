@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.design.internal.NavigationMenu
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.util.Log
@@ -20,11 +21,13 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
 import com.example.ddareungi.bookmark.PlaceType
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Park
 import com.example.ddareungi.data.Toilet
+import com.example.ddareungi.util.requestLocationPermission
 import com.example.ddareungi.util.checkLocationPermission
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -43,9 +46,10 @@ import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import io.github.yavski.fabspeeddial.FabSpeedDial
+import kotlinx.android.synthetic.main.map_frag.*
 import java.util.*
 
-class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeedDial.MenuListener {
+class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeedDial.MenuListener, MainActivity.BackButtonListener {
 
     override lateinit var presenter: MapContract.Presenter
 
@@ -81,7 +85,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             destCardView = findViewById(R.id.dest_card_view)
 
             myLocationBtn = (findViewById<FloatingActionButton>(R.id.my_location_button)).also {
-                it.setOnClickListener { moveCameraToUser() }
+                it.setOnClickListener { moveCameraToUser(init = false) }
             }
             refreshBtn = (findViewById<FloatingActionButton>(R.id.map_refresh_fab)).also {
                 it.setOnClickListener { presenter.requestBikeDataUpdate() }
@@ -245,7 +249,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     override fun showUpdatedBikeMarker() {
         val bounds = googleMap.projection.visibleRegion.latLngBounds
         val zoomLevel = googleMap.cameraPosition.zoom
-        presenter.updateMarkers(bounds, zoomLevel, true)
+        if(isAdded)
+            presenter.updateMarkers(bounds, zoomLevel, true)
     }
 
     private fun showSearchMarker(place: Place) {
@@ -300,14 +305,20 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         }
     }
 
-    override fun moveCameraToUser() {
+    override fun moveCameraToUser(init: Boolean) {
         if(checkLocationPermission()) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
                 if(it != null) {
                     moveCamera(LatLng(it.latitude, it.longitude), DEFAUT_ZOOM)
                 } else {
-                    moveCamera(DEFAULT_POS, -1f)
+                    if(init)
+                        moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
                 }
+            }
+        } else {
+            moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
+            if(!init) {
+                showNoGpsPermissionDialog()
             }
         }
     }
@@ -363,11 +374,29 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         Toast.makeText(requireContext(), "데이터를 불러오는데 실패하였습니다", Toast.LENGTH_SHORT).show()
     }
 
-    override fun showNoGpsDialog() {
+    override fun showNoGpsPermissionDialog() {
+        val context = context ?: return
+        val activity = activity ?: return
 
+        val builder = AlertDialog.Builder(context)
+        builder.setMessage("앱을 사용하는 동안\n해당 앱이 사용자의 위치에 접근하도록 허용하겠습니까?")
+            .setPositiveButton("확인") { dialog, which ->
+                (activity as AppCompatActivity).requestLocationPermission()
+            }
+            .setNegativeButton("취소") { _, _ -> }
+            .show()
     }
 
-    fun onBackButtonPressed(): Boolean {
+    override fun showLoadingIndicator(active: Boolean) {
+        if(isAdded) {
+            if (active)
+                progress_circular.visibility = View.VISIBLE
+            else
+                progress_circular.visibility = View.GONE
+        }
+    }
+
+    override fun onBackPressed() {
         if(bikeCardView.visibility == View.VISIBLE || destCardView.visibility == View.VISIBLE || parkCardView.visibility == View.VISIBLE) {
             bikeCardView.visibility = View.GONE
             parkCardView.visibility = View.GONE
@@ -376,13 +405,15 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             refreshBtn.show()
             placeTypeBtn.show()
 
-            return true
         } else if(searchMarker != null) {
             markerController.removeMarker(searchMarker!!.title)
             searchMarker = null
-            return true
-        } else
-            return false
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        (activity as MainActivity).setBackButtonPressedListener(this)
     }
 
     private fun showDdareungiWebPage() {
@@ -411,6 +442,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     override fun onPause() {
         super.onPause()
         mapView.onPause()
+        (activity as MainActivity).backButtonListener = null
     }
 
     override fun onStop() {
