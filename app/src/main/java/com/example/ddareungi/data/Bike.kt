@@ -1,6 +1,7 @@
 package com.example.ddareungi.data
 
 import android.os.AsyncTask
+import android.util.Log
 import com.example.ddareungi.NetworkTask
 import com.example.ddareungi.data.source.DataFilterType
 import com.example.ddareungi.data.source.DataRepository
@@ -26,6 +27,7 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
         fun newInstance() = Bike("", "", 0, 0, 0, 0.0, 0.0, 0)
 
         fun loadBike(bikeList: ArrayList<Bike>, callback: DataSource.ApiListener){
+            bikeList.clear()
             var totalBikeNum = 0
             lateinit var bikeNumCallback: DataRepository.BikeNumApiListener
 
@@ -60,6 +62,7 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
 
                 override fun onDataLoaded(dataFilterType: DataFilterType) {}
             }
+
             val url = baseUrl + "1/1000"
             bikeNumCallback = LoadBikeList(url)
             val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumCallback)

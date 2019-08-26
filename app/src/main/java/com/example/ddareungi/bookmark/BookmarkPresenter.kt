@@ -53,7 +53,6 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
                 dataRepository.refreshForBookmarkFrag(object: DataSource.LoadDataCallback {
 
                     override fun onDataLoaded() {
-                        //setWeatherViews()
 
                         loadBookmarks()
 

@@ -141,8 +141,7 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
 
                         (callback as DataRepository.LocationCodeApiListener).onDataLoaded(dataType, code)
                     } catch (e: JSONException) {
-                        var code="1114055000"
-                        (callback as DataRepository.LocationCodeApiListener).onDataLoaded(dataType, code)
+                        e.printStackTrace()
                     }
                 }
 

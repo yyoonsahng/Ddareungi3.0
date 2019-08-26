@@ -135,7 +135,7 @@ class DataRepository(
         class ApiListener : DataSource.ApiListener {
             private var bikeLoaded = false
             private var bikeCallCount = 0
-            private var weatherLoaded = true
+
             private var dustLoaded = false
             private var networkState = true
 
@@ -145,10 +145,9 @@ class DataRepository(
                     if(bikeCallCount == 0)  bikeLoaded = true
                 }
                 else if (dataFilterType == DataFilterType.BIKE_NUM) bikeCallCount++
-                else if (dataFilterType == DataFilterType.WEATHER) weatherLoaded = true
                 else if (dataFilterType == DataFilterType.DUST) dustLoaded = true
 
-                if(weatherLoaded && dustLoaded && bikeLoaded)
+                if(dustLoaded && bikeLoaded)
                     callback.onDataLoaded()
             }
 
