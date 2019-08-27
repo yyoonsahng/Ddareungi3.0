@@ -57,14 +57,14 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         val addr = addrList.first().getAddressLine(0).split(" ")
         splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
 
-        dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
-            override fun onDataLoaded() {
-                showBookmarkActivity(dataRepository)
-            }
+        dataRepository.initWeather(object: DataSource.LoadDataCallback{
+                override fun onDataLoaded() {
+                    showBookmarkActivity(dataRepository)
+                }
 
-            override fun onNetworkNotAvailable() {
-                showBookmarkActivity(dataRepository)
-            }
+                override fun onNetworkNotAvailable() {
+                    showBookmarkActivity(dataRepository)
+                }
         })
     }
 

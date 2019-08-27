@@ -12,6 +12,7 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -174,6 +175,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                     val geocoder = Geocoder(context, Locale.KOREA)
                     val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
                     val addr = addrList.first().getAddressLine(0).split(" ")
+
                     presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                     dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
                         override fun onDataLoaded() {

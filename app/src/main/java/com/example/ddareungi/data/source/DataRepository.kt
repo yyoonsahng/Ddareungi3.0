@@ -13,6 +13,7 @@ class DataRepository(
 ) : DataSource {
 
     var isReposInit = false
+
     var isWeatherInit=false
     var isBikeInit=false
     var isDustInit=false
@@ -20,6 +21,26 @@ class DataRepository(
     var isToiletInit=false
 
     override fun refreshWeather(callback: DataSource.LoadDataCallback) {
+        class ApiListener : DataSource.ApiListener {
+            private var networkState = true
+
+            override fun onDataLoaded(dataFilterType: DataFilterType) {
+                    callback.onDataLoaded()
+            }
+            override fun onFailure(dataFilterType: DataFilterType) {
+                //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
+                //onFailure 호출이 여러번 되도 onNetworkNotAvailable은 한번만 호출
+                if(networkState) {
+                    networkState = false
+                    callback.onNetworkNotAvailable()
+                }
+            }
+        }
+        val apiListener = ApiListener()
+        Weather.loadWeather(weather, apiListener)
+    }
+
+    override fun initWeather(callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
             private var networkState = true
 
@@ -40,7 +61,6 @@ class DataRepository(
             }
         }
         val apiListener = ApiListener()
-
         Weather.loadWeather(weather, apiListener)
     }
 

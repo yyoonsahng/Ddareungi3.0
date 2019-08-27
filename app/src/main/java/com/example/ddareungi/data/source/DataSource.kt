@@ -19,6 +19,6 @@ interface DataSource {
     fun refreshForBookmarkFrag(callback: LoadDataCallback)
 
     fun refreshBike(callback: LoadDataCallback)
-
+    fun initWeather(callback: LoadDataCallback)
     fun refreshWeather(callback: LoadDataCallback)
 }
