@@ -27,6 +27,7 @@ import com.example.ddareungi.util.RecyclerItemTouchHelper
 import com.example.ddareungi.util.checkLocationPermission
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.google.android.gms.location.LocationServices
+import java.lang.Exception
 import java.util.*
 
 class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
@@ -165,18 +166,16 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
 
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    try {
-                        mLocation = it
+                    mLocation = it
+                    try{
+                        val geocoder = Geocoder(context, Locale.KOREA)
+                        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                        val addr = addrList.first().getAddressLine(0).split(" ")
+                        presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                     }
-                    catch(e:Exception){
-                        mLocation.latitude = 37.540
-                        mLocation.longitude = 127.07
-                    }
-                    val geocoder = Geocoder(context, Locale.KOREA)
-                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                    val addr = addrList.first().getAddressLine(0).split(" ")
+                    catch (e:Exception){ }
 
-                    presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+
                     dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
                         override fun onDataLoaded() {
                             presenter.setWeatherViews()

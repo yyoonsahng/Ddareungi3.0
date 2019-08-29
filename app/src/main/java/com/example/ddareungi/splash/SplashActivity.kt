@@ -16,6 +16,7 @@ import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import java.lang.Exception
 import java.util.*
 
 class SplashActivity : AppCompatActivity(), SplashContract.View {
@@ -52,11 +53,16 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     }
 
     override fun initLocation(dataRepository: DataRepository) {
-        val geocoder = Geocoder(this, Locale.KOREA)
-        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-        val addr = addrList.first().getAddressLine(0).split(" ")
-        splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
 
+        try {
+            val geocoder = Geocoder(this, Locale.KOREA)
+            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+            val addr = addrList.first().getAddressLine(0).split(" ")
+            splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
+
+
+        }
+        catch(e:Exception){  }
         dataRepository.initWeather(object: DataSource.LoadDataCallback{
                 override fun onDataLoaded() {
                     showBookmarkActivity(dataRepository)
