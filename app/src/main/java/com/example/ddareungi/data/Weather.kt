@@ -1,7 +1,6 @@
 package com.example.ddareungi.data
 
 import android.os.AsyncTask
-import android.util.Log
 import com.example.ddareungi.NetworkTask
 import com.example.ddareungi.R
 import com.example.ddareungi.data.source.DataFilterType
@@ -22,6 +21,7 @@ data class Weather(var temp: Int, var sky: Int, var pty: Int, var wfKor: String,
         const val weatherUrl = "http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone="
 
         fun loadWeather(weather: Weather, callback: DataSource.ApiListener) {
+
             val locationTask = NetworkTask(weather, DataFilterType.LOCATION_CODE, codeUrl + weather.code + ".json.txt",
                 object : DataRepository.LocationCodeApiListener {
 

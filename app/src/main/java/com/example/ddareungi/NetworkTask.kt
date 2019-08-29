@@ -2,11 +2,11 @@ package com.example.ddareungi
 
 import android.os.AsyncTask
 import android.util.Log
-import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.data.*
 import com.example.ddareungi.data.source.DataFilterType
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
+import com.example.ddareungi.util.RequestHttpURLConnection
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -134,7 +134,13 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
                         for (i in 0 until jsonArray.length()) {
                             val value = jsonArray.getJSONObject(i).getString("value")
                             if (weather.neighborhood == value) {
-                                code = jsonArray.getJSONObject(i).getString("code")
+                                try {
+                                    code = jsonArray.getJSONObject(i).getString("code")
+                                }catch (e: JSONException) {
+                                    Log.i("catch","catch")
+                                    var code="1121571000"
+                                    (callback as DataRepository.LocationCodeApiListener).onDataLoaded(dataType, code)
+                                }
                                 break
                             }
                         }
