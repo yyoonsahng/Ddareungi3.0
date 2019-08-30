@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
@@ -17,7 +16,6 @@ import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ddareungi.data.Spot
-
 import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.util.checkCallPermission
 import com.example.ddareungi.util.requestCallPermission
