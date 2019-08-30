@@ -12,7 +12,7 @@
     </string-array>
     <string name="card_path_button_text">경로</string>
     <string name="map_card_rent_button_text">대여하러 가기</string>
-    <string name="bike_stop_fab_text">따릉이 정류소</string>
+    <string name="bike_stop_fab_text">따릉이 대여소</string>
     <string name="toilet_fab_text">화장실</string>
     <string name="park_fab_text">공원</string>
     <string name="delete">DELETE</string>

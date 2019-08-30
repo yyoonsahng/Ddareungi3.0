@@ -118,6 +118,9 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     override fun showLoadingIndicator(active: Boolean, hideAll: Boolean) {
         if(hideAll)
             showViews(false, false, false, false, false)
+        else
+            showViews(true, true, false, false, true)
+
         if(active)
             progressBar.visibility = View.VISIBLE
         else
@@ -135,7 +138,8 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     }
 
     override fun showLoadDataError() {
-        Toast.makeText(context, "데이터를 불러오는데 실패하였습니다", Toast.LENGTH_SHORT).show()
+        if(context!=null)
+             Toast.makeText(context, "데이터를 불러오는데 실패하였습니다", Toast.LENGTH_SHORT).show()
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
@@ -184,6 +188,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
                         override fun onNetworkNotAvailable() {
                             showLoadingIndicator(false, false)
+                            showCheckNetwork()
                             showLoadDataError()
                         }
                     } )

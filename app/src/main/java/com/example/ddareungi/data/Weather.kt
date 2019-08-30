@@ -1,6 +1,7 @@
 package com.example.ddareungi.data
 
 import android.os.AsyncTask
+import android.widget.Toast
 import com.example.ddareungi.NetworkTask
 import com.example.ddareungi.R
 import com.example.ddareungi.data.source.DataFilterType
@@ -21,27 +22,36 @@ data class Weather(var temp: Int, var sky: Int, var pty: Int, var wfKor: String,
         const val weatherUrl = "http://www.kma.go.kr/wid/queryDFSRSS.jsp?zone="
 
         fun loadWeather(weather: Weather, callback: DataSource.ApiListener) {
+            if (weather.code == "") { //위치가 서울이 아님
+                callback.onFailure(DataFilterType.WEATHER)
+            } else {
+                val locationTask = NetworkTask(weather,
+                    DataFilterType.LOCATION_CODE,
+                    codeUrl + weather.code + ".json.txt",
+                    object : DataRepository.LocationCodeApiListener {
 
-            val locationTask = NetworkTask(weather, DataFilterType.LOCATION_CODE, codeUrl + weather.code + ".json.txt",
-                object : DataRepository.LocationCodeApiListener {
+                        override fun onDataLoaded(
+                            dataFilterType: DataFilterType,
+                            locationCode: String
+                        ) {
+                            if (locationCode != "") {
+                                weather.code = locationCode
+                            }
+                            val url = weatherUrl + weather.code
+                            val weatherTask =
+                                NetworkTask(weather, DataFilterType.WEATHER, url, callback)
 
-                    override fun onDataLoaded(dataFilterType: DataFilterType, locationCode: String) {
-                        if(locationCode != "") {
-                            weather.code = locationCode
+                            weatherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
                         }
-                        val url = weatherUrl + weather.code
-                        val weatherTask = NetworkTask(weather, DataFilterType.WEATHER, url, callback)
 
-                        weatherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-                    }
+                        override fun onFailure(dataFilterType: DataFilterType) {
+                            callback.onFailure(dataFilterType)
+                        }
 
-                    override fun onFailure(dataFilterType: DataFilterType) {
-                        callback.onFailure(dataFilterType)
-                    }
-
-                    override fun onDataLoaded(dataFilterType: DataFilterType) {}
-                })
-            locationTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+                        override fun onDataLoaded(dataFilterType: DataFilterType) {}
+                    })
+                locationTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+            }
         }
     }
 
