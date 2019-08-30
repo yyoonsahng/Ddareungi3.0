@@ -59,6 +59,7 @@ class CourseFragment : Fragment() {
         val idTypeArray= resources.obtainTypedArray(R.array.button)
 
         for(i in 0..24){
+
             var view=activity!!.findViewById<Button>(idTypeArray.getResourceId(i,0))
             view.setOnClickListener {
                 val bundle=Bundle()

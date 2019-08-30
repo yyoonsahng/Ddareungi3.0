@@ -7,7 +7,7 @@
 
             <padding android:bottom="3dp" android:top="3dp" android:left="3dp" android:right="3dp"/>
             <corners  android:radius="80dp"/>
-            <solid android:color="#A31DC094"/>
+            <solid android:color="#3461E1A7"/>
         </shape>
     </item>
     <item android:state_pressed="false">

@@ -23,6 +23,8 @@
             android:layout_weight="0.5"/>
 
     <TextView
+            android:paddingLeft="3dp"
+            android:background="?attr/selectableItemBackground"
             android:text=" 서울 동북부"
             android:gravity="fill_vertical"
             android:layout_width="match_parent"
@@ -157,6 +159,8 @@
     </LinearLayout>
 
     <TextView
+            android:paddingLeft="3dp"
+            android:background="?attr/selectableItemBackground"
             android:text=" 서울 도심부"
             android:gravity="fill_vertical"
             android:layout_width="match_parent"
@@ -221,6 +225,8 @@
     </LinearLayout>
 
     <TextView
+            android:paddingLeft="3dp"
+            android:background="?attr/selectableItemBackground"
             android:text=" 서울 서북부"
             android:gravity="fill_vertical"
             android:layout_width="match_parent"
@@ -286,6 +292,8 @@
 
 
     <TextView
+            android:paddingLeft="3dp"
+            android:background="?attr/selectableItemBackground"
             android:text=" 서울 서남부"
             android:gravity="fill_vertical"
             android:layout_width="match_parent"
@@ -413,6 +421,8 @@
     </LinearLayout>
 
     <TextView
+            android:paddingLeft="3dp"
+            android:background="?attr/selectableItemBackground"
             android:text=" 서울 동남부"
             android:gravity="fill_vertical"
             android:layout_width="match_parent"
