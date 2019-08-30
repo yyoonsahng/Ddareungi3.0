@@ -2,11 +2,12 @@ package com.example.ddareungi
 
 import android.os.AsyncTask
 import android.util.Log
+import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.data.*
 import com.example.ddareungi.data.source.DataFilterType
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
-import com.example.ddareungi.util.RequestHttpURLConnection
+import com.google.android.libraries.places.internal.i
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -129,20 +130,19 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
 
                 DataFilterType.LOCATION_CODE -> {
                     try {
+                        var flag=true
                         val jsonArray = JSONArray(result)
                         var code = ""
                         for (i in 0 until jsonArray.length()) {
                             val value = jsonArray.getJSONObject(i).getString("value")
                             if (weather.neighborhood == value) {
-                                try {
-                                    code = jsonArray.getJSONObject(i).getString("code")
-                                }catch (e: JSONException) {
-                                    Log.i("catch","catch")
-                                    var code="1121571000"
-                                    (callback as DataRepository.LocationCodeApiListener).onDataLoaded(dataType, code)
-                                }
+                                code = jsonArray.getJSONObject(i).getString("code")
+                                flag=false
                                 break
                             }
+                        }
+                        if(flag){ //파싱된 동정보가 건물명/도로명일 때
+                            code = jsonArray.getJSONObject(0).getString("code") //임의로 첫번쨰 동으로 넣어둠
                         }
                         (callback as DataRepository.LocationCodeApiListener).onDataLoaded(dataType, code)
                     } catch (e: JSONException) {

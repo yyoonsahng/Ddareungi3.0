@@ -13,18 +13,23 @@ import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
 import com.example.ddareungi.data.DataRepositoryHolder
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.data.source.DataSource
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import java.lang.Exception
 import java.util.*
 
 class SplashActivity : AppCompatActivity(), SplashContract.View {
     lateinit var splashPresenter: SplashPresenter
-    val MY_LOCATION_REQUEST = 99
+
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
     var locationPermissionGranted = false
-    val CALL_REQUEST=1234
 
+    companion object {
+        const val MY_LOCATION_REQUEST = 99
+        const val CALL_REQUEST=1234
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,11 +52,26 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         startActivity(intent)
     }
 
-    override fun initLocation() {
-        val geocoder = Geocoder(this, Locale.KOREA)
-        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-        val addr = addrList.first().getAddressLine(0).split(" ")
-        splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
+    override fun initLocation(dataRepository: DataRepository) {
+
+        try {
+            val geocoder = Geocoder(this, Locale.KOREA)
+            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+            val addr = addrList.first().getAddressLine(0).split(" ")
+            splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
+
+
+        }
+        catch(e:Exception){  }
+        dataRepository.initWeather(object: DataSource.LoadDataCallback{
+                override fun onDataLoaded() {
+                    showBookmarkActivity(dataRepository)
+                }
+
+                override fun onNetworkNotAvailable() {
+                    showBookmarkActivity(dataRepository)
+                }
+        })
     }
 
     private fun checkAppPermission(requestPermission: Array<String>,isLocation:Boolean): Boolean {
@@ -69,10 +89,12 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 if (it != null) {
                     mLocation = it
                 }
-                splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
+                splashPresenter.initWeatherRepository()
             }
-            //사용자가 권한 체크한 후에 데이터 파싱
+            splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
+                        //사용자가 권한 체크한 후에 데이터 파싱
         }
+
         return true
     }
 
@@ -85,7 +107,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
-                if (checkAppPermission(permissions,false)) {
+                if (checkAppPermission(permissions,true)) {
                     //
                 } else {
                     locationPermissionGranted = false
@@ -106,4 +128,5 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
             askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
         }
     }
+
 }

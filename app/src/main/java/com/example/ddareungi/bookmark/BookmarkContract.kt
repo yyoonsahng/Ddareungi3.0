@@ -23,7 +23,7 @@ interface BookmarkContract {
 
         fun showClickedBookmarkInMapFrag(dataRepository: DataRepository, clickedRentalOffice: String)
 
-        fun initLocation()
+        fun initLocation(dataRepository: DataRepository)
 
     }
 
@@ -36,7 +36,7 @@ interface BookmarkContract {
         fun deleteBookmark(deletedBookmarkPosition: Int)
 
         fun openMapFrag(clickedRentalOffice: String)
-
+        fun setWeatherViews()
         fun processLocation(locality: String, neighborhood: String, weatherFile: Scanner, dustFile: Scanner)
     }
 }

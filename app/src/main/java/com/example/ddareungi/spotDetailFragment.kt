@@ -6,6 +6,8 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentActivity
+import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -15,7 +17,10 @@ import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.ddareungi.data.Spot
+
 import com.example.ddareungi.util.RequestHttpURLConnection
+import com.example.ddareungi.util.checkCallPermission
+import com.example.ddareungi.util.requestCallPermission
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_spot_detail.*
 import org.json.JSONArray
@@ -92,10 +97,14 @@ class spotDetailFragment : Fragment() {
             }
         }
         spotTelTxt.setOnClickListener {
-            if(spotTelTxt.text!="정보 없음"){
-                val number=Uri.parse("tel:"+spotTelTxt.text.toString())
-                val callIntent=Intent(Intent.ACTION_DIAL,number)
-                startActivity(callIntent)
+            if(spotTelTxt.text != "정보 없음"){
+                if(checkCallPermission()) {
+                    val number = Uri.parse("tel:" + spotTelTxt.text.toString())
+                    val callIntent = Intent(Intent.ACTION_DIAL, number)
+                    startActivity(callIntent)
+                } else {
+                    (activity as AppCompatActivity).requestCallPermission()
+                }
             }
         }
         spotPreBtn.setOnClickListener {

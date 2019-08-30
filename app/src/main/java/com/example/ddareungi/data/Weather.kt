@@ -31,6 +31,7 @@ data class Weather(var temp: Int, var sky: Int, var pty: Int, var wfKor: String,
                         }
                         val url = weatherUrl + weather.code
                         val weatherTask = NetworkTask(weather, DataFilterType.WEATHER, url, callback)
+
                         weatherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
                     }
 

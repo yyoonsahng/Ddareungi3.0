@@ -12,6 +12,7 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,12 +20,14 @@ import android.widget.*
 import com.example.ddareungi.R
 import com.example.ddareungi.data.Bookmark
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.data.source.DataSource
 import com.example.ddareungi.map.MapFragment
 import com.example.ddareungi.map.MapPresenter
 import com.example.ddareungi.util.RecyclerItemTouchHelper
 import com.example.ddareungi.util.checkLocationPermission
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.google.android.gms.location.LocationServices
+import java.lang.Exception
 import java.util.*
 
 class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
@@ -86,7 +89,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
     override fun showWeatherView(neighborhoodText: String, dustText: String, imageId: Int) {
 
-        if(isAdded()&&this!=null) {
+        if(isAdded()) {
             with(requireActivity()) {
                 findViewById<TextView>(R.id.neighborhood_text).text = neighborhoodText
                 findViewById<TextView>(R.id.dust_text).text = dustText
@@ -153,7 +156,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
         val mapPresenter = MapPresenter(dataRepository, mapFragment, true, clickedRentalOffice)
     }
 
-    override fun initLocation() {
+    override fun initLocation(dataRepository: DataRepository) {
         var mLocation = Location("initLocation")
         val res = requireContext().resources
         mLocation.latitude = 37.540
@@ -163,21 +166,32 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
 
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    try {
-                        mLocation = it
+                    mLocation = it
+                    try{
+                        val geocoder = Geocoder(context, Locale.KOREA)
+                        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                        val addr = addrList.first().getAddressLine(0).split(" ")
+                        presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                     }
-                    catch(e:Exception){
-                        mLocation.latitude = 37.540
-                        mLocation.longitude = 127.07
-                    }
+                    catch (e:Exception){ }
+
+
+                    dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
+                        override fun onDataLoaded() {
+                            presenter.setWeatherViews()
+                            showLoadingIndicator(false, false)
+                        }
+
+                        override fun onNetworkNotAvailable() {
+                            showLoadingIndicator(false, false)
+                            showLoadDataError()
+                        }
+                    } )
             }
 
 
         }
-        val geocoder = Geocoder(context, Locale.KOREA)
-        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-        val addr = addrList.first().getAddressLine(0).split(" ")
-        presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+
     }
 
     companion object {

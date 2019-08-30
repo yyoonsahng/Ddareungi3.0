@@ -1,5 +1,6 @@
 package com.example.ddareungi.bookmark
 
+import android.util.Log
 import com.example.ddareungi.data.Bookmark
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
@@ -44,7 +45,7 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
         else
         {
             //지역 정보 업데이트
-            bookmarkView.initLocation()
+            bookmarkView.initLocation(dataRepository)
             //외부 데이터를 한 번은 정상적으로 받아왔을 때
             if(isReposInit) {
                 bookmarkView.showLoadingIndicator(true, false)
@@ -52,7 +53,6 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
                 dataRepository.refreshForBookmarkFrag(object: DataSource.LoadDataCallback {
 
                     override fun onDataLoaded() {
-                        setWeatherViews()
 
                         loadBookmarks()
 
@@ -70,6 +70,7 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
             else {
                 bookmarkView.showLoadingIndicator(true, true)
                 //외부 데이터를 가지고 있는게 없으므로 전체 데이터를 웹에 요청
+
                 dataRepository.initRepository(object: DataSource.LoadDataCallback {
                     override fun onDataLoaded() {
                         setWeatherViews()
@@ -110,7 +111,6 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
 
     override fun deleteBookmark(deletedBookmarkPosition: Int) {
         dataRepository.deleteBookmarkInDatabase(deletedBookmarkPosition)
-        //bookmarks.removeAt(deletedBookmarkPosition)
 
         if(bookmarks.isEmpty()) {
             bookmarkView.showNoBookmark(bookmarks)
@@ -123,9 +123,9 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
         bookmarkView.showClickedBookmarkInMapFrag(dataRepository, clickedRentalOffice)
     }
 
-    fun setWeatherViews() {
+    override fun setWeatherViews() {
         val neighborhoodText = "현재 ${dataRepository.weather.neighborhood}은"
-        val dustText = "${dataRepository.weather.temp}℃ \n미세먼지는 ${dataRepository.dust.idex_nm}입니다"
+        val dustText = "${dataRepository.weather.temp}℃  ${dataRepository.weather.wfKor}\n미세먼지는 ${dataRepository.dust.idex_nm}입니다"
         val imageId = dataRepository.weather.matchImage()
 
         bookmarkView.showWeatherView(neighborhoodText, dustText, imageId)

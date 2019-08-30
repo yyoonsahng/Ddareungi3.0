@@ -1,6 +1,7 @@
 package com.example.ddareungi.data
 
 import android.os.AsyncTask
+import android.util.Log
 import com.example.ddareungi.NetworkTask
 import com.example.ddareungi.data.source.DataFilterType
 import com.example.ddareungi.data.source.DataRepository
@@ -26,7 +27,9 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
         fun newInstance() = Bike("", "", 0, 0, 0, 0.0, 0.0, 0)
 
         fun loadBike(bikeList: ArrayList<Bike>, callback: DataSource.ApiListener){
+            bikeList.clear()
             var totalBikeNum = 0
+            lateinit var bikeNumCallback: DataRepository.BikeNumApiListener
 
             class LoadBikeList(var url: String): DataRepository.BikeNumApiListener {
                 var bikeCallCount = 1
@@ -40,7 +43,7 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
                         val startIdx = (1 + 1000 * (bikeCallCount - 1)).toString()
                         val endIdx = (1000 * bikeCallCount).toString()
                         url = baseUrl + startIdx + "/" + endIdx
-                        val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, this)
+                        val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumCallback)
                         bikeNumTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
                     } else {
                         for(i in 0 until bikeCallCount) {
@@ -61,9 +64,10 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
             }
 
             val url = baseUrl + "1/1000"
-            val bikeNumLoadedCallback = LoadBikeList(url)
-            val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumLoadedCallback)
+            bikeNumCallback = LoadBikeList(url)
+            val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumCallback)
             bikeNumTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }
+
     }
 }
