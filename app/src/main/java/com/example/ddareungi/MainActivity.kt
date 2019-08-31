@@ -91,10 +91,10 @@ class MainActivity : AppCompatActivity(){
                 }
                 R.id.course -> {
                     val courseFragment = CourseFragment().also {
-
-
                         replaceFragmentInActivity(it, R.id.fragment_container, "추천 관광지")
                     }
+
+
                 }
             }
             true

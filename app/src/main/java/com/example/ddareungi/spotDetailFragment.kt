@@ -2,6 +2,8 @@ package com.example.ddareungi
 
 
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.location.Location
 import android.net.Uri
 import android.os.AsyncTask
@@ -29,6 +31,7 @@ import kotlinx.android.synthetic.main.fragment_spot_detail.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.net.URLEncoder
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -40,7 +43,22 @@ private const val ARG_PARAM2 = "param2"
  * A simple [Fragment] subclass.
  *
  */
-class spotDetailFragment : Fragment() {
+class spotDetailFragment : Fragment(){
+
+    fun showPathInNaverMap(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.addCategory(Intent.CATEGORY_BROWSABLE)
+        val list: MutableList<ResolveInfo> =
+            activity!!.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+        if (list.isEmpty()) {
+            //네이버 지도 앱이 깔려있지 않은 경우에 플레이 스토어로 연결
+            context!!.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.nhn.android.nmap"))
+            )
+        } else {
+            context!!.startActivity(intent)
+        }    }
+
 
 
 
@@ -92,7 +110,16 @@ class spotDetailFragment : Fragment() {
        spotTitle.isSelected=true
         // ***따릉이 경로 버튼***
         spotPathBtn.setOnClickListener {
+            val networkTask0 =
+                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
+            val closetBikeStation =networkTask0.findClsBikeStp(sList[num].mapX, sList[num].mapY)
+            val dlat = closetBikeStation.stationLatitude
+            val dlng = closetBikeStation.stationLongitude
+            val dname = URLEncoder.encode(closetBikeStation.stationName, "UTF-8")
+            val url =
+                "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
+            showPathInNaverMap(url)
         }
 
 
@@ -288,7 +315,7 @@ class spotDetailFragment : Fragment() {
 
                 //***근처 따릉이 대여소!!***
 
-                spotBikeTxt.text=findClsBikeStp(sList[num].mapX,sList[num].mapY)
+                spotBikeTxt.text=findClsBikeStp(sList[num].mapX,sList[num].mapY).stationName
 
 
                 spotHomeTxt.text = sList[num].homepage
@@ -301,12 +328,12 @@ class spotDetailFragment : Fragment() {
             }
 
         }
-        fun findClsBikeStp(mapX:Double,mapY:Double):String{
+        fun findClsBikeStp(mapX:Double,mapY:Double):Bike{
 
 
             val dest = Location("dest")
-            dest.latitude = mapX
-            dest.longitude = mapY
+            dest.latitude = mapY
+            dest.longitude = mapX
 
             Log.i("dest",dest.latitude.toString()+"//dataRepository: "+dataRepository.bikeList.size.toString())
             Log.i("dest2",dest.longitude.toString())
@@ -331,7 +358,7 @@ class spotDetailFragment : Fragment() {
             }
 
 
-            return closetBikeStation.stationName
+            return closetBikeStation
 
         }
 
