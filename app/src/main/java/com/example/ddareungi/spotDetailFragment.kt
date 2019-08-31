@@ -2,12 +2,14 @@ package com.example.ddareungi
 
 
 import android.content.Intent
+import android.location.Location
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +17,10 @@ import android.view.ViewGroup
 import android.widget.*
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.example.ddareungi.MainActivity.Companion.dataRepository
+import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Spot
+import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.util.checkCallPermission
 import com.example.ddareungi.util.requestCallPermission
@@ -37,12 +42,15 @@ private const val ARG_PARAM2 = "param2"
  */
 class spotDetailFragment : Fragment() {
 
+
+
+
     var sList = mutableListOf<Spot>()
     lateinit var jarray: JSONArray
     var num: Int = 0
     var index = 0
     var preclk=false
-
+   lateinit var dataRepository:DataRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +75,9 @@ class spotDetailFragment : Fragment() {
     }
 
     fun init(code: Int) {
+
+
+
         sList.clear()
         num = 0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
         val networkTask0 =
@@ -78,7 +89,6 @@ class spotDetailFragment : Fragment() {
         if (num == sList.size) {
             num = 0
         }
-
        spotTitle.isSelected=true
         // ***따릉이 경로 버튼***
         spotPathBtn.setOnClickListener {
@@ -259,6 +269,8 @@ class spotDetailFragment : Fragment() {
         }
 
         fun showSpot() {
+            //어댑터 연결
+
             if(mFrag.isAdded()&&mFrag!=null) {
                 val spotImgView = mFrag.activity!!.findViewById<ImageView>(R.id.spotImgView)
                 val spotTitle = mFrag.activity!!.findViewById<TextView>(R.id.spotTitle)
@@ -275,7 +287,9 @@ class spotDetailFragment : Fragment() {
                 spotTitle.text = sList[num].title
 
                 //***근처 따릉이 대여소!!***
-                //spotBikeTxt.text=
+
+                spotBikeTxt.text=findClsBikeStp(sList[num].mapX,sList[num].mapY)
+
 
                 spotHomeTxt.text = sList[num].homepage
                 if (sList[num].tel.length > 4) {
@@ -287,6 +301,41 @@ class spotDetailFragment : Fragment() {
             }
 
         }
+        fun findClsBikeStp(mapX:Double,mapY:Double):String{
+
+
+            val dest = Location("dest")
+            dest.latitude = mapX
+            dest.longitude = mapY
+
+            Log.i("dest",dest.latitude.toString()+"//dataRepository: "+dataRepository.bikeList.size.toString())
+            Log.i("dest2",dest.longitude.toString())
+            Log.i("dest3", dataRepository.bikeList.size.toString())
+            var closetBikeStation = Bike.newInstance()
+            var dist =Float.MAX_VALUE
+
+            for(bike in dataRepository.bikeList) {
+                Log.i("dest4",bike.stationName)
+                var bikeStation = Location("bike")
+                bikeStation.latitude = bike.stationLatitude
+                bikeStation.longitude = bike.stationLongitude
+                var tempDist: Float
+                tempDist = dest.distanceTo(bikeStation)
+                Log.i("dest7",dist.toString())
+                Log.i("dest6",tempDist.toString())
+                if (dist > tempDist) {
+                    dist = tempDist
+                    closetBikeStation = bike
+                }
+                Log.i("dest5",closetBikeStation.stationName)
+            }
+
+
+            return closetBikeStation.stationName
+
+        }
+
+
     }
 }
 

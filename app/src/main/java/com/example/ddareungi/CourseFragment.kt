@@ -21,7 +21,7 @@ import org.json.JSONArray
 * */
 
 
-class CourseFragment : Fragment() {
+class CourseFragment() : Fragment() {
 
     val zone= mutableMapOf<Int,String>(1 to "강남구",2 to "강동구", 3 to "강북구", 4 to "강서구", 5 to "관악구", 6 to "광진구", 7 to "구로구", 8 to "금천구", 9 to "노원구", 10 to "도봉구", 11 to "동대문구", 12 to "동작구", 13 to " 마포구", 14 to "서대문구", 15  to "서초구", 16 to "성동구", 17 to "성북구", 18 to "송파구", 19 to "양천구", 20 to "영등포구", 21 to "용산구", 22 to "은평구", 23 to "종로구", 24 to "중구", 25 to "중랑구")
     var sList=mutableListOf<Spot>()
@@ -53,7 +53,7 @@ class CourseFragment : Fragment() {
     }
 
     var index=0
-
+    var datarepoid=0
 
     fun init(){
         val idTypeArray= resources.obtainTypedArray(R.array.button)
@@ -65,6 +65,7 @@ class CourseFragment : Fragment() {
                 val bundle=Bundle()
                 index=i+1
                 bundle.putInt("index",index)
+                bundle.putInt("id",datarepoid)
                 val fragment = spotDetailFragment()
                 fragment.arguments=bundle
                 loadFragment(fragment)

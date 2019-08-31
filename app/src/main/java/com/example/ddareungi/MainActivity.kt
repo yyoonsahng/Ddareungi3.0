@@ -23,10 +23,10 @@ class MainActivity : AppCompatActivity(){
         fun onBackPressed()
     }
 
-    var backButtonListener: BackButtonListener? = null
 
+    var backButtonListener: BackButtonListener? = null
     var locationPermissionGranted: Boolean = false
-    lateinit var dataRepository: DataRepository
+    //lateinit var dataRepository: DataRepository
     lateinit var bookmarkPresenter: BookmarkPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,6 +91,8 @@ class MainActivity : AppCompatActivity(){
                 }
                 R.id.course -> {
                     val courseFragment = CourseFragment().also {
+
+
                         replaceFragmentInActivity(it, R.id.fragment_container, "추천 관광지")
                     }
                 }
@@ -111,6 +113,8 @@ class MainActivity : AppCompatActivity(){
     }
 
     companion object {
+        lateinit var dataRepository: DataRepository
+
         const val DATA_REPOSITORY_ID = "DATA_REPOSITORY_ID"
         const val LOCATION_PERMISSION_ID = "LOCATION_PERMISSION_ID"
     }
