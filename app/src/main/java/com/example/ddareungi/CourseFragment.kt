@@ -21,7 +21,7 @@ import org.json.JSONArray
 * */
 
 
-class CourseFragment() : Fragment() {
+class CourseFragment() : Fragment()  {
 
 
 
@@ -52,10 +52,10 @@ class CourseFragment() : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         activity!!.appbar_title.text = "추천 관광지"
+
     }
 
     var index=0
-    var datarepoid=0
 
     fun init(){
         val idTypeArray= resources.obtainTypedArray(R.array.button)
@@ -63,11 +63,11 @@ class CourseFragment() : Fragment() {
         for(i in 0..24){
 
             var view=activity!!.findViewById<Button>(idTypeArray.getResourceId(i,0))
+
             view.setOnClickListener {
                 val bundle=Bundle()
                 index=i+1
                 bundle.putInt("index",index)
-                bundle.putInt("id",datarepoid)
                 val fragment = spotDetailFragment()
                 fragment.arguments=bundle
                 loadFragment(fragment)

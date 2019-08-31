@@ -43,7 +43,13 @@ private const val ARG_PARAM2 = "param2"
  * A simple [Fragment] subclass.
  *
  */
-class spotDetailFragment : Fragment(){
+class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
+    override fun onBackPressed() {
+        val fragment=CourseFragment()
+        activity!!.supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
 
     fun showPathInNaverMap(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -307,7 +313,7 @@ class spotDetailFragment : Fragment(){
 
                 Glide.with(mFrag.activity!!.applicationContext)
                     .load(sList[num].imgOrigin)
-                    .apply(RequestOptions().placeholder(R.drawable.ic_directions_bike_black_24dp))
+                    .apply(RequestOptions().placeholder(R.drawable.ic_action_img))
                     .into(spotImgView)
 
 

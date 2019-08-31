@@ -1,0 +1,95 @@
+<LinearLayout
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:paddingHorizontal="10dp"
+>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"/>
+
+    <TextView
+            android:paddingHorizontal="10dp"
+            android:text="지역 선택 "
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+    />
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"/>
+
+    <Spinner
+            android:id="@+id/spinner1"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone1"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner2"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone2"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner3"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone3"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner4"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone4"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner5"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone5"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner6"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone6"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <Spinner
+            android:id="@+id/spinner7"
+            android:paddingHorizontal="10dp"
+            android:entries="@array/zone7"
+            android:spinnerMode="dialog"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+    ></Spinner>
+    <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.7"/>
+</LinearLayout>
