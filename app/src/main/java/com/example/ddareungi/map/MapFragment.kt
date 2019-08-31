@@ -311,7 +311,6 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
                 if(it != null) {
                     moveCamera(LatLng(it.latitude, it.longitude), DEFAUT_ZOOM)
                 } else {
-                    if(init)
                         moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
                 }
             }

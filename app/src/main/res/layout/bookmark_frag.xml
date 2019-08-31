@@ -89,7 +89,7 @@
 
             <TextView
                     android:id="@+id/no_wifi_text"
-                    android:text="네트워크 연결을 확인해주세요"
+                    android:text="gps설정과 네트워크 연결을 확인해주세요"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="16dp"
                     android:textSize="18sp" android:textColor="@color/grey"

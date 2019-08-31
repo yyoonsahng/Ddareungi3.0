@@ -61,6 +61,7 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
 
                     override fun onNetworkNotAvailable() {
                         bookmarkView.showLoadingIndicator(false, false)
+                        bookmarkView.showCheckNetwork()
 
                         bookmarkView.showLoadDataError()
                     }
