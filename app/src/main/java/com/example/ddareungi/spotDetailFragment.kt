@@ -119,12 +119,17 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
             val networkTask0 =
                 spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
+            //목적지
+            val dlat=sList[num].mapY
+            val dlng=sList[num].mapX
+            val dname=URLEncoder.encode(sList[num].title,"UTF-8")
+            //경유지
             val closetBikeStation =networkTask0.findClsBikeStp(sList[num].mapX, sList[num].mapY)
-            val dlat = closetBikeStation.stationLatitude
-            val dlng = closetBikeStation.stationLongitude
-            val dname = URLEncoder.encode(closetBikeStation.stationName, "UTF-8")
+            val vlat = closetBikeStation.stationLatitude
+            val vlng = closetBikeStation.stationLongitude
+            val vname = URLEncoder.encode(closetBikeStation.stationName, "UTF-8")
             val url =
-                "nmap://route/walk?dlat=$dlat&dlng=$dlng&dname=$dname&appname=com.example.ddareungi"
+                "nmap://route/bicycle?dlat=$dlat&dlng=$dlng&dname=$dname&v1lat=$vlat&v1lng=$vlng&v1name=$vname&appname=com.example.ddareungi"
             showPathInNaverMap(url)
         }
 

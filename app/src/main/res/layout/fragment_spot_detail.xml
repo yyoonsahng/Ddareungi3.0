@@ -56,9 +56,9 @@
                 android:autoSizeTextType="uniform"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:textColor="#01332C"
+                android:textColor="#01241F"
                 android:textSize="14sp"
-                android:textStyle="bold"/>
+                />
 
         <View
                 android:layout_width="match_parent"
@@ -76,12 +76,11 @@
                 android:paddingEnd="10dp">
 
 
-            <ImageView android:id="@+id/spotBikeImg"
-                       android:layout_width="30dp"
-                       android:layout_height="30dp"
-                       android:src="@drawable/ic_bike_button"/>
 
-            <TextView android:id="@+id/spotBikeTxt"
+            <TextView
+                    android:drawablePadding="10dp"
+                    android:drawableStart="@drawable/ic_bike_button"
+                    android:id="@+id/spotBikeTxt"
                       android:layout_width="0dp"
                       android:layout_height="wrap_content"
                       android:layout_weight="1"
@@ -106,6 +105,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="0.1"
+
         />
         <LinearLayout android:layout_width="match_parent"
                       android:layout_height="0dp"
@@ -115,15 +115,15 @@
                       android:paddingStart="10dp"
                       android:paddingEnd="10dp">
 
-            <ImageView android:id="@+id/spotHomeImg"
-                       android:layout_width="30dp"
-                       android:layout_height="30dp"
-                       android:src="@drawable/ic_business_black_24dp"/>
 
-            <TextView android:id="@+id/spotHomeTxt"
+
+            <TextView
+                    android:drawableStart="@drawable/ic_business_black_24dp"
+                    android:drawablePadding="10dp"
+                    android:paddingStart="5dp"
+                    android:id="@+id/spotHomeTxt"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
-                      android:paddingStart="5dp"
                       android:textSize="15sp"/>
 
         </LinearLayout>
@@ -146,6 +146,7 @@
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
                       android:drawableStart="@drawable/ic_phone_black_24dp"
+                      android:drawablePadding="10dp"
                       android:paddingStart="5dp"
                       android:textSize="15sp"/>
 
