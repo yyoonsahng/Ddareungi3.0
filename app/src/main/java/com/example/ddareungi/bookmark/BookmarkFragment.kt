@@ -170,7 +170,8 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
 
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    mLocation = it
+                    if(it!=null)
+                        mLocation = it
                     try{
                         val geocoder = Geocoder(context, Locale.KOREA)
                         val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
