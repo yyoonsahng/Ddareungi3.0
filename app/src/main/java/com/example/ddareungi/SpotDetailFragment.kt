@@ -34,22 +34,12 @@ import org.json.JSONObject
 import java.net.URLEncoder
 
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class SpotDetailFragment : Fragment() {
 
-/**
- * A simple [Fragment] subclass.
- *
- */
-class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
-    override fun onBackPressed() {
-        val fragment=CourseFragment()
-        activity!!.supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
-    }
+    var sList = mutableListOf<Spot>()
+    var num: Int = 0
+    var index = 0
+    var preclk=false
 
     fun showPathInNaverMap(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
@@ -63,30 +53,12 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
             )
         } else {
             context!!.startActivity(intent)
-        }    }
-
-
-
-
-
-    var sList = mutableListOf<Spot>()
-    lateinit var jarray: JSONArray
-    var num: Int = 0
-    var index = 0
-    var preclk=false
-   lateinit var dataRepository:DataRepository
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity!!.appbar_title.text = "추천 관광지"
+        }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        index = this.getArguments()!!.getInt("index")
+        index = this.arguments!!.getInt("index")
 
         return inflater.inflate(R.layout.fragment_spot_detail, container, false)
     }
@@ -94,18 +66,15 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         init(index)
-
-
     }
 
     fun init(code: Int) {
 
 
-
         sList.clear()
         num = 0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
         val networkTask0 =
-            spotDetailFragment.NetworkTask(code, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+            SpotDetailFragment.NetworkTask(code, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
         networkTask0.execute()
         if (networkTask0.getStatus() != AsyncTask.Status.FINISHED)
@@ -117,7 +86,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
         // ***따릉이 경로 버튼***
         spotPathBtn.setOnClickListener {
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
             //목적지
             val dlat=sList[num].mapY
@@ -166,7 +135,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
 
 
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             num--
             if (num < 0) {
@@ -182,7 +151,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
 
 
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             num++
             if (num == sList.size) {
@@ -201,7 +170,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
                 num++
             }
             val networkTask0 =
-                spotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             val str = sList[num].overview
             popup(str)
@@ -236,7 +205,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
     }
 
 
-    class NetworkTask(var code: Int, var sList: MutableList<Spot>, var num: Int, var mFrag: spotDetailFragment) :
+    class NetworkTask(var code: Int, var sList: MutableList<Spot>, var num: Int, var mFrag: SpotDetailFragment) :
         AsyncTask<Unit, Unit, String>() {
 
         var url = arrayOf(
@@ -309,7 +278,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
         fun showSpot() {
             //어댑터 연결
 
-            if(mFrag.isAdded()&&mFrag!=null) {
+            if(mFrag.isAdded) {
                 val spotImgView = mFrag.activity!!.findViewById<ImageView>(R.id.spotImgView)
                 val spotTitle = mFrag.activity!!.findViewById<TextView>(R.id.spotTitle)
                 val spotTelTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotTelTxt)
@@ -346,9 +315,6 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
             dest.latitude = mapY
             dest.longitude = mapX
 
-            Log.i("dest",dest.latitude.toString()+"//dataRepository: "+dataRepository.bikeList.size.toString())
-            Log.i("dest2",dest.longitude.toString())
-            Log.i("dest3", dataRepository.bikeList.size.toString())
             var closetBikeStation = Bike.newInstance()
             var dist =Float.MAX_VALUE
 
@@ -359,18 +325,13 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
                 bikeStation.longitude = bike.stationLongitude
                 var tempDist: Float
                 tempDist = dest.distanceTo(bikeStation)
-                Log.i("dest7",dist.toString())
-                Log.i("dest6",tempDist.toString())
                 if (dist > tempDist) {
                     dist = tempDist
                     closetBikeStation = bike
                 }
-                Log.i("dest5",closetBikeStation.stationName)
             }
 
-
             return closetBikeStation
-
         }
 
 

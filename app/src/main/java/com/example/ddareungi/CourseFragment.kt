@@ -3,15 +3,16 @@ package com.example.ddareungi
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import kotlinx.android.synthetic.main.activity_main.*
+import com.example.ddareungi.util.replaceFragmentInActivityAndAddToStack
 import kotlinx.android.synthetic.main.crs_select_gu.*
 
 /*
-*  구 선택 -> 해당 구ㅇ에 있는 관광지 목록 파싱 -> 첫 번쨰 관광지에 대한 내용 파싱 -> 보여주기 형식
+*  구 선택 -> 해당 구에 있는 관광지 목록 파싱 -> 첫 번쨰 관광지에 대한 내용 파싱 -> 보여주기 형식
 * 현재 프레그먼트는 강남구/ 강동구 두 개를 예시로 해두었웁니다. 실제로 레이아웃짜시면 함수만 가져다가 쓰시면 됨니다
 * 구현한 함수
 * 1) 관광지 정보를 얻기 위해 구를 선택할 때
@@ -22,58 +23,30 @@ import kotlinx.android.synthetic.main.crs_select_gu.*
 
 class CourseFragment() : Fragment()  {
 
-
-
     val zone= mutableMapOf<Int,String>(1 to "강남구",2 to "강동구", 3 to "강북구", 4 to "강서구", 5 to "관악구", 6 to "광진구", 7 to "구로구", 8 to "금천구", 9 to "노원구", 10 to "도봉구", 11 to "동대문구", 12 to "동작구", 13 to "마포구", 14 to "서대문구", 15  to "서초구", 16 to "성동구", 17 to "성북구", 18 to "송파구", 19 to "양천구", 20 to "영등포구", 21 to "용산구", 22 to "은평구", 23 to "종로구", 24 to "중구", 25 to "중랑구")
     lateinit var adapter2:ArrayAdapter<String>
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.crs_select_gu, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        var guArray= arrayListOf<String>()
-        for(i in zone){
+        var guArray = arrayListOf<String>()
+        for (i in zone) {
             guArray.add(i.value)
         }
 
-        adapter2= ArrayAdapter(this.requireContext(),R.layout.spotmenu_gu,R.id.listViewText,guArray )
-        guListview.adapter=adapter2
-        init()
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        activity!!.appbar_title.text = "추천 관광지"
-
-    }
-
-
-
-    fun init(){
-
+        adapter2 = ArrayAdapter(this.requireContext(), R.layout.spotmenu_gu, R.id.listViewText, guArray)
+        guListview.adapter = adapter2
         guListview.setOnItemClickListener { parent, view, position, id ->
-            val bundle=Bundle()
-            bundle.putInt("index",position+1)
-            val fragment = spotDetailFragment()
-            fragment.arguments=bundle
-            loadFragment(fragment)
-
+            val bundle = Bundle()
+            bundle.putInt("index", position + 1)
+            val fragment = SpotDetailFragment()
+            fragment.arguments = bundle
+            (requireActivity() as AppCompatActivity).replaceFragmentInActivityAndAddToStack(fragment, R.id.fragment_container, "추천 관광지")
         }
-
     }
-
-
-        fun loadFragment(fragment: Fragment) {
-            activity!!.supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit()
-        }
-
 }

@@ -96,6 +96,13 @@ class MarkerController(val context: Context, val googleMap: GoogleMap) {
         visibleMarkers.remove(markerKey)
     }
 
+    fun findBikeMarker(key: String, bike: Bike): Marker {
+        if(visibleMarkers[key] == null) {
+            addBikeMarker(mutableMapOf(key to bike), mutableListOf(key), mutableListOf())
+        }
+        return visibleMarkers[key]!!
+    }
+
     /*
         marker를 View 형태로 만들어서 textView에 자전거 수를 표시하게 함.
         marker 아이콘은 비트맵 형태로 사용해야 되므로 View를 비트맵으로 바꿔줘야 함

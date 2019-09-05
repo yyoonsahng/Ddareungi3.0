@@ -49,7 +49,7 @@ import io.github.yavski.fabspeeddial.FabSpeedDial
 import kotlinx.android.synthetic.main.map_frag.*
 import java.util.*
 
-class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeedDial.MenuListener, MainActivity.BackButtonListener {
+class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeedDial.MenuListener {
 
     override lateinit var presenter: MapContract.Presenter
 
@@ -148,6 +148,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
                 presenter.currentClickedMarker = null
                 hideMarkerCardView()
             }
+            presenter.findClickedBookmarkedMarker()
         }
     }
 
@@ -244,6 +245,10 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             findViewById<TextView>(R.id.dest_name_text).text = name
             findViewById<TextView>(R.id.dest_dist_text).text = dist
         }
+    }
+
+    override fun findMarkerWithStationId(id: String, bike: Bike) {
+        presenter.currentClickedMarker = markerController.findBikeMarker(id, bike)
     }
 
     override fun showUpdatedBikeMarker() {
@@ -395,7 +400,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         }
     }
 
-    override fun onBackPressed() {
+    fun onBackPressed(): Boolean {
         if(bikeCardView.visibility == View.VISIBLE || destCardView.visibility == View.VISIBLE || parkCardView.visibility == View.VISIBLE) {
             bikeCardView.visibility = View.GONE
             parkCardView.visibility = View.GONE
@@ -404,15 +409,19 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             refreshBtn.show()
             placeTypeBtn.show()
 
+            return true
+
         } else if(searchMarker != null) {
             markerController.removeMarker(searchMarker!!.title)
             searchMarker = null
-        }
+
+            return true
+        } else
+            return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        (activity as MainActivity).setBackButtonPressedListener(this)
     }
 
     private fun showDdareungiWebPage() {
@@ -441,7 +450,6 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     override fun onPause() {
         super.onPause()
         mapView.onPause()
-        (activity as MainActivity).backButtonListener = null
     }
 
     override fun onStop() {
