@@ -23,6 +23,7 @@ import com.example.ddareungi.MainActivity.Companion.dataRepository
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Spot
 import com.example.ddareungi.data.source.DataRepository
+import com.example.ddareungi.util.OnSwipeTouchListener
 import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.util.checkCallPermission
 import com.example.ddareungi.util.requestCallPermission
@@ -44,6 +45,9 @@ private const val ARG_PARAM2 = "param2"
  *
  */
 class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
+
+
+
     override fun onBackPressed() {
         val fragment=CourseFragment()
         activity!!.supportFragmentManager.beginTransaction()
@@ -64,8 +68,6 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
         } else {
             context!!.startActivity(intent)
         }    }
-
-
 
 
 
@@ -153,6 +155,8 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
                 }
             }
         }
+
+
         spotPreBtn.setOnClickListener {
 
             if(num==0){//첫 번째 관광지에서 뒤로가기 누름
@@ -215,6 +219,18 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
 
 
         }
+
+       frameView.setOnTouchListener (object :OnSwipeTouchListener(){
+
+           override fun onSwipeRight() {
+             Log.i("touch","touch1")
+           }
+
+           override fun onSwipeLeft() {
+               Log.i("touch","touch2")
+           }
+       })
+
     }
 
     fun popup(n: String) {
@@ -375,5 +391,7 @@ class spotDetailFragment : Fragment(), MainActivity.BackButtonListener {
 
 
     }
+
+
 }
 
