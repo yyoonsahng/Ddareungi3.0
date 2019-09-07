@@ -155,31 +155,35 @@ class SpotDetailFragment : Fragment() {
 
        frameView.setOnTouchListener (object :OnSwipeTouchListener(this){
 
-           override fun onSwipeLeft() {
-             Log.i("touch","touch1")
+           override fun onSwipeLeft() {//다음 화면
+             Log.i("touch","touch1:$num")
 
                preclk=false
 
-
-               val networkTask0 =
-                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-               networkTask0.execute()
                num++
                if (num == sList.size) {
                    num = 0
                }
 
+               val networkTask0 =
+                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+               networkTask0.execute()
+
 
            }
 
            override fun onSwipeRight() {
-               Log.i("touch","touch2")
+               Log.i("touch","touch2:$num")
 
-               if(num==0){//첫 번째 관광지에서 뒤로가기 누름
+               num--
+               if (num < 0) {
+
                    val fragment=CourseFragment()
                    activity!!.supportFragmentManager.beginTransaction()
                        .replace(R.id.fragment_container, fragment)
                        .commit()
+
+                   num=0
                }
 
                preclk=true
@@ -188,10 +192,7 @@ class SpotDetailFragment : Fragment() {
                val networkTask0 =
                    SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
                networkTask0.execute()
-               num--
-               if (num < 0) {
-                   num = 0
-               }
+
 
            }
        })
