@@ -19,12 +19,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(){
 
-    interface BackButtonListener {
-        fun onBackPressed()
-    }
-
-
-    var backButtonListener: BackButtonListener? = null
     var locationPermissionGranted: Boolean = false
     //lateinit var dataRepository: DataRepository
     lateinit var bookmarkPresenter: BookmarkPresenter
@@ -101,14 +95,12 @@ class MainActivity : AppCompatActivity(){
         }
     }
 
-    fun setBackButtonPressedListener(listener: BackButtonListener) {
-        this.backButtonListener = listener
-    }
-
     override fun onBackPressed() {
-        if(backButtonListener != null)
-            backButtonListener!!.onBackPressed()
-        else
+        val frag = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if(frag is MapFragment) {
+            if(!frag.onBackPressed())
+                super.onBackPressed()
+        } else
             super.onBackPressed()
     }
 

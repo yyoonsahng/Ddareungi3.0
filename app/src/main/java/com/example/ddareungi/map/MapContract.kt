@@ -3,6 +3,7 @@ package com.example.ddareungi.map
 import android.location.Location
 import android.support.annotation.IdRes
 import com.example.ddareungi.bookmark.PlaceType
+import com.example.ddareungi.data.Bike
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.libraries.places.api.model.Place
@@ -25,6 +26,8 @@ interface MapContract {
         fun changeBookmarkState(bookmarked: Int)
 
         fun showPathInNaverMap(url: String)
+
+        fun findMarkerWithStationId(id: String, bike: Bike)
 
         fun moveCameraToUser(init: Boolean)
 
@@ -49,6 +52,8 @@ interface MapContract {
         var currentClickedMarkerType: PlaceType
 
         fun initCameraPosition()
+
+        fun findClickedBookmarkedMarker()
 
         fun updateMarkers(bounds: LatLngBounds, zoomLevel: Float, clearAll: Boolean)
 

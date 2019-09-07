@@ -39,6 +39,14 @@ fun AppCompatActivity.replaceFragmentInActivity(fragment: Fragment, @IdRes frame
     appbar_title.text = appbarTitle
 }
 
+fun AppCompatActivity.replaceFragmentInActivityAndAddToStack(fragment: Fragment, @IdRes frameId: Int, appbarTitle: String) {
+    supportFragmentManager.transact {
+        replace(frameId, fragment)
+        addToBackStack(null)
+    }
+    appbar_title.text = appbarTitle
+}
+
 /**
  * The `fragment` is added to the container view with tag. The operation is
  * performed by the `fragmentManager`.

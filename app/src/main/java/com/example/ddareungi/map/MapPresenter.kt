@@ -50,6 +50,20 @@ class MapPresenter(val dataRepository: DataRepository, val mapView: MapContract.
         }
     }
 
+    override fun findClickedBookmarkedMarker() {
+        if(fromBookmarkFrag) {
+            var clickedStation = Bike.newInstance()
+            for(bike in dataRepository.bikeList) {
+                if(bike.stationName == clickedStationName) {
+                    clickedStation = bike
+                    break
+                }
+            }
+            clickedStation.bookmarked = 1
+            mapView.findMarkerWithStationId(clickedStation.stationId, clickedStation)
+        }
+    }
+
     override fun updateMarkers(bounds: LatLngBounds, zoomLevel: Float, clearAll: Boolean) {
         val showKeyList = mutableListOf<String>()
         val removeKeyList = mutableListOf<String>()
