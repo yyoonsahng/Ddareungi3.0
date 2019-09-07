@@ -22,14 +22,11 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ddareungi.MainActivity.Companion.dataRepository
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Spot
-import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.util.OnSwipeTouchListener
 import com.example.ddareungi.util.RequestHttpURLConnection
 import com.example.ddareungi.util.checkCallPermission
 import com.example.ddareungi.util.requestCallPermission
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_spot_detail.*
-import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLEncoder
@@ -125,40 +122,10 @@ class SpotDetailFragment : Fragment() {
         }
         spotPreBtn.setOnClickListener {
 
-            if(num==0){//첫 번째 관광지에서 뒤로가기 누름
-                val fragment=CourseFragment()
-                activity!!.supportFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .commit()
-            }
-
-            preclk=true
-
-
-            val networkTask0 =
-                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            num--
-            if (num < 0) {
-                num = 0
-            }
-
 
         }
         spotNextBtn.setOnClickListener {
             //옆으로 넘겼다는건 이미 관광 게시물을 하나 봤다는 의미니까 sList에 데이터 존재함
-
-            preclk=false
-
-
-            val networkTask0 =
-                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            num++
-            if (num == sList.size) {
-                num = 0
-            }
-
 
         }
 
@@ -188,12 +155,44 @@ class SpotDetailFragment : Fragment() {
 
        frameView.setOnTouchListener (object :OnSwipeTouchListener(this){
 
-           override fun onSwipeRight() {
+           override fun onSwipeLeft() {
              Log.i("touch","touch1")
+
+               preclk=false
+
+
+               val networkTask0 =
+                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+               networkTask0.execute()
+               num++
+               if (num == sList.size) {
+                   num = 0
+               }
+
+
            }
 
-           override fun onSwipeLeft() {
+           override fun onSwipeRight() {
                Log.i("touch","touch2")
+
+               if(num==0){//첫 번째 관광지에서 뒤로가기 누름
+                   val fragment=CourseFragment()
+                   activity!!.supportFragmentManager.beginTransaction()
+                       .replace(R.id.fragment_container, fragment)
+                       .commit()
+               }
+
+               preclk=true
+
+
+               val networkTask0 =
+                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+               networkTask0.execute()
+               num--
+               if (num < 0) {
+                   num = 0
+               }
+
            }
        })
 

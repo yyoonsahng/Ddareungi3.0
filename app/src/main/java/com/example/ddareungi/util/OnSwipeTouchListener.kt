@@ -3,8 +3,9 @@ package com.example.ddareungi.util
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import com.example.ddareungi.SpotDetailFragment
 
-open class OnSwipeTouchListener(): View.OnTouchListener {
+open class OnSwipeTouchListener(fragment: SpotDetailFragment): View.OnTouchListener {
 
     private val gestureDetector=GestureDetector(GestureListener())
 
