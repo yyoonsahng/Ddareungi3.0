@@ -156,11 +156,12 @@ class SpotDetailFragment : Fragment() {
        frameView.setOnTouchListener (object :OnSwipeTouchListener(this){
 
            override fun onSwipeLeft() {//다음 화면
-             Log.i("touch","touch1:$num")
 
                preclk=false
 
                num++
+               Log.i("touch","touch1:$num")
+
                if (num == sList.size) {
                    num = 0
                }
@@ -173,9 +174,10 @@ class SpotDetailFragment : Fragment() {
            }
 
            override fun onSwipeRight() {
-               Log.i("touch","touch2:$num")
 
                num--
+               Log.i("touch","touch2:$num")
+
                if (num < 0) {
 
                    val fragment=CourseFragment()
