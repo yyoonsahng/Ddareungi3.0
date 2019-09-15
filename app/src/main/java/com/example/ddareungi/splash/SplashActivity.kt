@@ -1,9 +1,9 @@
 package com.example.ddareungi.splash
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Geocoder
-import android.location.Location
+import android.location.*
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -14,8 +14,11 @@ import com.example.ddareungi.R
 import com.example.ddareungi.data.DataRepositoryHolder
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
+import com.example.ddareungi.splash.SplashActivity.Companion.CALL_REQUEST
+import com.example.ddareungi.splash.SplashActivity.Companion.MY_LOCATION_REQUEST
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.internal.lm
 import java.lang.Exception
 import java.util.*
 
@@ -28,8 +31,9 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
     companion object {
         const val MY_LOCATION_REQUEST = 99
-        const val CALL_REQUEST=1234
+        const val CALL_REQUEST = 1234
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -59,56 +63,92 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
             val geocoder = Geocoder(this, Locale.KOREA)
             val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
             val addr = addrList.first().getAddressLine(0).split(" ")
-            splashPresenter.processLocation(addr[2], addr[3], Scanner(resources.openRawResource(R.raw.weather)), Scanner(resources.openRawResource(R.raw.dust)))
+            splashPresenter.processLocation(
+                addr[2],
+                addr[3],
+                Scanner(resources.openRawResource(R.raw.weather)),
+                Scanner(resources.openRawResource(R.raw.dust))
+            )
 
-
+        } catch (e: Exception) {
         }
-        catch(e:Exception){  }
-        dataRepository.initWeather(object: DataSource.LoadDataCallback{
-                override fun onDataLoaded() {
-                    showBookmarkActivity(dataRepository)
-                }
+        dataRepository.initWeather(object : DataSource.LoadDataCallback {
+            override fun onDataLoaded() {
+                showBookmarkActivity(dataRepository)
+            }
 
-                override fun onNetworkNotAvailable() {
-                    showBookmarkActivity(dataRepository)
-                }
+            override fun onNetworkNotAvailable() {
+                showBookmarkActivity(dataRepository)
+            }
         })
     }
 
-    private fun checkAppPermission(requestPermission: Array<String>,isLocation:Boolean): Boolean {
+    private fun checkAppPermission(requestPermission: Array<String>, isLocation: Boolean): Boolean {
         val requestResult = BooleanArray(requestPermission.size)
         for (i in requestResult.indices) {
             requestResult[i] =
-                ContextCompat.checkSelfPermission(this, requestPermission[i]) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(
+                    this,
+                    requestPermission[i]
+                ) == PackageManager.PERMISSION_GRANTED
             if (!requestResult[i]) {
                 return false
             }
         }
-        if(isLocation) {
-            locationPermissionGranted = true
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (it != null) {
-                    mLocation = it
-                }
-                splashPresenter.initWeatherRepository()
-            }
-            splashPresenter.initDataRepository() //위치정보 파싱이 끝난 후에 데이터 파싱
-                        //사용자가 권한 체크한 후에 데이터 파싱
-        }
+        if (isLocation) {
+            val lm =
+                applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+            val locationListener = object : LocationListener {
+                var isGpsProvider = false
+                var isNetworkProvider = false
+                var isLoaded = false
+                override fun onLocationChanged(location: Location) {
+
+                    if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
+                    if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
+                        true
+                    if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
+                        isLoaded = true
+                        mLocation.latitude = location.latitude
+                        mLocation.longitude = location.longitude
+                        lm.removeUpdates(this)
+                        splashPresenter.initWeatherRepository()
+                    }
+                }
+
+                override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+                }
+
+                override fun onProviderEnabled(provider: String) {
+                }
+
+                override fun onProviderDisabled(provider: String) {
+                }
+            }
+
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
+            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener)
+            splashPresenter.initDataRepository()
+        }
         return true
     }
+
 
     private fun askPermission(requestPermission: Array<String>, REQ_PERMISSION: Int) {
         ActivityCompat.requestPermissions(this, requestPermission, REQ_PERMISSION)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
             MY_LOCATION_REQUEST -> {
-                if (checkAppPermission(permissions,true)) {
+                if (checkAppPermission(permissions, true)) {
                     //
                 } else {
                     locationPermissionGranted = false
@@ -119,13 +159,16 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     }
 
     private fun initPermission() {
-        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),true)) {
+        if (checkAppPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), true)) {
         } else {
-            askPermission(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), MY_LOCATION_REQUEST)
+            askPermission(
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                MY_LOCATION_REQUEST
+            )
         }
-        if(checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE),false)){
+        if (checkAppPermission(arrayOf(android.Manifest.permission.CALL_PHONE), false)) {
 
-        }else{
+        } else {
             askPermission(arrayOf(android.Manifest.permission.CALL_PHONE), CALL_REQUEST)
         }
     }

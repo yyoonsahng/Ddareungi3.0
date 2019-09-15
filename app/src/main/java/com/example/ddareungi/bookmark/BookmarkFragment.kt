@@ -1,8 +1,11 @@
 package com.example.ddareungi.bookmark
 
 
+import android.content.Context
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.design.widget.FloatingActionButton
@@ -171,6 +174,41 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
         val mapPresenter = MapPresenter(dataRepository, mapFragment, true, clickedRentalOffice)
     }
 
+    private fun setUpLocation(mLocation:Location?,callback: DataSource.LoadDataCallback) {
+        val lm =
+            context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val locationListener = object : LocationListener {
+            var isGpsProvider = false
+            var isNetworkProvider = false
+            var isLoaded = false
+            override fun onLocationChanged(location: Location) {
+                if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
+                if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
+                    true
+                if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
+                    isLoaded = true
+                    mLocation!!.latitude = location.latitude
+                    mLocation!!.longitude = location.longitude
+                    lm.removeUpdates(this)
+                    callback.onDataLoaded()
+                }
+            }
+
+            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+
+            override fun onProviderEnabled(provider: String) {}
+
+            override fun onProviderDisabled(provider: String) {}
+        }
+        if (checkLocationPermission()) {
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
+            lm.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener
+            )
+        }
+
+    }
     override fun initLocation(dataRepository: DataRepository) {
         var mLocation = Location("initLocation")
         val res = requireContext().resources
@@ -183,26 +221,35 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
                     if(it!=null)
                         mLocation = it
-                    try{
-                        val geocoder = Geocoder(context, Locale.KOREA)
-                        val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                        val addr = addrList.first().getAddressLine(0).split(" ")
-                        presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
-                    }
-                    catch (e:Exception){ }
+                    else
+                        setUpLocation(mLocation,object:DataSource.LoadDataCallback{
+                            override fun onDataLoaded() {
+                                try{
+                                    val geocoder = Geocoder(context, Locale.KOREA)
+                                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                                    val addr = addrList.first().getAddressLine(0).split(" ")
+                                    presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+                                }
+                                catch (e:Exception){ }
 
 
-                    dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
-                        override fun onDataLoaded() {
-                            presenter.setWeatherViews()
-                        }
+                                dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
+                                    override fun onDataLoaded() {
+                                        presenter.setWeatherViews()
+                                    }
 
-                        override fun onNetworkNotAvailable() {
-                            showLoadingIndicator(false, false)
-                            showCheckNetwork()
-                            showLoadDataError()
-                        }
-                    } )
+                                    override fun onNetworkNotAvailable() {
+                                        showLoadingIndicator(false, false)
+                                        showCheckNetwork()
+                                        showLoadDataError()
+                                    }
+                                } )
+                            }
+                            override fun onNetworkNotAvailable() {
+
+                            }
+                        })
+
             }
 
 

@@ -1,11 +1,15 @@
 package com.example.ddareungi.map
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.support.design.internal.NavigationMenu
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
@@ -27,6 +31,7 @@ import com.example.ddareungi.bookmark.PlaceType
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Park
 import com.example.ddareungi.data.Toilet
+import com.example.ddareungi.data.source.DataSource
 import com.example.ddareungi.util.requestLocationPermission
 import com.example.ddareungi.util.checkLocationPermission
 import com.google.android.gms.common.api.Status
@@ -74,7 +79,11 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     lateinit var markerController: MarkerController
     var searchMarker: Marker? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         val root = inflater.inflate(R.layout.map_frag, container, false)
         with(root)
@@ -97,7 +106,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
                 it.setOnClickListener { presenter.getUrlForNaverMap(R.id.path_button) }
             }
             rentBtn = (findViewById<Button>(R.id.rent_button)).also {
-                it.setOnClickListener {showDdareungiWebPage() }
+                it.setOnClickListener { showDdareungiWebPage() }
             }
             parkPathBtn = (findViewById<ImageButton>(R.id.park_card_path_button)).also {
                 it.setOnClickListener { presenter.getUrlForNaverMap(R.id.park_card_path_button) }
@@ -105,7 +114,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             searchPathButton = (findViewById<ImageButton>(R.id.dest_card_path_button)).also {
                 it.setOnClickListener { presenter.getUrlForNaverMap(R.id.dest_card_path_button) }
             }
-            placeTypeBtn = (findViewById<FabSpeedDial>(R.id.map_place_fab)).also { it.setMenuListener(this@MapFragment) }
+            placeTypeBtn =
+                (findViewById<FabSpeedDial>(R.id.map_place_fab)).also { it.setMenuListener(this@MapFragment) }
         }
 
         mapView.onCreate(savedInstanceState)
@@ -131,12 +141,14 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             setOnCameraIdleListener {
                 val bounds = projection.visibleRegion.latLngBounds
                 val zoomLevel = cameraPosition.zoom
-                presenter.updateMarkers(bounds, zoomLevel, false) }
+                presenter.updateMarkers(bounds, zoomLevel, false)
+            }
 
             setOnCameraMoveListener {
                 val bounds = projection.visibleRegion.latLngBounds
                 val zoomLevel = cameraPosition.zoom
-                presenter.updateMarkers(bounds, zoomLevel, false) }
+                presenter.updateMarkers(bounds, zoomLevel, false)
+            }
 
             setOnMarkerClickListener {
                 animateCamera(CameraUpdateFactory.newLatLng(it.position))
@@ -152,6 +164,43 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         }
     }
 
+    private fun setUpLocation(mLocation:Location?,callback:DataSource.LoadDataCallback) {
+        val lm =
+            context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        val locationListener = object : LocationListener {
+            var isGpsProvider = false
+            var isNetworkProvider = false
+            var isLoaded = false
+            override fun onLocationChanged(location: Location) {
+
+                if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
+                if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
+                    true
+
+                if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
+                    isLoaded = true
+                    mLocation!!.latitude = location.latitude
+                    mLocation!!.longitude = location.longitude
+                    lm.removeUpdates(this)
+                    callback.onDataLoaded()
+                }
+
+            }
+
+            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
+
+            override fun onProviderEnabled(provider: String) {}
+
+            override fun onProviderDisabled(provider: String) {}
+        }
+        if (checkLocationPermission()) {
+            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
+            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener
+            )
+        }
+    }
+
     private fun initAutocompleteFragment() {
         val context = context ?: return
         Places.initialize(context, resources.getString(R.string.google_maps_key))
@@ -161,7 +210,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         val rectBounds = RectangularBounds.newInstance(bounds)
 
         //Places.initialize(context, resources.getString(R.string.google_maps_key))
-        autoCompleteFragment = childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment?
+        autoCompleteFragment =
+            childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment?
         autoCompleteFragment!!.setHint("목적지 검색")
         autoCompleteFragment!!.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
         autoCompleteFragment!!.setLocationRestriction(rectBounds)
@@ -183,13 +233,27 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
 
     }
 
-    override fun showMarkerOnCurrentMap(markersToShow: MutableMap<String, Any>, showKeyList: MutableList<String>, removeKeyList: MutableList<String>
+    override fun showMarkerOnCurrentMap(
+        markersToShow: MutableMap<String, Any>,
+        showKeyList: MutableList<String>,
+        removeKeyList: MutableList<String>
     ) {
-        when(presenter.currentPlaceType) {
-            PlaceType.BIKE -> markerController.addBikeMarker(markersToShow as MutableMap<String, Bike>, showKeyList, removeKeyList)
-            PlaceType.TOILET -> markerController.addToiletMarker(markersToShow as MutableMap<String, Toilet>, showKeyList)
-            PlaceType.PARK -> markerController.addParkMarker(markersToShow as MutableMap<String, Park>, showKeyList)
-            else -> {}
+        when (presenter.currentPlaceType) {
+            PlaceType.BIKE -> markerController.addBikeMarker(
+                markersToShow as MutableMap<String, Bike>,
+                showKeyList,
+                removeKeyList
+            )
+            PlaceType.TOILET -> markerController.addToiletMarker(
+                markersToShow as MutableMap<String, Toilet>,
+                showKeyList
+            )
+            PlaceType.PARK -> markerController.addParkMarker(
+                markersToShow as MutableMap<String, Park>,
+                showKeyList
+            )
+            else -> {
+            }
         }
     }
 
@@ -197,14 +261,14 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         presenter.currentClickedMarker = marker
         destCardView.visibility = View.GONE
 
-        if(marker.tag is Place)
+        if (marker.tag is Place)
             presenter.currentClickedMarkerType = PlaceType.SEARCH
         else
             presenter.currentClickedMarkerType = presenter.currentPlaceType
 
 
-        if(presenter.currentClickedMarkerType == PlaceType.TOILET)
-                marker.showInfoWindow()
+        if (presenter.currentClickedMarkerType == PlaceType.TOILET)
+            marker.showInfoWindow()
 
         presenter.updateClickedMarkerCardView(marker)
     }
@@ -218,7 +282,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             findViewById<TextView>(R.id.station_name_text).text = stationName
             findViewById<TextView>(R.id.left_bike_num_text).text = leftBikeNum
         }
-        if(bookmarked) {
+        if (bookmarked) {
             bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_black_24dp))
         } else {
             bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_border_black_24dp))
@@ -254,12 +318,12 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     override fun showUpdatedBikeMarker() {
         val bounds = googleMap.projection.visibleRegion.latLngBounds
         val zoomLevel = googleMap.cameraPosition.zoom
-        if(isAdded)
+        if (isAdded)
             presenter.updateMarkers(bounds, zoomLevel, true)
     }
 
     private fun showSearchMarker(place: Place) {
-        if(searchMarker != null) {
+        if (searchMarker != null) {
             markerController.removeMarker(searchMarker!!.title)
         }
         searchMarker = markerController.addSearchMarker(place)
@@ -276,9 +340,9 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         destCardView.visibility = View.GONE
 
         with(presenter) {
-            if(currentClickedMarker != null)
+            if (currentClickedMarker != null)
                 currentClickedMarker!!.hideInfoWindow()
-            if(currentClickedMarkerType != PlaceType.SEARCH)
+            if (currentClickedMarkerType != PlaceType.SEARCH)
                 currentClickedMarker = null
         }
 
@@ -287,41 +351,59 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     override fun changeBookmarkState(bookmarked: Int) {
-        if(bookmarked == 0) {
+        if (bookmarked == 0) {
             bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_border_black_24dp))
-        } else if(bookmarked == 1) {
+        } else if (bookmarked == 1) {
             bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_black_24dp))
         }
     }
 
     override fun getUserLocation(callback: MapPresenter.GetUserLocationCallback) {
-        var location: Location? = null
-
-        if(checkLocationPermission()) {
+        var location= Location("initLocation")
+        if (checkLocationPermission()) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                if(it != null) {
+                if (it != null) {
                     location = it
+                    callback.onSuccess(location)
+                } else {
+                    setUpLocation(location,object :DataSource.LoadDataCallback{
+                        override fun onDataLoaded() {
+                            callback.onSuccess(location)
+                        }
+
+                        override fun onNetworkNotAvailable() {}
+                    })
                 }
-                else {
-                    location = null
-                }
-                callback.onSuccess(location)
+
             }
         }
     }
 
     override fun moveCameraToUser(init: Boolean) {
-        if(checkLocationPermission()) {
+
+        var location=Location("initLocation")
+
+        if (checkLocationPermission()) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
-                if(it != null) {
-                    moveCamera(LatLng(it.latitude, it.longitude), DEFAUT_ZOOM)
-                } else {
-                        moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
+                if (it != null) {
+                    location=it
+                    moveCamera(LatLng(location!!.latitude, location!!.longitude), DEFAUT_ZOOM)
                 }
+                else{
+                    setUpLocation(location,object :DataSource.LoadDataCallback{
+                        override fun onDataLoaded() {
+                            moveCamera(LatLng(location!!.latitude, location!!.longitude), DEFAUT_ZOOM)
+                        }
+
+                        override fun onNetworkNotAvailable() {}
+                    })
+                }
+
+
             }
         } else {
             moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
-            if(!init) {
+            if (!init) {
                 showNoGpsPermissionDialog()
             }
         }
@@ -334,10 +416,9 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     private fun moveCamera(pos: LatLng, zoomLevel: Float) {
-        if(zoomLevel == -1f) {
+        if (zoomLevel == -1f) {
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(pos))
-        }
-        else {
+        } else {
             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, zoomLevel))
         }
     }
@@ -347,7 +428,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         val bounds = googleMap.projection.visibleRegion.latLngBounds
         val zoomLevel = googleMap.cameraPosition.zoom
 
-        when(menuItem!!.itemId) {
+        when (menuItem!!.itemId) {
             R.id.bike_stop_fab -> presenter.currentPlaceType = PlaceType.BIKE
             R.id.toilet_fab -> presenter.currentPlaceType = PlaceType.TOILET
             R.id.park_fab -> presenter.currentPlaceType = PlaceType.PARK
@@ -363,7 +444,10 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.addCategory(Intent.CATEGORY_BROWSABLE)
         val list: MutableList<ResolveInfo> =
-            activity!!.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            activity!!.packageManager.queryIntentActivities(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
         if (list.isEmpty()) {
             //네이버 지도 앱이 깔려있지 않은 경우에 플레이 스토어로 연결
             context!!.startActivity(
@@ -392,7 +476,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     override fun showLoadingIndicator(active: Boolean) {
-        if(isAdded) {
+        if (isAdded) {
             if (active)
                 progress_circular.visibility = View.VISIBLE
             else
@@ -401,7 +485,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     fun onBackPressed(): Boolean {
-        if(bikeCardView.visibility == View.VISIBLE || destCardView.visibility == View.VISIBLE || parkCardView.visibility == View.VISIBLE) {
+        if (bikeCardView.visibility == View.VISIBLE || destCardView.visibility == View.VISIBLE || parkCardView.visibility == View.VISIBLE) {
             bikeCardView.visibility = View.GONE
             parkCardView.visibility = View.GONE
             destCardView.visibility = View.GONE
@@ -411,7 +495,7 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
 
             return true
 
-        } else if(searchMarker != null) {
+        } else if (searchMarker != null) {
             markerController.removeMarker(searchMarker!!.title)
             searchMarker = null
 
@@ -425,14 +509,17 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     }
 
     private fun showDdareungiWebPage() {
-        val ddareungiHome = Uri.parse("https://www.bikeseoul.com/app/station/moveStationRealtimeStatus.do?searchParameter=GU")
+        val ddareungiHome =
+            Uri.parse("https://www.bikeseoul.com/app/station/moveStationRealtimeStatus.do?searchParameter=GU")
         val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
         startActivity(webIntent)
     }
 
     override fun onMenuClosed() {}
 
-    override fun onPrepareMenu(navigationMenu: NavigationMenu?): Boolean { return true }
+    override fun onPrepareMenu(navigationMenu: NavigationMenu?): Boolean {
+        return true
+    }
 
 
     override fun onStart() {

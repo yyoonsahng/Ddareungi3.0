@@ -45,7 +45,8 @@ class DataRepository(
             private var networkState = true
 
             override fun onDataLoaded(dataFilterType: DataFilterType) {
-                isWeatherInit = true
+                if(dataFilterType== DataFilterType.WEATHER) isWeatherInit=true
+                else isDustInit=true
                 if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
                     isReposInit = true
                     callback.onDataLoaded()
@@ -62,6 +63,7 @@ class DataRepository(
         }
         val apiListener = ApiListener()
         Weather.loadWeather(weather, apiListener)
+        Dust.loadDust(dust, apiListener)
     }
 
     //외부로부터 받아와야 하는 데이터 모두 불러올 때
@@ -80,7 +82,7 @@ class DataRepository(
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 when(dataFilterType) {
                     DataFilterType.PARK ->  isParkInit= true
-                    DataFilterType.DUST -> isDustInit = true
+//                    DataFilterType.DUST -> isDustInit = true
                     DataFilterType.BIKE -> {
                         bikeCallCount--
                         if(bikeCallCount == 0)  isBikeInit = true
@@ -113,7 +115,7 @@ class DataRepository(
         Bike.loadBike(bikeList, apiListener)
         Park.loadPark(parkList, apiListener)
         Toilet.loadToilet(toiletList, apiListener)
-        Dust.loadDust(dust, apiListener)
+
     }
 
     //MapFragment에서 자전거 관련 정보 받아와야 할 때
