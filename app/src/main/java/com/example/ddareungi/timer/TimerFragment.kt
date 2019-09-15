@@ -16,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.example.ddareungi.R
+import kotlinx.android.synthetic.main.fragment_timer.view.*
 
 class TimerFragment : Fragment() {
 
@@ -45,9 +46,19 @@ class TimerFragment : Fragment() {
             timerTextView = findViewById(R.id.timer_text_view)
             timerRadioGroup = (findViewById<RadioGroup>(R.id.timer_radio_group)).apply {
                 setOnCheckedChangeListener { _, checkedId ->
-                    if (checkedId == R.id.one_hour_radio_button) countHour = 1
-                    else if (checkedId == R.id.two_hour_radio_button) countHour = 2
-                    showLeftTime()
+                    if(!isTimerRunning) {
+                        if (checkedId == R.id.one_hour_radio_button) countHour = 1
+                        else if (checkedId == R.id.two_hour_radio_button) countHour = 2
+                        showLeftTime()
+                    }
+                    else{
+                        if((checkedId==R.id.one_hour_radio_button && countHour==2)
+                            || (checkedId==R.id.two_hour_radio_button && countHour==1) )
+                            Toast.makeText(context,"타이머가 이미 실행중입니다.\n반납완료를 먼저 눌러주세요",Toast.LENGTH_SHORT).show()
+                        if(countHour==1) one_hour_radio_button.isChecked=true else two_hour_radio_button.isChecked=true
+
+
+                    }
                 }
             }
             timerBtn = (findViewById<AppCompatButton>(R.id.timer_button)).apply {
