@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -119,14 +120,6 @@ class SpotDetailFragment : Fragment() {
                     (activity as AppCompatActivity).requestCallPermission()
                 }
             }
-        }
-        spotPreBtn.setOnClickListener {
-
-
-        }
-        spotNextBtn.setOnClickListener {
-            //옆으로 넘겼다는건 이미 관광 게시물을 하나 봤다는 의미니까 sList에 데이터 존재함
-
         }
 
         spotMoreBtn.setOnClickListener {
@@ -299,12 +292,15 @@ class SpotDetailFragment : Fragment() {
                 val spotTelTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotTelTxt)
                 val spotHomeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotHomeTxt)
                 val spotBikeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotBikeTxt)
+                val no_img_text=mFrag.activity!!.findViewById<TextView>(R.id.no_img_text)
 
+                spotImgView.scaleType=ImageView.ScaleType.CENTER_INSIDE
                 Glide.with(mFrag.activity!!.applicationContext)
                     .load(sList[num].imgOrigin)
-                    .apply(RequestOptions().placeholder(R.drawable.ic_action_img))
+                    .apply(RequestOptions().placeholder(R.drawable.ic_no_bookmark))
                     .into(spotImgView)
-
+                if(sList[num].imgOrigin!="")  spotImgView.scaleType=ImageView.ScaleType.FIT_XY
+                no_img_text.visibility = if(sList[num].imgOrigin=="") View.VISIBLE else View.GONE
 
                 spotTitle.text = sList[num].title
 

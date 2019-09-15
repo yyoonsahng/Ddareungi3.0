@@ -39,6 +39,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         mLocation.latitude = 37.540
         mLocation.longitude = 127.07
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         initPermission()
     }
