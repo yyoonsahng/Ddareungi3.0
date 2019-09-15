@@ -115,6 +115,18 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
         showViews(false, false, true, false, false)
     }
 
+    override fun showLoadingByBikeStatus(active: Boolean, hideBike: Boolean) {
+        if(hideBike)
+            showViews(false, true, false, true, true)
+        else
+            showViews(true, true, false, false, true)
+
+        if(active)
+            progressBar.visibility = View.VISIBLE
+        else
+            progressBar.visibility = View.GONE
+    }
+
     override fun showLoadingIndicator(active: Boolean, hideAll: Boolean) {
         if(hideAll)
             showViews(false, false, false, false, false)
@@ -183,7 +195,6 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                     dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
                         override fun onDataLoaded() {
                             presenter.setWeatherViews()
-                            showLoadingIndicator(false, false)
                         }
 
                         override fun onNetworkNotAvailable() {

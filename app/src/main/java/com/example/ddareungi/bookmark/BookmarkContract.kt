@@ -16,7 +16,7 @@ interface BookmarkContract {
         fun showCheckNetwork()
 
         fun showLoadingIndicator(active: Boolean, hideAll: Boolean)
-
+        fun showLoadingByBikeStatus(active: Boolean, hideBike:Boolean)
         fun showWeatherView(neighborhoodText: String, dustText: String, imageId: Int)
 
         fun showLoadDataError()

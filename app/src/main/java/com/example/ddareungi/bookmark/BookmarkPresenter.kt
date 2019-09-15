@@ -53,16 +53,13 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
                 dataRepository.refreshForBookmarkFrag(object: DataSource.LoadDataCallback {
 
                     override fun onDataLoaded() {
-
                         loadBookmarks()
 
-                        bookmarkView.showLoadingIndicator(false, false)
                     }
 
                     override fun onNetworkNotAvailable() {
                         bookmarkView.showLoadingIndicator(false, false)
                         bookmarkView.showCheckNetwork()
-
                         bookmarkView.showLoadDataError()
                     }
 
@@ -76,9 +73,8 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
                     override fun onDataLoaded() {
                         setWeatherViews()
 
-                        loadBookmarks()
-
                         bookmarkView.showLoadingIndicator(false, false)
+                        loadBookmarks()
                     }
 
                     override fun onNetworkNotAvailable() {
@@ -105,8 +101,10 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
         }
         if(bookmarks.isEmpty()) {
             bookmarkView.showNoBookmark(bookmarks)
+            bookmarkView.showLoadingByBikeStatus(false, true)
         } else {
             bookmarkView.showBookmarkedList(bookmarks)
+            bookmarkView.showLoadingByBikeStatus(false, false)
         }
     }
 
@@ -115,8 +113,10 @@ class BookmarkPresenter(val dataRepository: DataRepository, val bookmarkView: Bo
 
         if(bookmarks.isEmpty()) {
             bookmarkView.showNoBookmark(bookmarks)
+
         } else {
             bookmarkView.showBookmarkedList(bookmarks)
+
         }
     }
 
