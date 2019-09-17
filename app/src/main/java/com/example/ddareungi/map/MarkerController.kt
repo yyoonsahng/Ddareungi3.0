@@ -1,14 +1,10 @@
 package com.example.ddareungi.map
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.support.v4.content.ContextCompat
-import android.util.DisplayMetrics
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.example.ddareungi.R
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Park
@@ -16,33 +12,41 @@ import com.example.ddareungi.data.Toilet
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.model.Place
+import com.google.maps.android.ui.IconGenerator
 import kotlinx.android.synthetic.main.bike_marker.view.*
 
 class MarkerController(val context: Context, val googleMap: GoogleMap) {
     val visibleMarkers = mutableMapOf<String, Marker>()
 
+
     fun addBikeMarker(markersToShow: MutableMap<String, Bike>, showKeyList: MutableList<String>, removeKeyList: MutableList<String>) {
+        val iconGenerator = IconGenerator(context)
+
         for(key in showKeyList) {
             val bike = markersToShow[key]
             val markerOptions = MarkerOptions()
-            val markerView = LayoutInflater.from(context).inflate(R.layout.bike_marker, null)
-            //marker의 위치 정보 설정
-            markerOptions.position(LatLng(bike!!.stationLatitude, bike.stationLongitude))
+            val bikeMarkerView = LayoutInflater.from(context).inflate(R.layout.bike_marker, null)
 
-            //markerView의 textView에 자전거 수 표시
-            markerView.bike_marker_num_textView.text = bike.parkingBikeTotCnt.toString()
+            bikeMarkerView!!.amu_text.text = bike!!.parkingBikeTotCnt.toString()
+            if(bike.parkingBikeTotCnt == 0) {
+                iconGenerator.setBackground(context.getDrawable(R.drawable.ic_simple_marker_low))
+            } else if(bike.parkingBikeTotCnt < 10) {
+                iconGenerator.setBackground(context.getDrawable(R.drawable.ic_simple_marker_middle))
+            } else {
+                iconGenerator.setBackground(context.getDrawable(R.drawable.ic_simple_marker_high))
+            }
+            iconGenerator.setContentView(bikeMarkerView)
+            //marker의 위치 정보 설정
+            markerOptions.position(LatLng(bike.stationLatitude, bike.stationLongitude))
 
             //자전거 수 별 다른 아이콘 이미지 설정, 자전거가 많을 수록 zIndex 값을 높게 설정해서 우선적으로 보이게 함
-            if (bike.parkingBikeTotCnt == 0) {
-                markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_simple_marker_low)
-            } else if (bike.parkingBikeTotCnt < 10) {
-                markerView.bike_marker_num_textView.setBackgroundResource(R.drawable.ic_simple_marker_middle)
+            if (bike.parkingBikeTotCnt < 10) {
                 markerOptions.zIndex(1.0f)
             } else {
                 markerOptions.zIndex(2.0f)
             }
             //뷰를 drawable로 만들어서 마커의 아이콘으로 설정
-            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(createDrawableFromView(context, markerView)))
+            markerOptions.icon(BitmapDescriptorFactory.fromBitmap(iconGenerator.makeIcon()))
 
             visibleMarkers[key] = (googleMap.addMarker(markerOptions))
             visibleMarkers[key]!!.tag = bike
@@ -107,21 +111,20 @@ class MarkerController(val context: Context, val googleMap: GoogleMap) {
         marker를 View 형태로 만들어서 textView에 자전거 수를 표시하게 함.
         marker 아이콘은 비트맵 형태로 사용해야 되므로 View를 비트맵으로 바꿔줘야 함
      */
-    private fun createDrawableFromView(context: Context, view: View): Bitmap {
-        val displayMetrics = DisplayMetrics()
-        (context as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
-        view.layoutParams =
-            ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
-        view.buildDrawingCache()
-        val bitmap = Bitmap.createBitmap(view.measuredWidth, view.measuredHeight, Bitmap.Config.ARGB_8888)
-
-        val canvas = Canvas(bitmap)
-        view.draw(canvas)
-
-        return bitmap
-    }
+//    private fun createDrawableFromView(context: Context, view: View): Bitmap {
+//        val displayMetrics = DisplayMetrics()
+//        (context as Activity).windowManager.defaultDisplay.getMetrics(displayMetrics)
+//        view.layoutParams =
+//            ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+//        view.measure(displayMetrics.widthPixels, displayMetrics.heightPixels)
+//        view.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
+//        val bitmap = Bitmap.createBitmap(view.measuredWidth, view.measuredHeight, Bitmap.Config.ARGB_8888)
+//
+//        val canvas = Canvas(bitmap)
+//        view.draw(canvas)
+//
+//        return bitmap
+//    }
 
     private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
         val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)

@@ -9,7 +9,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.support.design.internal.NavigationMenu
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
@@ -25,15 +24,14 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
 import com.example.ddareungi.bookmark.PlaceType
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Park
 import com.example.ddareungi.data.Toilet
 import com.example.ddareungi.data.source.DataSource
-import com.example.ddareungi.util.requestLocationPermission
 import com.example.ddareungi.util.checkLocationPermission
+import com.example.ddareungi.util.requestLocationPermission
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -318,6 +316,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
     override fun showUpdatedBikeMarker() {
         val bounds = googleMap.projection.visibleRegion.latLngBounds
         val zoomLevel = googleMap.cameraPosition.zoom
+        googleMap.clear()
+        markerController.visibleMarkers.clear()
         if (isAdded)
             presenter.updateMarkers(bounds, zoomLevel, true)
     }

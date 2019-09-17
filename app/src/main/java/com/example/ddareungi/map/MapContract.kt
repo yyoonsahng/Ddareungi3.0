@@ -6,7 +6,6 @@ import com.example.ddareungi.bookmark.PlaceType
 import com.example.ddareungi.data.Bike
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
-import com.google.android.libraries.places.api.model.Place
 
 interface MapContract {
 
