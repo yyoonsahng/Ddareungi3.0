@@ -23,8 +23,12 @@ class DataRepository(
     override fun refreshWeather(callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
             private var networkState = true
-
+            private var isWeather=false
+            private var isDust=false
             override fun onDataLoaded(dataFilterType: DataFilterType) {
+                if(dataFilterType== DataFilterType.WEATHER) isWeather=true
+                else isDust=true
+                if(isWeather&&isDust)
                     callback.onDataLoaded()
             }
             override fun onFailure(dataFilterType: DataFilterType) {
@@ -38,9 +42,10 @@ class DataRepository(
         }
         val apiListener = ApiListener()
         Weather.loadWeather(weather, apiListener)
+        Dust.loadDust(dust,apiListener)
     }
 
-    override fun initWeather(callback: DataSource.LoadDataCallback) {
+    override fun initWeather(isGps:Boolean,callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
             private var networkState = true
 
@@ -48,7 +53,7 @@ class DataRepository(
                 if(dataFilterType== DataFilterType.WEATHER) isWeatherInit=true
                 else isDustInit=true
                 if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
-                    isReposInit = true
+                    isReposInit=if(isGps) true else false
                     callback.onDataLoaded()
                 }
             }
@@ -69,12 +74,7 @@ class DataRepository(
     //외부로부터 받아와야 하는 데이터 모두 불러올 때
     override fun initRepository(callback: DataSource.LoadDataCallback) {
         class ApiListener: DataSource.ApiListener {
-//            private var bikeLoaded = false
-//            private var toiletLoaded = false
-//            private var parkLoaded = false
-//            private var weatherLoaded = false
-//            private var dustLoaded = false
-            private var bikeCallCount = 0
+
             private var toiletCallCount = 0
             private var networkState = true
 
@@ -82,16 +82,12 @@ class DataRepository(
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 when(dataFilterType) {
                     DataFilterType.PARK ->  isParkInit= true
-//                    DataFilterType.DUST -> isDustInit = true
-                    DataFilterType.BIKE -> {
-                        bikeCallCount--
-                        if(bikeCallCount == 0)  isBikeInit = true
-                    }
+                    DataFilterType.BIKE -> isBikeInit = true
+
                     DataFilterType.TOILET -> {
                         toiletCallCount--
                         if(toiletCallCount == 0) isToiletInit = true
                     }
-                    DataFilterType.BIKE_NUM -> bikeCallCount++
                     DataFilterType.TOILET_NUM -> toiletCallCount++
                 }
                 
@@ -127,10 +123,9 @@ class DataRepository(
 
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 if (dataFilterType == DataFilterType.BIKE) {
-                    bikeCallCount--
-                    if(bikeCallCount == 0)  bikeLoaded = true
+
+                        bikeLoaded = true
                 }
-                else if (dataFilterType == DataFilterType.BIKE_NUM) bikeCallCount++
 
                 if(bikeLoaded)
                     callback.onDataLoaded()
@@ -150,44 +145,6 @@ class DataRepository(
         Bike.loadBike(bikeList, apiListener)
     }
 
-
-
-    //BookmarkFragment에서 날씨, 자전거 관련 정보 다시 받아올 때
-    override fun refreshForBookmarkFrag(callback: DataSource.LoadDataCallback) {
-        class ApiListener : DataSource.ApiListener {
-            private var bikeLoaded = false
-            private var bikeCallCount = 0
-
-            private var dustLoaded = false
-            private var networkState = true
-
-            override fun onDataLoaded(dataFilterType: DataFilterType) {
-                if (dataFilterType == DataFilterType.BIKE) {
-                    bikeCallCount--
-                    if(bikeCallCount == 0)  bikeLoaded = true
-                }
-                else if (dataFilterType == DataFilterType.BIKE_NUM) bikeCallCount++
-                else if (dataFilterType == DataFilterType.DUST) dustLoaded = true
-
-                if(dustLoaded && bikeLoaded)
-                    callback.onDataLoaded()
-            }
-
-            override fun onFailure(dataFilterType: DataFilterType) {
-                //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
-                //onFailure 호출이 여러번 되도 onNetworkNotAvailable은 한번만 호출
-                if(networkState) {
-                    networkState = false
-                    callback.onNetworkNotAvailable()
-                }
-            }
-        }
-        val apiListener = ApiListener()
-
-        Bike.loadBike(bikeList, apiListener)
-        Dust.loadDust(dust, apiListener)
-        //Weather.loadWeather(weather, apiListener)
-    }
 
     //날씨 api / 구에 따른 지역코드 파싱
     private fun loadWeatherFile(weatherFile: Scanner): String {

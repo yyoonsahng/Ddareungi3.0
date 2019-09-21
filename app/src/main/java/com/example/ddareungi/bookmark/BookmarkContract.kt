@@ -38,5 +38,10 @@ interface BookmarkContract {
         fun openMapFrag(clickedRentalOffice: String)
         fun setWeatherViews()
         fun processLocation(locality: String, neighborhood: String, weatherFile: Scanner, dustFile: Scanner)
+        fun setIsWeather()
+        fun getIsAll():Boolean
+        fun getIsWeather():Boolean
+        fun getIsBike():Boolean
+        fun loadBookmarks()
     }
 }

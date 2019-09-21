@@ -25,7 +25,7 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
 
     constructor(dataList: ArrayList<*>, dataType: DataFilterType, url: String, callback: DataSource.ApiListener)
             : this(dataType, url, callback) {
-        if (dataType == DataFilterType.BIKE) bikeList = dataList as ArrayList<Bike>
+        if (dataType == DataFilterType.BIKE_NUM) bikeList = dataList as ArrayList<Bike>
         else if (dataType == DataFilterType.PARK) parkList = dataList as ArrayList<Park>
         else if (dataType == DataFilterType.TOILET) toiletList = dataList as ArrayList<Toilet>
     }
@@ -48,27 +48,6 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
             callback.onFailure(dataType)
         } else {
             when (dataType) {
-                DataFilterType.BIKE -> {
-                    try {
-                        val jsonArray: JSONArray =
-                            JSONObject(result).getJSONObject("rentBikeStatus").getJSONArray("row")
-                        for (i in 0 until jsonArray.length()) {
-                            val jsonObj = jsonArray.getJSONObject(i)
-                            val stationId: String = jsonObj.optString("stationId")
-                            val stationName: String = jsonObj.optString("stationName")
-                            val rackTotCnt: Int = jsonObj.optInt("rackTotCnt")
-                            val parkingBikeTotCnt: Int = jsonObj.optInt("parkingBikeTotCnt")
-                            val shared: Int = jsonObj.optInt("shared")
-                            val stationLatitude: Double = jsonObj.optDouble("stationLatitude")
-                            val stationLongitude: Double = jsonObj.optDouble("stationLongitude")
-                            val bookmarked: Int = 0
-                            bikeList.add(Bike(stationId, stationName, rackTotCnt, parkingBikeTotCnt, shared, stationLatitude, stationLongitude, bookmarked))
-                        }
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-                }
-
                 DataFilterType.PARK -> {
                     try {
                         val jsonArray: JSONArray =
@@ -198,10 +177,31 @@ class NetworkTask(val dataType: DataFilterType, var url: String, val callback: D
                         val jsonObj = JSONObject(result).getJSONObject("rentBikeStatus")
                         val bikeNum = jsonObj.optInt("list_total_count")
                         val bStatus = jsonObj.getJSONObject("RESULT").optString("CODE")
-                        if (bStatus != "INFO-000")
-                            callback.onFailure(dataType)
+                        if (bStatus != "INFO-000") {
+                            if(bStatus=="INFO-200")
+                                callback.onDataLoaded(DataFilterType.BIKE)
+                            else
+                                callback.onFailure(dataType)
+                        }
                         else {
                             (callback as DataRepository.BikeNumApiListener).onDataLoaded(dataType, bikeNum)
+                            try {
+                                val jsonArray: JSONArray = jsonObj.getJSONArray("row")
+                                for (i in 0 until jsonArray.length()) {
+                                    val jsonObj = jsonArray.getJSONObject(i)
+                                    val stationId: String = jsonObj.optString("stationId")
+                                    val stationName: String = jsonObj.optString("stationName")
+                                    val rackTotCnt: Int = jsonObj.optInt("rackTotCnt")
+                                    val parkingBikeTotCnt: Int = jsonObj.optInt("parkingBikeTotCnt")
+                                    val shared: Int = jsonObj.optInt("shared")
+                                    val stationLatitude: Double = jsonObj.optDouble("stationLatitude")
+                                    val stationLongitude: Double = jsonObj.optDouble("stationLongitude")
+                                    val bookmarked: Int = 0
+                                    bikeList.add(Bike(stationId, stationName, rackTotCnt, parkingBikeTotCnt, shared, stationLatitude, stationLongitude, bookmarked))
+                                }
+                            } catch (e: JSONException) {
+                                e.printStackTrace()
+                            }
                         }
                     } catch (e: JSONException) {
                         e.printStackTrace()

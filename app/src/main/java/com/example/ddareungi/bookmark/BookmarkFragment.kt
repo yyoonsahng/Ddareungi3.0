@@ -30,6 +30,7 @@ import com.example.ddareungi.util.RecyclerItemTouchHelper
 import com.example.ddareungi.util.checkLocationPermission
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.internal.lm
 import java.lang.Exception
 import java.util.*
 
@@ -182,6 +183,10 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             var isGpsProvider = false
             var isNetworkProvider = false
             var isLoaded = false
+
+            var isGpsProviderEnabled = true
+            var isNetworkProviderEnabled = true
+
             override fun onLocationChanged(location: Location) {
                 if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
                 if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
@@ -199,7 +204,18 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
             override fun onProviderEnabled(provider: String) {}
 
-            override fun onProviderDisabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {
+                if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
+                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
+                    false
+                if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
+                    lm.removeUpdates(this)
+                    callback.onNetworkNotAvailable()
+                }
+
+            }
+
+
         }
         if (checkLocationPermission()) {
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
@@ -219,8 +235,32 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
 
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    if(it!=null)
+                    if(it!=null) {
                         mLocation = it
+                        try{
+                            val geocoder = Geocoder(context, Locale.KOREA)
+                            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
+                            val addr = addrList.first().getAddressLine(0).split(" ")
+                            presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+                        }
+                        catch (e:Exception){ }
+                        dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
+                            override fun onDataLoaded() {
+                                presenter.setIsWeather()
+                                if(presenter.getIsAll()&&presenter.getIsWeather()&&presenter.getIsBike()) {
+                                    showLoadingIndicator(false, false)
+                                    presenter.setWeatherViews()
+                                    presenter.loadBookmarks()
+                                }
+                            }
+
+                            override fun onNetworkNotAvailable() {
+                                showLoadingIndicator(false, false)
+                                showCheckNetwork()
+                                showLoadDataError()
+                            }
+                        } )
+                    }
                     else
                         setUpLocation(mLocation,object:DataSource.LoadDataCallback{
                             override fun onDataLoaded() {
@@ -235,7 +275,12 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
 
                                 dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
                                     override fun onDataLoaded() {
-                                        presenter.setWeatherViews()
+                                        presenter.setIsWeather()
+                                        if(presenter.getIsAll()&&presenter.getIsWeather()&&presenter.getIsBike()) {
+                                            showLoadingIndicator(false, false)
+                                            presenter.setWeatherViews()
+                                            presenter.loadBookmarks()
+                                        }
                                     }
 
                                     override fun onNetworkNotAvailable() {
@@ -246,7 +291,9 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                 } )
                             }
                             override fun onNetworkNotAvailable() {
-
+                                showLoadingIndicator(false, false)
+                                showCheckNetwork()
+                                showLoadDataError()
                             }
                         })
 

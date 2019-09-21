@@ -9,25 +9,23 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.widget.Toast
 import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
 import com.example.ddareungi.data.DataRepositoryHolder
 import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
-import com.example.ddareungi.splash.SplashActivity.Companion.CALL_REQUEST
-import com.example.ddareungi.splash.SplashActivity.Companion.MY_LOCATION_REQUEST
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.places.internal.lm
 import java.lang.Exception
 import java.util.*
-
 class SplashActivity : AppCompatActivity(), SplashContract.View {
     lateinit var splashPresenter: SplashPresenter
 
     var mLocation: Location = Location("initLocation")
     lateinit var fusedLocationClient: FusedLocationProviderClient
     var locationPermissionGranted = false
+
 
     companion object {
         const val MY_LOCATION_REQUEST = 99
@@ -37,8 +35,8 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dataRepository = DataRepository.newInstance(this)
 
+        val dataRepository = DataRepository.newInstance(this)
         splashPresenter = SplashPresenter(dataRepository, this)
 
         mLocation.latitude = 37.540
@@ -57,7 +55,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         startActivity(intent)
     }
 
-    override fun initLocation(dataRepository: DataRepository) {
+    override fun initLocation(isGps:Boolean,dataRepository: DataRepository) {
 
         try {
             val geocoder = Geocoder(this, Locale.KOREA)
@@ -66,13 +64,13 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
             splashPresenter.processLocation(
                 addr[2],
                 addr[3],
-                Scanner(resources.openRawResource(R.raw.weather)),
-                Scanner(resources.openRawResource(R.raw.dust))
+                Scanner(resources.openRawResource(com.example.ddareungi.R.raw.weather)),
+                Scanner(resources.openRawResource(com.example.ddareungi.R.raw.dust))
             )
 
         } catch (e: Exception) {
         }
-        dataRepository.initWeather(object : DataSource.LoadDataCallback {
+        dataRepository.initWeather(isGps,object : DataSource.LoadDataCallback {
             override fun onDataLoaded() {
                 showBookmarkActivity(dataRepository)
             }
@@ -103,8 +101,10 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 var isGpsProvider = false
                 var isNetworkProvider = false
                 var isLoaded = false
+                var isGpsProviderEnabled = true
+                var isNetworkProviderEnabled = true
                 override fun onLocationChanged(location: Location) {
-
+                    lm.removeUpdates(this)
                     if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
                     if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
                         true
@@ -113,7 +113,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                         mLocation.latitude = location.latitude
                         mLocation.longitude = location.longitude
                         lm.removeUpdates(this)
-                        splashPresenter.initWeatherRepository()
+                        splashPresenter.initWeatherRepository(true)
                     }
                 }
 
@@ -121,14 +121,33 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 }
 
                 override fun onProviderEnabled(provider: String) {
+
                 }
 
                 override fun onProviderDisabled(provider: String) {
+
+                    Toast.makeText(applicationContext,"위치 환경 설정을 켜주세요.",Toast.LENGTH_SHORT).show()
+
+                    if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
+                    if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
+                        false
+                    if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
+
+                        splashPresenter.initWeatherRepository(false)
+                        lm.removeUpdates(this)
+                    }
+
+
                 }
             }
 
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener)
+            lm.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER,
+                60000L,
+                10f,
+                locationListener
+            )
             splashPresenter.initDataRepository()
         }
         return true

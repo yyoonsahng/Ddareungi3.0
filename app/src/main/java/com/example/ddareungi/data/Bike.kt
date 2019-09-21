@@ -32,28 +32,23 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
             lateinit var bikeNumCallback: DataRepository.BikeNumApiListener
 
             class LoadBikeList(var url: String): DataRepository.BikeNumApiListener {
-                var bikeCallCount = 1
+                var bikeCallCount = 0
 
                 override fun onDataLoaded(dataFilterType: DataFilterType, bikeNum: Int) {
-                    callback.onDataLoaded(DataFilterType.BIKE_NUM)
+                    if(bikeNum==-1)
+                        callback.onDataLoaded(DataFilterType.BIKE)
                     totalBikeNum += bikeNum
 
                     if(totalBikeNum % 1000 == 0) {
                         bikeCallCount++
-                        val startIdx = (1 + 1000 * (bikeCallCount - 1)).toString()
-                        val endIdx = (1000 * bikeCallCount).toString()
+                        val startIdx = (1 + 1000 * bikeCallCount).toString()
+                        val endIdx = (1000 * (bikeCallCount+1)).toString()
                         url = baseUrl + startIdx + "/" + endIdx
-                        val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumCallback)
+                        val bikeNumTask = NetworkTask(bikeList,DataFilterType.BIKE_NUM, url, bikeNumCallback)
                         bikeNumTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-                    } else {
-                        for(i in 0 until bikeCallCount) {
-                            val startIdx = (1 + 1000 * i).toString()
-                            val endIdx = (1000 * (i + 1)).toString()
-                            url = baseUrl + startIdx + "/" + endIdx
-                            val bikeTask = NetworkTask(bikeList, DataFilterType.BIKE, url, callback)
-                            bikeTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
-                        }
                     }
+                    else
+                        callback.onDataLoaded(DataFilterType.BIKE)
                 }
 
                 override fun onFailure(dataFilterType: DataFilterType) {
@@ -65,7 +60,7 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
 
             val url = baseUrl + "1/1000"
             bikeNumCallback = LoadBikeList(url)
-            val bikeNumTask = NetworkTask(DataFilterType.BIKE_NUM, url, bikeNumCallback)
+            val bikeNumTask = NetworkTask(bikeList,DataFilterType.BIKE_NUM, url, bikeNumCallback)
             bikeNumTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
         }
 

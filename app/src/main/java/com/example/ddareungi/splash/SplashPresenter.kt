@@ -7,10 +7,13 @@ import java.util.*
 class SplashPresenter(val dataRepository: DataRepository, val splashView: SplashContract.View) :
     SplashContract.Presenter {
 
+    var isGps=false
     override fun initDataRepository() {
 
         dataRepository.initRepository(object : DataSource.LoadDataCallback {
             override fun onDataLoaded() {
+                if(!isGps)
+                    dataRepository.isReposInit=false
                 splashView.showBookmarkActivity(dataRepository)
             }
 
@@ -20,8 +23,9 @@ class SplashPresenter(val dataRepository: DataRepository, val splashView: Splash
         })
     }
 
-    override fun initWeatherRepository() {
-        splashView.initLocation(dataRepository)
+    override fun initWeatherRepository(isGps:Boolean) {
+        this.isGps=isGps
+        splashView.initLocation(isGps,dataRepository)
     }
 
     override fun processLocation(locality: String, neighborhood: String, weatherFile: Scanner, dustFile: Scanner) {

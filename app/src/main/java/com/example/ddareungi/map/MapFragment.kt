@@ -170,6 +170,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             var isGpsProvider = false
             var isNetworkProvider = false
             var isLoaded = false
+            var isGpsProviderEnabled = true
+            var isNetworkProviderEnabled = true
             override fun onLocationChanged(location: Location) {
 
                 if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
@@ -190,7 +192,17 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
 
             override fun onProviderEnabled(provider: String) {}
 
-            override fun onProviderDisabled(provider: String) {}
+            override fun onProviderDisabled(provider: String) {
+                Toast.makeText(context,"위치 환경 설정을 켜주세요.",Toast.LENGTH_SHORT).show()
+                if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
+                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
+                    false
+                if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
+                    lm.removeUpdates(this)
+                    callback.onNetworkNotAvailable()
+                }
+
+            }
         }
         if (checkLocationPermission()) {
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
