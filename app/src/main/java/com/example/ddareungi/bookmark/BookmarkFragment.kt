@@ -41,6 +41,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     lateinit var noNetworkView: LinearLayout
     lateinit var noBookmarkView: LinearLayout
     lateinit var networkRefreshBtn: TextView
+    lateinit var locationView: TextView
     lateinit var refreshFab: FloatingActionButton
 
     private lateinit var bookmarkAdapter: BookmarkAdapter
@@ -53,6 +54,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val root = inflater.inflate(R.layout.bookmark_frag, container, false)
         with(root) {
+            locationView=findViewById(R.id.neighborhood_text)
             progressBar = findViewById(R.id.progress_circular)
             weatherView = findViewById(R.id.weatherLL)
             bookmarkListView = findViewById(R.id.bookmark)
@@ -145,6 +147,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                           showRefreshFab: Boolean) {
         bookmarkListView.visibility = if(showBikeList) View.VISIBLE else View.GONE
         weatherView.visibility = if(showWeatherView) View.VISIBLE else View.GONE
+        locationView.visibility = if(showWeatherView) View.VISIBLE else View.GONE
         noNetworkView.visibility = if(showNetworkView) View.VISIBLE else View.GONE
         noBookmarkView.visibility = if(showNoBookmarkView) View.VISIBLE else View.GONE
         if(showRefreshFab) refreshFab.show() else refreshFab.hide()
@@ -225,8 +228,8 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
     override fun initLocation(dataRepository: DataRepository) {
         var mLocation = Location("initLocation")
         val res = requireContext().resources
-        mLocation.latitude = 37.540
-        mLocation.longitude = 127.07
+        mLocation.latitude = 37.566414
+        mLocation.longitude = 126.977912
 
         if(checkLocationPermission()) {
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
@@ -237,17 +240,18 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                         try{
                             val geocoder = Geocoder(context, Locale.KOREA)
                             val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
-                            var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+                            var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
                             for(addr in addrList) {
                                 val splitedArr = addr.getAddressLine(0).split(" ")
-                                if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                                if(splitedArr[2].endsWith("구") ){
                                     address = splitedArr
                                     break
                                 }
                             }
                             presenter.processLocation(address[2], address[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                         }
-                        catch (e:Exception){ }
+                        catch (e:Exception){
+                        }
                         dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
                             override fun onDataLoaded() {
                                 presenter.setIsWeather()
@@ -271,10 +275,10 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                 try{
                                     val geocoder = Geocoder(context, Locale.KOREA)
                                     val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
-                                    var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+                                    var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
                                     for(addr in addrList) {
                                        val splitedArr = addr.getAddressLine(0).split(" ")
-                                        if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                                        if(splitedArr[2].endsWith("구")){
                                             address = splitedArr
                                             break
                                         }

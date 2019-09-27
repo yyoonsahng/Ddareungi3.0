@@ -197,17 +197,16 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             override fun onProviderDisabled(provider: String) {
                 Toast.makeText(context,"위치 환경 설정을 켜주세요.",Toast.LENGTH_SHORT).show()
                 if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
-                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
-                    false
-                if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
-                    lm.removeUpdates(this)
-                    callback.onNetworkNotAvailable()
-                }
-
+                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled = false
+            if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
+                lm.removeUpdates(this)
+                callback.onNetworkNotAvailable()
             }
+
         }
-        if (checkLocationPermission()) {
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
+    }
+    if (checkLocationPermission()) {
+        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener
             )
         }
@@ -577,9 +576,8 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
 
     companion object {
         const val DEFAUT_ZOOM = 15f
-        val DEFAULT_POS = LatLng(37.540, 127.07)
+        val DEFAULT_POS = LatLng(37.566414, 126.977912)
         val MIN_CAMERA_ZOOM = 14f
     }
 
 }
-

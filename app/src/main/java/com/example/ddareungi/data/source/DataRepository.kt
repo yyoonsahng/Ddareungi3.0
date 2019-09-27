@@ -230,8 +230,8 @@ class DataRepository(
 
     companion object {
         fun newInstance(context: Context): DataRepository {
-            val dust = Dust(0.0, 0.0, "", 0.0, "", "광진구")
-            val weather = Weather(0, 0, 0, "", 0, "", "화양동")
+            val dust = Dust(0.0, 0.0, "", 0.0, "", "중구")
+            val weather = Weather(0, 0, 0, "", 0, "", "명동")
 
             return DataRepository(ArrayList(), ArrayList(), ArrayList(), dust, weather, BookmarkDatabase.getInstance(context))
         }

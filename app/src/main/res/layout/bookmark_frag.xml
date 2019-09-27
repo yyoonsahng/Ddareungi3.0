@@ -85,11 +85,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/ic_wifi"/>
+                    android:src="@drawable/ic_error_icon"/>
 
             <TextView
                     android:id="@+id/no_wifi_text"
-                    android:text="gps설정과 네트워크 연결을 확인해주세요"
+                    android:text="GPS설정과 네트워크 연결을 확인해주세요"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="16dp"
                     android:textSize="18sp" android:textColor="@color/grey"
