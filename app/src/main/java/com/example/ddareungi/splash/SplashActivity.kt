@@ -141,7 +141,6 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                     if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
                         false
                     if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
-
                         splashPresenter.initWeatherRepository(false)
                         lm.removeUpdates(this)
                     }

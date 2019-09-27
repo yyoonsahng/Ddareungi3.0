@@ -31,7 +31,7 @@ class BookmarkPresenter(
     override fun loadData() {
         //SplashActivity에서 데이터 받아오는데 실패한 경우에 isReposInit = false
         val isReposInit = dataRepository.isReposInit
-        Log.i("test","bookmarkPresenter: isReposinit == "+ isReposInit)
+        dataRepository.networkState=true
         //fragment가 생성될 때 호출
         if (firstLoad) {
             //데이터베이스에서 북마크된 정류소 불러와서 자전거 수 정보 업데이트

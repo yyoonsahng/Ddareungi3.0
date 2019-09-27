@@ -262,10 +262,12 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                     showLoadingIndicator(false, false)
                                     presenter.setWeatherViews()
                                     presenter.loadBookmarks()
+                                    dataRepository.networkState=true
                                 }
                             }
 
                             override fun onNetworkNotAvailable() {
+                                dataRepository.networkState=false
                                 showLoadingIndicator(false, false)
                                 showCheckNetwork()
                                 showLoadDataError()
@@ -298,6 +300,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                             showLoadingIndicator(false, false)
                                             presenter.setWeatherViews()
                                             presenter.loadBookmarks()
+                                            dataRepository.networkState=true
                                         }
                                     }
 
@@ -305,6 +308,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                         showLoadingIndicator(false, false)
                                         showCheckNetwork()
                                         showLoadDataError()
+                                        dataRepository.networkState=false
                                     }
                                 } )
                             }
@@ -312,6 +316,7 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                                 showLoadingIndicator(false, false)
                                 showCheckNetwork()
                                 showLoadDataError()
+                                dataRepository.networkState=false
                             }
                         })
 

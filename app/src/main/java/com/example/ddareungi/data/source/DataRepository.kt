@@ -19,17 +19,20 @@ class DataRepository(
     var isDustInit=false
     var isParkInit=false
     var isToiletInit=false
+    var networkState=true
 
     override fun refreshWeather(callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
-            private var networkState = true
+        //    private var networkState = true
             private var isWeather=false
             private var isDust=false
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 if(dataFilterType== DataFilterType.WEATHER) isWeather=true
                 else isDust=true
-                if(isWeather&&isDust)
+                if(isWeather&&isDust) {
+                    networkState=true
                     callback.onDataLoaded()
+                }
             }
             override fun onFailure(dataFilterType: DataFilterType) {
                 //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
@@ -47,23 +50,26 @@ class DataRepository(
 
     override fun initWeather(isGps:Boolean,callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
-            private var networkState = true
+           // private var networkState = true
 
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 if(dataFilterType== DataFilterType.WEATHER) isWeatherInit=true
                 else isDustInit=true
                 if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
                     isReposInit=if(isGps) true else false
+                    networkState=true
                     callback.onDataLoaded()
                 }
             }
             override fun onFailure(dataFilterType: DataFilterType) {
                 //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
                 //onFailure 호출이 여러번 되도 onNetworkNotAvailable은 한번만 호출
-                if(networkState) {
-                    networkState = false
-                    callback.onNetworkNotAvailable()
-                }
+
+                    if (networkState) {
+                        networkState = false
+                        callback.onNetworkNotAvailable()
+                    }
+
             }
         }
         val apiListener = ApiListener()
@@ -77,7 +83,7 @@ class DataRepository(
         class ApiListener: DataSource.ApiListener {
 
             private var toiletCallCount = 0
-            private var networkState = true
+           // private var networkState = true
 
             //각각 데이터가 성공적으로 불러와 질 때마다 callback 실행
             override fun onDataLoaded(dataFilterType: DataFilterType) {
@@ -94,6 +100,7 @@ class DataRepository(
 
                 if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
                     isReposInit = true
+                    networkState=true
                     callback.onDataLoaded()
                 }
             }
@@ -119,7 +126,7 @@ class DataRepository(
         class ApiListener: DataSource.ApiListener {
 
             private var toiletCallCount = 0
-            private var networkState = true
+ //           private var networkState = true
             private var isPark=false
             private var isBike=false
             private var isToilet=false
@@ -138,6 +145,7 @@ class DataRepository(
 
                 if(isPark && isBike && isToilet) {
                     isReposInit = true
+                    networkState=true
                     callback.onDataLoaded()
                 }
             }
@@ -163,7 +171,7 @@ class DataRepository(
         class ApiListener : DataSource.ApiListener {
             private var bikeLoaded = false
             private var bikeCallCount = 0
-            private var networkState = true
+     //       private var networkState = true
 
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 if (dataFilterType == DataFilterType.BIKE) {
@@ -171,8 +179,10 @@ class DataRepository(
                         bikeLoaded = true
                 }
 
-                if(bikeLoaded)
+                if(bikeLoaded) {
+                    networkState=true
                     callback.onDataLoaded()
+                }
             }
 
             override fun onFailure(dataFilterType: DataFilterType) {
