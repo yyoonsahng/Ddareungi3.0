@@ -31,7 +31,7 @@ class BookmarkPresenter(
     override fun loadData() {
         //SplashActivity에서 데이터 받아오는데 실패한 경우에 isReposInit = false
         val isReposInit = dataRepository.isReposInit
-
+        Log.i("test","bookmarkPresenter: isReposinit == "+ isReposInit)
         //fragment가 생성될 때 호출
         if (firstLoad) {
             //데이터베이스에서 북마크된 정류소 불러와서 자전거 수 정보 업데이트
@@ -77,7 +77,7 @@ class BookmarkPresenter(
 
                 //외부 데이터를 가지고 있는게 없으므로 전체 데이터를 웹에 요청
 
-                dataRepository.initRepository(object : DataSource.LoadDataCallback {
+                dataRepository.initRepositoryForBookmarkFrag(object : DataSource.LoadDataCallback {
                     override fun onDataLoaded() {
                         isAll=true
                         isBike=true
@@ -90,9 +90,7 @@ class BookmarkPresenter(
 
                     override fun onNetworkNotAvailable() {
                         bookmarkView.showLoadingIndicator(false, false)
-
                         bookmarkView.showCheckNetwork()
-
                         bookmarkView.showLoadDataError()
                     }
 
@@ -156,7 +154,10 @@ class BookmarkPresenter(
         dataRepository.initLocationCode(weatherFile, dustFile, locality, neighborhood)
     }
 
-    override fun setIsWeather(){isWeather=!isWeather}
+    override fun setIsWeather(){
+        Log.i("test","setisweather 원래값 "+isWeather)
+        isWeather=!isWeather
+        Log.i("test","setisweather 바뀐값 "+isWeather)}
     override fun getIsAll(): Boolean {return isAll}
     override fun getIsWeather():Boolean{return isWeather}
     override fun getIsBike():Boolean{return isBike}

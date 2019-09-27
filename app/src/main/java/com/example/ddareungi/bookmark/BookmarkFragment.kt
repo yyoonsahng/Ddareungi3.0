@@ -15,6 +15,7 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -80,11 +81,13 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             }
 
             networkRefreshBtn = (findViewById<TextView>(R.id.network_refresh_button)).also {
-                it.setOnClickListener { presenter.loadData() }
+                it.setOnClickListener {
+                    presenter.loadData() }
             }
 
             refreshFab = (findViewById<FloatingActionButton>(R.id.bookmark_refresh_fab)).also {
-                it.setOnClickListener { presenter.loadData() }
+                it.setOnClickListener {
+                    presenter.loadData() }
             }
         }
         return root

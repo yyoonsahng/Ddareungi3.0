@@ -72,6 +72,7 @@ class DataRepository(
     }
 
     //외부로부터 받아와야 하는 데이터 모두 불러올 때
+
     override fun initRepository(callback: DataSource.LoadDataCallback) {
         class ApiListener: DataSource.ApiListener {
 
@@ -90,7 +91,7 @@ class DataRepository(
                     }
                     DataFilterType.TOILET_NUM -> toiletCallCount++
                 }
-                
+
                 if(isBikeInit && isToiletInit && isParkInit && isWeatherInit && isDustInit) {
                     isReposInit = true
                     callback.onDataLoaded()
@@ -112,6 +113,49 @@ class DataRepository(
         Park.loadPark(parkList, apiListener)
         Toilet.loadToilet(toiletList, apiListener)
 
+    }
+
+    override fun initRepositoryForBookmarkFrag(callback: DataSource.LoadDataCallback) {
+        class ApiListener: DataSource.ApiListener {
+
+            private var toiletCallCount = 0
+            private var networkState = true
+            private var isPark=false
+            private var isBike=false
+            private var isToilet=false
+            //각각 데이터가 성공적으로 불러와 질 때마다 callback 실행
+            override fun onDataLoaded(dataFilterType: DataFilterType) {
+                when(dataFilterType) {
+                    DataFilterType.PARK ->  isPark= true
+                    DataFilterType.BIKE -> isBike = true
+
+                    DataFilterType.TOILET -> {
+                        toiletCallCount--
+                        if(toiletCallCount == 0) isToilet = true
+                    }
+                    DataFilterType.TOILET_NUM -> toiletCallCount++
+                }
+
+                if(isPark && isBike && isToilet) {
+                    isReposInit = true
+                    callback.onDataLoaded()
+                }
+            }
+
+            override fun onFailure(dataFilterType: DataFilterType) {
+                //요청한 데이터 중 하나라도 실패하면 연결 실패로 간주
+                //onFailure 호출이 여러번 되도 onNetworkNotAvailable은 한번만 호출
+                if(networkState) {
+                    networkState = false
+                    callback.onNetworkNotAvailable()
+                }
+            }
+        }
+        val apiListener = ApiListener()
+
+        Bike.loadBike(bikeList, apiListener)
+        Park.loadPark(parkList, apiListener)
+        Toilet.loadToilet(toiletList, apiListener)
     }
 
     //MapFragment에서 자전거 관련 정보 받아와야 할 때

@@ -16,11 +16,9 @@ class RecyclerItemTouchHelper: ItemTouchHelper.SimpleCallback {
     }
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         return true
     }
     override fun onSwiped(p0: RecyclerView.ViewHolder, p1: Int) {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         listener.onSwiped(p0, p1, p0.adapterPosition)
 
     }

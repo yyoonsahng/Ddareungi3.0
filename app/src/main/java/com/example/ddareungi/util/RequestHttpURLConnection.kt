@@ -32,7 +32,7 @@ class RequestHttpURLConnection {
                 else
                     break
             }
-            return page;
+            return page
         } catch (e: MalformedURLException) { // for URL
             e.printStackTrace()
         } catch (e: IOException) { // for openConnection()

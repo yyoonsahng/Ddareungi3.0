@@ -45,7 +45,7 @@ data class Bike(val stationId:String, val stationName:String, val rackTotCnt:Int
                         val endIdx = (1000 * (bikeCallCount+1)).toString()
                         url = baseUrl + startIdx + "/" + endIdx
                         val bikeNumTask = NetworkTask(bikeList,DataFilterType.BIKE_NUM, url, bikeNumCallback)
-                        bikeNumTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+                        bikeNumTask.execute()
                     }
                     else
                         callback.onDataLoaded(DataFilterType.BIKE)
