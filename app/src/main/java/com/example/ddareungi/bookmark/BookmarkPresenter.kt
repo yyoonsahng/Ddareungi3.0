@@ -53,7 +53,7 @@ class BookmarkPresenter(
             bookmarkView.initLocation(dataRepository) //리스터 추가해서 전체적으로 fail이 한번만 나도 아예 fail로 처리
             //외부 데이터를 한 번은 정상적으로 받아왔을 때
             if (isReposInit) {
-                bookmarkView.showLoadingIndicator(true, false)
+                bookmarkView.showLoadingIndicator(true, true)
                 //날씨, 지역 정보만 웹에 요청
                 dataRepository.refreshBike(object : DataSource.LoadDataCallback {
                     override fun onDataLoaded() {
