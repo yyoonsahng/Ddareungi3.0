@@ -15,7 +15,6 @@ import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,8 +29,6 @@ import com.example.ddareungi.util.RecyclerItemTouchHelper
 import com.example.ddareungi.util.checkLocationPermission
 import com.example.ddareungi.util.replaceFragmentInActivity
 import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.places.internal.lm
-import java.lang.Exception
 import java.util.*
 
 class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
@@ -235,13 +232,20 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
             val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
 
                 fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    if(it!=null) {
+                    if(it != null) {
                         mLocation = it
                         try{
                             val geocoder = Geocoder(context, Locale.KOREA)
-                            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                            val addr = addrList.first().getAddressLine(0).split(" ")
-                            presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+                            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
+                            var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+                            for(addr in addrList) {
+                                val splitedArr = addr.getAddressLine(0).split(" ")
+                                if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                                    address = splitedArr
+                                    break
+                                }
+                            }
+                            presenter.processLocation(address[2], address[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                         }
                         catch (e:Exception){ }
                         dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
@@ -266,9 +270,16 @@ class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHel
                             override fun onDataLoaded() {
                                 try{
                                     val geocoder = Geocoder(context, Locale.KOREA)
-                                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-                                    val addr = addrList.first().getAddressLine(0).split(" ")
-                                    presenter.processLocation(addr[2], addr[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
+                                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
+                                    var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+                                    for(addr in addrList) {
+                                       val splitedArr = addr.getAddressLine(0).split(" ")
+                                        if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                                            address = splitedArr
+                                            break
+                                        }
+                                    }
+                                    presenter.processLocation(address[2], address[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
                                 }
                                 catch (e:Exception){ }
 

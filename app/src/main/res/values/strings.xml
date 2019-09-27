@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">따릉이 3.0</string>
+    <string name="app_name">따릉아! 같이가</string>
     <string name="google_maps_key" templateMergeStragey="preserve" translatable="false">
         AIzaSyAWxll_7dyNsCe-zCQMbl3by3eKnXdiEc4
     </string>

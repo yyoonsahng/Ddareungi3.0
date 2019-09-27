@@ -3,12 +3,14 @@ package com.example.ddareungi.splash
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.*
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.widget.Toast
 import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
@@ -17,8 +19,8 @@ import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.data.source.DataSource
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import java.lang.Exception
 import java.util.*
+
 class SplashActivity : AppCompatActivity(), SplashContract.View {
     lateinit var splashPresenter: SplashPresenter
 
@@ -59,18 +61,25 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
 
         try {
             val geocoder = Geocoder(this, Locale.KOREA)
-            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1)
-            val addr = addrList.first().getAddressLine(0).split(" ")
+            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
+            var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+            for(addr in addrList) {
+                val splitedArr = addr.getAddressLine(0).split(" ")
+                if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                    address = splitedArr
+                    break
+                }
+            }
             splashPresenter.processLocation(
-                addr[2],
-                addr[3],
-                Scanner(resources.openRawResource(com.example.ddareungi.R.raw.weather)),
-                Scanner(resources.openRawResource(com.example.ddareungi.R.raw.dust))
+                address[2],
+                address[3],
+                Scanner(resources.openRawResource(R.raw.weather)),
+                Scanner(resources.openRawResource(R.raw.dust))
             )
 
         } catch (e: Exception) {
         }
-        dataRepository.initWeather(isGps,object : DataSource.LoadDataCallback {
+        dataRepository.initWeather(isGps, object : DataSource.LoadDataCallback {
             override fun onDataLoaded() {
                 showBookmarkActivity(dataRepository)
             }

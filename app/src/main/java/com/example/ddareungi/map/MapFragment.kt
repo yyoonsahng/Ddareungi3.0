@@ -132,7 +132,9 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
 
         with(googleMap) {
 
-            googleMap.setMinZoomPreference(MIN_CAMERA_ZOOM)
+            setMinZoomPreference(MIN_CAMERA_ZOOM)
+
+            isMyLocationEnabled = true
 
             presenter.initCameraPosition()
 
@@ -398,15 +400,15 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         if (checkLocationPermission()) {
             fusedLocationClient.lastLocation.addOnSuccessListener {
                 if (it != null) {
-                    location=it
-                    moveCamera(LatLng(location!!.latitude, location!!.longitude), DEFAUT_ZOOM)
+                    location = it
+                    moveCamera(LatLng(location.latitude, location.longitude), DEFAUT_ZOOM)
                 }
                 else{
-                    setUpLocation(location,object :DataSource.LoadDataCallback{
+                    moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
+                    setUpLocation(location, object :DataSource.LoadDataCallback{
                         override fun onDataLoaded() {
-                            moveCamera(LatLng(location!!.latitude, location!!.longitude), DEFAUT_ZOOM)
+                            moveCamera(LatLng(location.latitude, location.longitude), DEFAUT_ZOOM)
                         }
-
                         override fun onNetworkNotAvailable() {}
                     })
                 }
