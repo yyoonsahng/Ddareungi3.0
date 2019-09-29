@@ -108,5 +108,5 @@ fun AppCompatActivity.requestCallPermission() {
 private inline fun FragmentManager.transact(action: FragmentTransaction.() -> Unit) {
     beginTransaction().apply {
         action()
-    }.commit()
+    }.commitAllowingStateLoss()
 }

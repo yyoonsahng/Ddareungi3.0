@@ -154,10 +154,7 @@ class BookmarkPresenter(
         dataRepository.initLocationCode(weatherFile, dustFile, locality, neighborhood)
     }
 
-    override fun setIsWeather(){
-        Log.i("test","setisweather 원래값 "+isWeather)
-        isWeather=!isWeather
-        Log.i("test","setisweather 바뀐값 "+isWeather)}
+    override fun setIsWeather(){ isWeather=!isWeather}
     override fun getIsAll(): Boolean {return isAll}
     override fun getIsWeather():Boolean{return isWeather}
     override fun getIsBike():Boolean{return isBike}

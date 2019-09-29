@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.widget.Toast
 import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
@@ -41,8 +42,8 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         val dataRepository = DataRepository.newInstance(this)
         splashPresenter = SplashPresenter(dataRepository, this)
 
-        mLocation.latitude = 37.540
-        mLocation.longitude = 127.07
+        mLocation.latitude = 37.566414
+        mLocation.longitude = 126.977912
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         initPermission()
@@ -62,10 +63,10 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         try {
             val geocoder = Geocoder(this, Locale.KOREA)
             val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
-            var address: List<String> = listOf("대한민국", "서울특별시", "광진구", "자양동")
+            var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
             for(addr in addrList) {
                 val splitedArr = addr.getAddressLine(0).split(" ")
-                if(splitedArr[2].endsWith("구") && splitedArr[2].endsWith("동")){
+                if(splitedArr[2].endsWith("구") ){
                     address = splitedArr
                     break
                 }
@@ -115,8 +116,7 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 override fun onLocationChanged(location: Location) {
                     lm.removeUpdates(this)
                     if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
-                    if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
-                        true
+                    if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =true
                     if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
                         isLoaded = true
                         mLocation.latitude = location.latitude
@@ -134,15 +134,13 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
                 }
 
                 override fun onProviderDisabled(provider: String) {
-
+                    lm.removeUpdates(this)
                     Toast.makeText(applicationContext,"위치 환경 설정을 켜주세요.",Toast.LENGTH_SHORT).show()
 
                     if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
-                    if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
-                        false
+                    if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =false
                     if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
                         splashPresenter.initWeatherRepository(false)
-                        lm.removeUpdates(this)
                     }
 
 

@@ -9,6 +9,7 @@ import android.net.Uri
 import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
+import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.text.method.ScrollingMovementMethod
@@ -23,10 +24,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.example.ddareungi.MainActivity.Companion.dataRepository
 import com.example.ddareungi.data.Bike
 import com.example.ddareungi.data.Spot
-import com.example.ddareungi.util.OnSwipeTouchListener
-import com.example.ddareungi.util.RequestHttpURLConnection
-import com.example.ddareungi.util.checkCallPermission
-import com.example.ddareungi.util.requestCallPermission
+import com.example.ddareungi.map.MapFragment
+import com.example.ddareungi.map.MapPresenter
+import com.example.ddareungi.util.*
 import kotlinx.android.synthetic.main.fragment_spot_detail.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -101,13 +101,23 @@ class SpotDetailFragment : Fragment() {
             showPathInNaverMap(url)
         }
 
-
+        spotBikeTxt.setOnClickListener{
+            requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view).apply {
+                menu.findItem(R.id.map).isChecked = true
+            }
+            val mapFragment = MapFragment().also {
+                (requireActivity() as AppCompatActivity).replaceFragmentInActivity(it, R.id.fragment_container, "")
+            }
+            val mapPresenter = MapPresenter(dataRepository, mapFragment, true, spotBikeTxt.text.toString())
+        }
         spotHomeTxt.setOnClickListener {
-            if(spotHomeTxt.length()>0){
+            if(spotHomeTxt.text!="정보 없음"){
                 val webpage= Uri.parse("http://"+spotHomeTxt.text.toString())
                 val webIntent= Intent(Intent.ACTION_VIEW,webpage)
                 startActivity(webIntent)
-
+            }
+            else{
+                Toast.makeText(context,"홈페이지 url 정보가 없습니다.",Toast.LENGTH_SHORT).show()
             }
         }
         spotTelTxt.setOnClickListener {
@@ -119,6 +129,9 @@ class SpotDetailFragment : Fragment() {
                 } else {
                     (activity as AppCompatActivity).requestCallPermission()
                 }
+            }
+            else{
+                Toast.makeText(context,"전화번호 정보가 없습니다.",Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -153,8 +166,6 @@ class SpotDetailFragment : Fragment() {
                preclk=false
 
                num++
-               Log.i("touch","touch1:$num")
-
                if (num == sList.size) {
                    num = 0
                }
@@ -169,8 +180,6 @@ class SpotDetailFragment : Fragment() {
            override fun onSwipeRight() {
 
                num--
-               Log.i("touch","touch2:$num")
-
                if (num < 0) {
 
                    val fragment=CourseFragment()
@@ -225,7 +234,6 @@ class SpotDetailFragment : Fragment() {
             var spotData = ""
             if (sList.size == 0) { //처음 클릭할 때
                 var res = RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=0")
-
                 var jobj = JSONObject(res).getJSONObject("response").getJSONObject("body")
                 var totalCount = jobj.optInt("totalCount")
 

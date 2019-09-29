@@ -15,7 +15,7 @@
             android:paddingHorizontal="10dp"
             android:text="지역 선택 "
             android:textStyle="bold"
-            android:textSize="20sp"
+            android:textSize="20sp" android:textColor="@color/colorPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
     />

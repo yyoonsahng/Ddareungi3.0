@@ -17,47 +17,10 @@ class spotAdapter (val items:MutableList<Spot>)
         //반환타입에 맞게 v객체로 viewHolder 만듬 레이아웃 객체만들고 viewholder로
     }
 
-    fun moveItem( position1:Int,  position2:Int){
-        val item1=items.get(position1)
-
-        //지우고 다시 넣어주자
-        items.removeAt(position1)
-        items.add(position2,item1)
-        //item data set 변화
-        notifyItemMoved(position1,position2)//pos1 에서 pos2로
-
-
-    }
-    fun removeItem(position:Int){
-        items.removeAt(position)
-        notifyItemRemoved(position)
-    }
     override fun getItemCount(): Int {
         return items.size
     }
-/*
-    private fun findClosestBikeStation(lat: Double, lng: Double): Bike {
-        val dest = Location("dest")
-        dest.latitude = lat
-        dest.longitude = lng
 
-        var closetBikeStation = Bike.newInstance()
-        var dist = Float.MAX_VALUE
-
-        for(bike in dataRepository.bikeList) {
-            val bikeStation = Location("bike")
-            bikeStation.latitude = bike.stationLatitude
-            bikeStation.longitude = bike.stationLongitude
-            var tempDist: Float
-            tempDist = dest.distanceTo(bikeStation)
-            if(dist > tempDist) {
-                dist = tempDist
-                closetBikeStation = bike
-            }
-        }
-        return closetBikeStation
-    }
-*/
     override fun onBindViewHolder(p0: ViewHolder, p1: Int) {
         //데이터와 뷰를 연결
 
@@ -71,17 +34,6 @@ class spotAdapter (val items:MutableList<Spot>)
             p0.spotTelTxt.visibility=View.GONE
         }
         p0.spotHomeTxt.text=items.get(p1).homepage
-/*
-        Glide.with()
-            .load(items.get(p1).imgOrigin)
-            .apply(RequestOptions().placeholder(R.drawable.ic_directions_bike_black_24dp))
-            .into(p0.spotImgView)
-        */
-
-
-
-
-
     }
 
     inner class ViewHolder(itemView: View)

@@ -2,6 +2,7 @@ package com.example.ddareungi.map
 
 import android.location.Location
 import android.support.annotation.IdRes
+import android.util.Log
 import com.example.ddareungi.R
 import com.example.ddareungi.bookmark.PlaceType
 import com.example.ddareungi.data.Bike
