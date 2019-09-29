@@ -166,6 +166,8 @@ class DataRepository(
         Toilet.loadToilet(toiletList, apiListener)
     }
 
+
+
     //MapFragment에서 자전거 관련 정보 받아와야 할 때
     override fun refreshBike(callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {

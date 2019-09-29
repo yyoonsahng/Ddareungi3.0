@@ -31,6 +31,7 @@ import kotlinx.android.synthetic.main.fragment_spot_detail.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.URLEncoder
+import com.example.ddareungi.data.source.DataSource
 
 
 class SpotDetailFragment : Fragment(){
@@ -157,27 +158,33 @@ class SpotDetailFragment : Fragment(){
         }
 
         spotMoreBtn.setOnClickListener {
-
-            if (num > 0 && !preclk) {
-                num--
-            } else if (num < sList.size && preclk) {
-                num++
+            if(sList.isEmpty()){
+                Toast.makeText(context,"데이터 로딩 오류가 발생했습니다\n다시 선택하여주십시오",Toast.LENGTH_SHORT).show()
+                noWifi()
             }
-            val networkTask0 =
-                SpotDetailFragment.NetworkTask(
-                    -1,
-                    sList,
-                    num,
-                    this
-                ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-            networkTask0.execute()
-            val str = sList[num].overview
-            popup(str)
+            else{
+                if (num > 0 && !preclk) {
+                    num--
+                } else if (num < sList.size && preclk) {
+                    num++
+                }
+                val networkTask0 =
+                    SpotDetailFragment.NetworkTask(
+                        -1,
+                        sList,
+                        num,
+                        this
+                    ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                networkTask0.execute()
+                val str = sList[num].overview
+                popup(str)
 
-            if (!preclk) {
-                num++
-            } else {
-                num--
+                if (!preclk) {
+                    num++
+                } else {
+                    num--
+                }
+
             }
 
 
@@ -303,30 +310,30 @@ class SpotDetailFragment : Fragment(){
             if(result=="ERROR"){
                 Toast.makeText(mFrag.context,"네트워크 설정을 확인해주세요",Toast.LENGTH_SHORT).show()
                 mFrag.noWifi()
-                return
             }
+            else {
+                var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body")
+                    .getJSONObject("items")
+                    .getJSONObject("item")
+                try {
+                    sList[num].tel = jobj.optString("tel")
+                } catch (e: JSONException) {
+                    sList[num].tel = "정보 없음"
+                }
 
-            var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body")
-                .getJSONObject("items")
-                .getJSONObject("item")
-            try {
-                sList[num].tel = jobj.optString("tel")
-            } catch (e: JSONException) {
-                sList[num].tel = "정보 없음"
+                try {
+                    sList[num].homepage =
+                        jobj.optString("homepage").substringAfterLast("http://")
+                            .substringBefore("&")
+                            .substringBefore("<").substringBefore("/", "정보 없음")
+                } catch (e: JSONException) {
+                    sList[num].homepage = "정보없음"
+                }
+
+                sList[num].overview = jobj.optString("overview")
+                sList[num].deleteTag()
+                showSpot()
             }
-
-            try {
-                sList[num].homepage =
-                    jobj.optString("homepage").substringAfterLast("http://").substringBefore("&")
-                        .substringBefore("<").substringBefore("/", "정보 없음")
-            } catch (e: JSONException) {
-                sList[num].homepage = "정보없음"
-            }
-
-            sList[num].overview = jobj.optString("overview")
-            sList[num].deleteTag()
-            showSpot()
-
         }
 
         fun parsingSpotList(data: String) {
@@ -403,19 +410,41 @@ class SpotDetailFragment : Fragment(){
 
             var closetBikeStation = Bike.newInstance()
             var dist = Float.MAX_VALUE
+            if(dataRepository.bikeList.isEmpty()){
+                dataRepository.refreshBike(object :DataSource.LoadDataCallback{
+                    override fun onDataLoaded() {
+                        for (bike in dataRepository.bikeList) {
+                            var bikeStation = Location("bike")
+                            bikeStation.latitude = bike.stationLatitude
+                            bikeStation.longitude = bike.stationLongitude
+                            var tempDist: Float
+                            tempDist = dest.distanceTo(bikeStation)
+                            if (dist > tempDist) {
+                                dist = tempDist
+                                closetBikeStation = bike
+                            }
+                        }
+                    }
 
-            for (bike in dataRepository.bikeList) {
-                var bikeStation = Location("bike")
-                bikeStation.latitude = bike.stationLatitude
-                bikeStation.longitude = bike.stationLongitude
-                var tempDist: Float
-                tempDist = dest.distanceTo(bikeStation)
-                if (dist > tempDist) {
-                    dist = tempDist
-                    closetBikeStation = bike
+                    override fun onNetworkNotAvailable() {
+                        Toast.makeText(mFrag.context,"네트워크 설정을 확인해주세요",Toast.LENGTH_SHORT).show()
+                        mFrag.noWifi()
+                    }
+                })
+            }
+            else {
+                for (bike in dataRepository.bikeList) {
+                    var bikeStation = Location("bike")
+                    bikeStation.latitude = bike.stationLatitude
+                    bikeStation.longitude = bike.stationLongitude
+                    var tempDist: Float
+                    tempDist = dest.distanceTo(bikeStation)
+                    if (dist > tempDist) {
+                        dist = tempDist
+                        closetBikeStation = bike
+                    }
                 }
             }
-
             return closetBikeStation
         }
 

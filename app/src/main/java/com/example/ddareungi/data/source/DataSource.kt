@@ -13,7 +13,6 @@ interface DataSource {
 
         fun onFailure(dataFilterType: DataFilterType)
     }
-
     fun initRepository(callback: LoadDataCallback)
     fun initRepositoryForBookmarkFrag(callback: LoadDataCallback)
     fun refreshBike(callback: LoadDataCallback)
