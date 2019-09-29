@@ -170,8 +170,7 @@ class DataRepository(
     override fun refreshBike(callback: DataSource.LoadDataCallback) {
         class ApiListener : DataSource.ApiListener {
             private var bikeLoaded = false
-            private var bikeCallCount = 0
-     //       private var networkState = true
+
 
             override fun onDataLoaded(dataFilterType: DataFilterType) {
                 if (dataFilterType == DataFilterType.BIKE) {

@@ -33,18 +33,22 @@ import org.json.JSONObject
 import java.net.URLEncoder
 
 
-class SpotDetailFragment : Fragment() {
+class SpotDetailFragment : Fragment(){
+
 
     var sList = mutableListOf<Spot>()
     var num: Int = 0
     var index = 0
-    var preclk=false
+    var preclk = false
 
     fun showPathInNaverMap(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.addCategory(Intent.CATEGORY_BROWSABLE)
         val list: MutableList<ResolveInfo> =
-            activity!!.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            activity!!.packageManager.queryIntentActivities(
+                intent,
+                PackageManager.MATCH_DEFAULT_ONLY
+            )
         if (list.isEmpty()) {
             //네이버 지도 앱이 깔려있지 않은 경우에 플레이 스토어로 연결
             context!!.startActivity(
@@ -55,7 +59,11 @@ class SpotDetailFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
         index = this.arguments!!.getInt("index")
 
@@ -73,7 +81,12 @@ class SpotDetailFragment : Fragment() {
         sList.clear()
         num = 0 //현재 보여주는 스팟 번호(지역구를 새로 선택했으니 0으로 초기화)
         val networkTask0 =
-            SpotDetailFragment.NetworkTask(code, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+            SpotDetailFragment.NetworkTask(
+                code,
+                sList,
+                num,
+                this
+            ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
         networkTask0.execute()
         if (networkTask0.getStatus() != AsyncTask.Status.FINISHED)
@@ -81,18 +94,23 @@ class SpotDetailFragment : Fragment() {
         if (num == sList.size) {
             num = 0
         }
-       spotTitle.isSelected=true
+        spotTitle.isSelected = true
         // ***따릉이 경로 버튼***
         spotPathBtn.setOnClickListener {
             val networkTask0 =
-                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(
+                    -1,
+                    sList,
+                    num,
+                    this
+                ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
 
             //목적지
-            val dlat=sList[num].mapY
-            val dlng=sList[num].mapX
-            val dname=URLEncoder.encode(sList[num].title,"UTF-8")
+            val dlat = sList[num].mapY
+            val dlng = sList[num].mapX
+            val dname = URLEncoder.encode(sList[num].title, "UTF-8")
             //경유지
-            val closetBikeStation =networkTask0.findClsBikeStp(sList[num].mapX, sList[num].mapY)
+            val closetBikeStation = networkTask0.findClsBikeStp(sList[num].mapX, sList[num].mapY)
             val vlat = closetBikeStation.stationLatitude
             val vlng = closetBikeStation.stationLongitude
             val vname = URLEncoder.encode(closetBikeStation.stationName, "UTF-8")
@@ -101,37 +119,40 @@ class SpotDetailFragment : Fragment() {
             showPathInNaverMap(url)
         }
 
-        spotBikeTxt.setOnClickListener{
+        spotBikeTxt.setOnClickListener {
             requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view).apply {
                 menu.findItem(R.id.map).isChecked = true
             }
             val mapFragment = MapFragment().also {
-                (requireActivity() as AppCompatActivity).replaceFragmentInActivity(it, R.id.fragment_container, "")
+                (requireActivity() as AppCompatActivity).replaceFragmentInActivity(
+                    it,
+                    R.id.fragment_container,
+                    ""
+                )
             }
-            val mapPresenter = MapPresenter(dataRepository, mapFragment, true, spotBikeTxt.text.toString())
+            val mapPresenter =
+                MapPresenter(dataRepository, mapFragment, true, spotBikeTxt.text.toString())
         }
         spotHomeTxt.setOnClickListener {
-            if(spotHomeTxt.text!="정보 없음"){
-                val webpage= Uri.parse("http://"+spotHomeTxt.text.toString())
-                val webIntent= Intent(Intent.ACTION_VIEW,webpage)
+            if (spotHomeTxt.text != "정보 없음") {
+                val webpage = Uri.parse("http://" + spotHomeTxt.text.toString())
+                val webIntent = Intent(Intent.ACTION_VIEW, webpage)
                 startActivity(webIntent)
-            }
-            else{
-                Toast.makeText(context,"홈페이지 url 정보가 없습니다.",Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "홈페이지 url 정보가 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
         spotTelTxt.setOnClickListener {
-            if(spotTelTxt.text != "정보 없음"){
-                if(checkCallPermission()) {
+            if (spotTelTxt.text != "정보 없음") {
+                if (checkCallPermission()) {
                     val number = Uri.parse("tel:" + spotTelTxt.text.toString())
                     val callIntent = Intent(Intent.ACTION_DIAL, number)
                     startActivity(callIntent)
                 } else {
                     (activity as AppCompatActivity).requestCallPermission()
                 }
-            }
-            else{
-                Toast.makeText(context,"전화번호 정보가 없습니다.",Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "전화번호 정보가 없습니다.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -139,80 +160,97 @@ class SpotDetailFragment : Fragment() {
 
             if (num > 0 && !preclk) {
                 num--
-            }
-            else if(num<sList.size&&preclk){
+            } else if (num < sList.size && preclk) {
                 num++
             }
             val networkTask0 =
-                SpotDetailFragment.NetworkTask(-1, sList, num, this) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                SpotDetailFragment.NetworkTask(
+                    -1,
+                    sList,
+                    num,
+                    this
+                ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
             networkTask0.execute()
             val str = sList[num].overview
             popup(str)
 
             if (!preclk) {
                 num++
-             }
-            else{
+            } else {
                 num--
-             }
+            }
 
 
         }
 
-       frameView.setOnTouchListener (object :OnSwipeTouchListener(this){
+        frameView.setOnTouchListener(object : OnSwipeTouchListener(this) {
 
-           override fun onSwipeLeft() {//다음 화면
+            override fun onSwipeLeft() {//다음 화면
 
-               preclk=false
+                preclk = false
 
-               num++
-               if (num == sList.size) {
-                   num = 0
-               }
+                num++
+                if (num == sList.size) {
+                    num = 0
+                }
 
-               val networkTask0 =
-                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-               networkTask0.execute()
-
-
-           }
-
-           override fun onSwipeRight() {
-
-               num--
-               if (num < 0) {
-
-                   val fragment=CourseFragment()
-                   activity!!.supportFragmentManager.beginTransaction()
-                       .replace(R.id.fragment_container, fragment)
-                       .commit()
-
-                   num=0
-               }
-
-               preclk=true
+                val networkTask0 =
+                    SpotDetailFragment.NetworkTask(
+                        -1,
+                        sList,
+                        num,
+                        this@SpotDetailFragment
+                    ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                networkTask0.execute()
 
 
-               val networkTask0 =
-                   SpotDetailFragment.NetworkTask(-1, sList, num, this@SpotDetailFragment) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
-               networkTask0.execute()
+            }
+
+            override fun onSwipeRight() {
+
+                num--
+                if (num < 0) {
+
+                    val fragment = CourseFragment()
+                    activity!!.supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .commit()
+
+                    num = 0
+                }
+
+                preclk = true
 
 
-           }
-       })
+                val networkTask0 =
+                    SpotDetailFragment.NetworkTask(
+                        -1,
+                        sList,
+                        num,
+                        this@SpotDetailFragment
+                    ) //선택된 구에 따라서 구 코드 달라짐 ex. 강남구 1  강동구 2 ,...
+                networkTask0.execute()
+
+
+            }
+        })
 
     }
 
     fun popup(n: String) {
         val popupView = layoutInflater.inflate(R.layout.spotdetailpopup, null)
         val popupWindow =
-            PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            PopupWindow(
+                popupView,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
         popupWindow.isFocusable = true
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
         val spotDetailTxt = popupView.findViewById<TextView>(R.id.spotDetailTxt)
         //if(sList.isNotEmpty()){
         spotDetailTxt.text = n
-        spotDetailTxt.movementMethod=ScrollingMovementMethod()
+        spotDetailTxt.movementMethod = ScrollingMovementMethod()
 
         //}
         val closeBtn = popupView.findViewById<Button>(R.id.spotClsBtn)
@@ -221,8 +259,16 @@ class SpotDetailFragment : Fragment() {
         }
     }
 
+     fun noWifi(){
+         requireActivity().onBackPressed()
+     }
 
-    class NetworkTask(var code: Int, var sList: MutableList<Spot>, var num: Int, var mFrag: SpotDetailFragment) :
+    class NetworkTask(
+        var code: Int,
+        var sList: MutableList<Spot>,
+        var num: Int,
+        var mFrag: SpotDetailFragment
+    ) :
         AsyncTask<Unit, Unit, String>() {
 
         var url = arrayOf(
@@ -233,24 +279,35 @@ class SpotDetailFragment : Fragment() {
         override fun doInBackground(vararg params: Unit?): String {
             var spotData = ""
             if (sList.size == 0) { //처음 클릭할 때
-                var res = RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=0")
-                var jobj = JSONObject(res).getJSONObject("response").getJSONObject("body")
-                var totalCount = jobj.optInt("totalCount")
+                var res =
+                    RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=0")
+                if (res == "ERROR") return "ERROR"
+                else {
+                    var jobj = JSONObject(res).getJSONObject("response").getJSONObject("body")
+                    var totalCount = jobj.optInt("totalCount")
 
-                var result =
-                    RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=" + totalCount.toString())
-                parsingSpotList(result)
+                    var result =
+                        RequestHttpURLConnection().request(url[0] + code.toString() + "&numOfRows=" + totalCount.toString())
+                    if (result == "ERROR") return "ERROR"
+                    else parsingSpotList(result)
+                }
             }
 
             spotData = RequestHttpURLConnection().request(url[1] + sList[num].contentid)
-
+            if(spotData=="ERROR") return "ERROR"
             return spotData
         }
 
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
+            if(result=="ERROR"){
+                Toast.makeText(mFrag.context,"네트워크 설정을 확인해주세요",Toast.LENGTH_SHORT).show()
+                mFrag.noWifi()
+                return
+            }
 
-            var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body").getJSONObject("items")
+            var jobj = JSONObject(result).getJSONObject("response").getJSONObject("body")
+                .getJSONObject("items")
                 .getJSONObject("item")
             try {
                 sList[num].tel = jobj.optString("tel")
@@ -259,20 +316,22 @@ class SpotDetailFragment : Fragment() {
             }
 
             try {
-                   sList[num].homepage =
-                    jobj.optString("homepage").substringAfterLast("http://").substringBefore("&").substringBefore("<").substringBefore("/","정보 없음")
+                sList[num].homepage =
+                    jobj.optString("homepage").substringAfterLast("http://").substringBefore("&")
+                        .substringBefore("<").substringBefore("/", "정보 없음")
             } catch (e: JSONException) {
                 sList[num].homepage = "정보없음"
             }
 
-            sList[num].overview=jobj.optString("overview")
+            sList[num].overview = jobj.optString("overview")
             sList[num].deleteTag()
             showSpot()
 
         }
 
         fun parsingSpotList(data: String) {
-            var jarray = JSONObject(data).getJSONObject("response").getJSONObject("body").getJSONObject("items")
+            var jarray = JSONObject(data).getJSONObject("response").getJSONObject("body")
+                .getJSONObject("items")
                 .getJSONArray("item")
 
             for (i in 0..jarray.length() - 1) {
@@ -285,7 +344,17 @@ class SpotDetailFragment : Fragment() {
                 val title: String = jObject.optString("title")
 
                 sList.add(
-                    Spot(contentid, imgOrigin, imgThumb, mapX, mapY, title, "tel", "homepage", "overview")
+                    Spot(
+                        contentid,
+                        imgOrigin,
+                        imgThumb,
+                        mapX,
+                        mapY,
+                        title,
+                        "tel",
+                        "homepage",
+                        "overview"
+                    )
                 )
 
             }
@@ -293,28 +362,27 @@ class SpotDetailFragment : Fragment() {
 
         fun showSpot() {
             //어댑터 연결
-
-            if(mFrag.isAdded) {
+            if (mFrag.isAdded) {
                 val spotImgView = mFrag.activity!!.findViewById<ImageView>(R.id.spotImgView)
                 val spotTitle = mFrag.activity!!.findViewById<TextView>(R.id.spotTitle)
                 val spotTelTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotTelTxt)
                 val spotHomeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotHomeTxt)
                 val spotBikeTxt = mFrag.activity!!.findViewById<TextView>(R.id.spotBikeTxt)
-                val no_img_text=mFrag.activity!!.findViewById<TextView>(R.id.no_img_text)
+                val no_img_text = mFrag.activity!!.findViewById<TextView>(R.id.no_img_text)
 
-                spotImgView.scaleType=ImageView.ScaleType.CENTER_INSIDE
+                spotImgView.scaleType = ImageView.ScaleType.CENTER_INSIDE
                 Glide.with(mFrag.activity!!.applicationContext)
                     .load(sList[num].imgOrigin)
                     .apply(RequestOptions().placeholder(R.drawable.ic_no_bookmark))
                     .into(spotImgView)
-                if(sList[num].imgOrigin!="")  spotImgView.scaleType=ImageView.ScaleType.FIT_XY
-                no_img_text.visibility = if(sList[num].imgOrigin=="") View.VISIBLE else View.GONE
+                if (sList[num].imgOrigin != "") spotImgView.scaleType = ImageView.ScaleType.FIT_XY
+                no_img_text.visibility = if (sList[num].imgOrigin == "") View.VISIBLE else View.GONE
 
                 spotTitle.text = sList[num].title
 
                 //***근처 따릉이 대여소!!***
 
-                spotBikeTxt.text=findClsBikeStp(sList[num].mapX,sList[num].mapY).stationName
+                spotBikeTxt.text = findClsBikeStp(sList[num].mapX, sList[num].mapY).stationName
 
 
                 spotHomeTxt.text = sList[num].homepage
@@ -327,18 +395,16 @@ class SpotDetailFragment : Fragment() {
             }
 
         }
-        fun findClsBikeStp(mapX:Double,mapY:Double):Bike{
 
-
+        fun findClsBikeStp(mapX: Double, mapY: Double): Bike {
             val dest = Location("dest")
             dest.latitude = mapY
             dest.longitude = mapX
 
             var closetBikeStation = Bike.newInstance()
-            var dist =Float.MAX_VALUE
+            var dist = Float.MAX_VALUE
 
-            for(bike in dataRepository.bikeList) {
-                Log.i("dest4",bike.stationName)
+            for (bike in dataRepository.bikeList) {
                 var bikeStation = Location("bike")
                 bikeStation.latitude = bike.stationLatitude
                 bikeStation.longitude = bike.stationLongitude

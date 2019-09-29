@@ -17,6 +17,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import kotlinx.android.synthetic.main.activity_main.*
 
 
+
 class MainActivity : AppCompatActivity(){
 
     var locationPermissionGranted: Boolean = false
