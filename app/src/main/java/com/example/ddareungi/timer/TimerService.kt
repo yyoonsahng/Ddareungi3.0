@@ -6,11 +6,13 @@ import android.content.Intent
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
-import android.support.v4.app.NotificationCompat
+import androidx.core.app.NotificationCompat
+import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
-import com.example.ddareungi.splash.SplashActivity
+
 
 class TimerService : Service(){
+
     lateinit var timer: CountDownTimer
     var limitTime: Long = 10000
     var notifText = ""
@@ -19,11 +21,13 @@ class TimerService : Service(){
         super.onStartCommand(intent, flags, startId)
         isRunning = true
         limitTime = intent!!.getIntExtra(TimerFragment.TIME, 1) * MILLS_PER_HOUR - 5 * MILLS_PER_MIN
+
         if(limitTime == 55 * MILLS_PER_MIN) {
             notifText = "55분 00초"
         } else {
             notifText = "1시간 55분 00초"
         }
+
         startForeground(NOTIF_ID, getNotification(notifText))
 
         timer = object: CountDownTimer(limitTime, 10L) {
@@ -41,6 +45,7 @@ class TimerService : Service(){
                     notifText = String.format("%d시간 %02d분 %02d초", hour, min, sec)
                 else
                     notifText = String.format("%02d분 %02d초", min, sec)
+
                 updateNotification(notifText)
             }
 
@@ -63,17 +68,22 @@ class TimerService : Service(){
         notificationManager.cancel(NOTIF_ID)
         super.onDestroy()
     }
+
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
-    fun getNotification(text: String): Notification {
+    private fun getNotification(text: String): Notification {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(
                 NotificationChannel("timer notification", "Timer notification", NotificationManager.IMPORTANCE_HIGH)
             )
         }
-        val intent = PendingIntent.getActivity(this, 0, Intent(this, SplashActivity::class.java), 0)
+        val activityIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+            addNextIntentWithParentStack(activityIntent)
+            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
 
         return NotificationCompat.Builder(this, "timer notification")
             .setSmallIcon(R.drawable.ic_ddareungi_logo)
@@ -81,7 +91,7 @@ class TimerService : Service(){
             .setContentText(text)
             .setOnlyAlertOnce(true)
             .setOngoing(true)
-            .setContentIntent(intent)
+            .setContentIntent(pendingIntent)
             .build()
     }
 

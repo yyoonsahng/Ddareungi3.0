@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View"/>
+
+        <variable
+            name="pathClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="mapVM"
+            type="com.example.ddareungi.map.MapViewModel" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        app:cardCornerRadius="8dp"
+        android:layout_gravity="bottom">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/park_name_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                style="@style/DestCardNameStyle"
+                android:text="@{mapVM.clickedPark.name}"
+                tools:text="어린이대공원"/>
+
+            <TextView
+                android:id="@+id/park_dist_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/park_name_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                style="@style/DestCardDistTextStyle"
+                app:setDist="@{mapVM.clickedPark.dist}"
+                tools:text="1.9km"/>
+
+            <ImageButton
+                android:id="@+id/park_card_path_button"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:backgroundTint="@color/colorPrimaryLight"
+                android:background="@drawable/dest_path_button_style"
+                android:src="@drawable/ic_baseline_directions_40px"
+                android:onClick="@{pathClickListener}"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+</layout>

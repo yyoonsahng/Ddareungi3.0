@@ -1,237 +1,390 @@
 package com.example.ddareungi.map
 
-import android.content.Context
+
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.internal.NavigationMenu
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.CardView
 import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.example.ddareungi.R
-import com.example.ddareungi.bookmark.PlaceType
-import com.example.ddareungi.data.Bike
+import com.example.ddareungi.data.BikeStation
 import com.example.ddareungi.data.Park
-import com.example.ddareungi.data.Toilet
-import com.example.ddareungi.data.source.DataSource
-import com.example.ddareungi.util.checkLocationPermission
-import com.example.ddareungi.util.requestLocationPermission
-import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.FusedLocationProviderClient
+import com.example.ddareungi.databinding.MapFragBinding
+import com.example.ddareungi.utils.GpsUtils
+import com.example.ddareungi.utils.setupSnackBar
+import com.example.ddareungi.utils.NaverMapUtils
+import com.example.ddareungi.utils.NetworkUtils
+import com.example.ddareungi.viewmodel.BikeStationViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.*
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
+import com.google.android.material.internal.NavigationMenu
 import io.github.yavski.fabspeeddial.FabSpeedDial
-import kotlinx.android.synthetic.main.map_frag.*
-import java.util.*
+import kotlinx.android.synthetic.main.activity_main.*
 
-class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeedDial.MenuListener {
 
-    override lateinit var presenter: MapContract.Presenter
+class MapFragment : Fragment(), OnMapReadyCallback, FabSpeedDial.MenuListener {
 
-    lateinit var mapView: MapView
-    lateinit var googleMap: GoogleMap
-    var autoCompleteFragment: AutocompleteSupportFragment? = null
+    // MapFragment binding 객체
+    private lateinit var binding: MapFragBinding
 
-    lateinit var myLocationBtn: FloatingActionButton
-    lateinit var refreshBtn: FloatingActionButton
-    lateinit var placeTypeBtn: FabSpeedDial
-    lateinit var bookmarkBtn: ImageButton
-    lateinit var rentBtn: Button
-    lateinit var bikePathBtn: Button
-    lateinit var parkPathBtn: ImageButton
-    lateinit var searchPathButton: ImageButton
+    // GoogleMap 객체
+    private lateinit var googleMap: GoogleMap
 
-    lateinit var bikeCardView: CardView
-    lateinit var parkCardView: CardView
-    lateinit var destCardView: CardView
+    // 따릉이 정류소 ViewModel 객체
+    private lateinit var bsViewModel: BikeStationViewModel
 
-    lateinit var fusedLocationClient: FusedLocationProviderClient
-    lateinit var markerController: MarkerController
-    var searchMarker: Marker? = null
+    // 지도 ViewModel 객체
+    private lateinit var mapViewModel: MapViewModel
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+    // 정류소 마커 관련 기능 Controller
+    private lateinit var markerController: MarkerController
+
+    // 목적지 검색 fragment 객체
+    private var autoCompleteFragment: AutocompleteSupportFragment? = null
+
+    // 사용자 GPS 권한 획득 여부
+    private var locationPermissionGranted = false
+
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        val root = inflater.inflate(R.layout.map_frag, container, false)
-        with(root)
-        {
-            mapView = findViewById(R.id.mapView)
-            bikeCardView = findViewById(R.id.bike_card_view)
-            parkCardView = findViewById(R.id.park_card_view)
-            destCardView = findViewById(R.id.dest_card_view)
+        bsViewModel = activity?.run {
+            ViewModelProviders.of(this)[BikeStationViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
 
-            myLocationBtn = (findViewById<FloatingActionButton>(R.id.my_location_button)).also {
-                it.setOnClickListener { moveCameraToUser(init = false) }
-            }
-            refreshBtn = (findViewById<FloatingActionButton>(R.id.map_refresh_fab)).also {
-                it.setOnClickListener { presenter.requestBikeDataUpdate() }
-            }
-            bookmarkBtn = (findViewById<ImageButton>(R.id.bookmark_button)).also {
-                it.setOnClickListener { presenter.updateBookmarkState() }
-            }
-            bikePathBtn = (findViewById<Button>(R.id.path_button)).also {
-                it.setOnClickListener { presenter.getUrlForNaverMap(R.id.path_button) }
-            }
-            rentBtn = (findViewById<Button>(R.id.rent_button)).also {
-                it.setOnClickListener { showDdareungiWebPage() }
-            }
-            parkPathBtn = (findViewById<ImageButton>(R.id.park_card_path_button)).also {
-                it.setOnClickListener { presenter.getUrlForNaverMap(R.id.park_card_path_button) }
-            }
-            searchPathButton = (findViewById<ImageButton>(R.id.dest_card_path_button)).also {
-                it.setOnClickListener { presenter.getUrlForNaverMap(R.id.dest_card_path_button) }
-            }
-            placeTypeBtn =
-                (findViewById<FabSpeedDial>(R.id.map_place_fab)).also { it.setMenuListener(this@MapFragment) }
-        }
+        mapViewModel = activity?.run {
+            ViewModelProviders.of(this)[MapViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
 
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+        binding = MapFragBinding.inflate(inflater, container, false)
+            .apply {
+                bsviewmodel = bsViewModel
+                mapviewmodel = mapViewModel
+                stationCardView.viewModel = mapViewModel
+                parkCardView.setMapVM(mapViewModel)
+                searchCardView.setMapVM(mapViewModel)
+            }
 
         initAutocompleteFragment()
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        binding.mapView.onCreate(savedInstanceState)
+        binding.mapView.getMapAsync(this)
 
-        return root
+        binding.lifecycleOwner = this.viewLifecycleOwner
+
+        mapViewModel.start(bsViewModel.bikeStations.value!!)
+
+        setClickedStation()
+
+        return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        setUpBookmarkButton()
+
+        setUpRefreshFab()
+
+        setCardViewVisibility()
+
+        setupSnackbar()
+
+        setUpPathButtonInNaverMap()
+
+        setUpRentButton()
+
+        binding.mapPlaceFab.setMenuListener(this)
+
+        Log.i("MapFragment", "visibility in onActivityCreated: ${binding.mapPlaceFab.visibility}")
     }
 
     override fun onMapReady(map: GoogleMap?) {
         googleMap = map!!
-        markerController = MarkerController(context!!, googleMap)
+
+        markerController = MarkerController(requireContext(), mapViewModel)
+
+        initCameraPosition()
+
+        setUpMyLocationButton()
 
         with(googleMap) {
 
+            // 최소 카메라 줌 제한
             setMinZoomPreference(MIN_CAMERA_ZOOM)
 
-            isMyLocationEnabled = true
-
-            presenter.initCameraPosition()
-
+            // 카메라가 멈췄을 때 projection bound 안의 마커 업데이트
             setOnCameraIdleListener {
-                val bounds = projection.visibleRegion.latLngBounds
-                val zoomLevel = cameraPosition.zoom
-                presenter.updateMarkers(bounds, zoomLevel, false)
+                val bound = projection.visibleRegion.latLngBounds
+
+                if(mapViewModel.currentPlaceType.value == "Bike")
+                    markerController.updateBikeStationMarkers(viewLifecycleOwner, googleMap, bound)
+                else if(mapViewModel.currentPlaceType.value == "Park")
+                    markerController.updateParkMarkers(viewLifecycleOwner, googleMap, bound)
             }
 
+            // 카메라가 움직일 때 projection bound 안의 마커 업데이트
             setOnCameraMoveListener {
-                val bounds = projection.visibleRegion.latLngBounds
-                val zoomLevel = cameraPosition.zoom
-                presenter.updateMarkers(bounds, zoomLevel, false)
+                val bound = projection.visibleRegion.latLngBounds
+
+                if(mapViewModel.currentPlaceType.value == "Bike")
+                    markerController.updateBikeStationMarkers(viewLifecycleOwner, googleMap, bound)
+                else if(mapViewModel.currentPlaceType.value == "Park")
+                    markerController.updateParkMarkers(viewLifecycleOwner, googleMap, bound)
             }
 
+            // 마커 클릭 리스너 추가
             setOnMarkerClickListener {
+
+                // 클릭한 마커를 중심으로 카메라 이동
                 animateCamera(CameraUpdateFactory.newLatLng(it.position))
-                showClickedMarkerCardView(it)
-                true
-            }
 
-            setOnMapClickListener {
-                presenter.currentClickedMarker = null
-                hideMarkerCardView()
-            }
-            presenter.findClickedBookmarkedMarker()
-        }
-    }
+                // 검색 결과 마커가 없는 경우
+                if(mapViewModel.searchedPlace.value == null) {
 
-    private fun setUpLocation(mLocation:Location?,callback:DataSource.LoadDataCallback) {
-        val lm =
-            context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        val locationListener = object : LocationListener {
-            var isGpsProvider = false
-            var isNetworkProvider = false
-            var isLoaded = false
-            var isGpsProviderEnabled = true
-            var isNetworkProviderEnabled = true
-            override fun onLocationChanged(location: Location) {
-
-                if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
-                if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
-                    true
-
-                if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
-                    isLoaded = true
-                    mLocation!!.latitude = location.latitude
-                    mLocation!!.longitude = location.longitude
-                    lm.removeUpdates(this)
-                    callback.onDataLoaded()
+                    // 클릭한 정류소 정보를 viewModel에 전달
+                    if (mapViewModel.currentPlaceType.value == "Bike") {
+                        val station = it.tag as BikeStation
+                        mapViewModel.setClickedStation(station)
+                    }
+                    else if (mapViewModel.currentPlaceType.value == "Park") {
+                        val park = it.tag as Park
+                        mapViewModel.setClickedPark(park, getUserLocationTask())
+                    }
                 }
-
+                else {
+                    // 검색 결과 마커가 있는 경우
+                    if(it.tag is Place) {
+                        val place = it.tag as Place
+                        mapViewModel.setSearchedPlace(it, getUserLocationTask())
+                        Log.i("MapFragment", "place : ${place.name}")
+                    }
+                    // 검색 결과 마커가 있고 다른 마커를 클릭한 경우
+                    else {
+                        if (mapViewModel.currentPlaceType.value == "Bike") {
+                            val station = it.tag as BikeStation
+                            mapViewModel.setClickedStation(station)
+                        }
+                        else if (mapViewModel.currentPlaceType.value == "Park") {
+                            val park = it.tag as Park
+                            mapViewModel.setClickedPark(park, getUserLocationTask())
+                        }
+                    }
+                }
+                    true
             }
 
-            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-
-            override fun onProviderEnabled(provider: String) {}
-
-            override fun onProviderDisabled(provider: String) {
-                Toast.makeText(context,"위치 환경 설정을 켜주세요.",Toast.LENGTH_SHORT).show()
-                if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
-                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled = false
-            if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
-                lm.removeUpdates(this)
-                callback.onNetworkNotAvailable()
+            // 지도 클릭 리스너 추가
+            setOnMapClickListener {
+                if(mapViewModel.markerClicked.value!!) {
+                    mapViewModel.setClickedAsNull()
+                }
             }
+        }
 
+        // 대여소 실시간 정보를 새로 받아왔을 때 마커에 표시되는 정보 업데이트
+        bsViewModel.bikeStations.observe(viewLifecycleOwner, Observer {
+            if(it.isNotEmpty() && mapViewModel.currentPlaceType.value == "Bike") {
+                mapViewModel.bikeStations = it
+                val bound = googleMap.projection.visibleRegion.latLngBounds
+                markerController.updateBikeStationMarkers(viewLifecycleOwner, googleMap, bound)
+            }
+        })
+
+        // 마커 종류를 변경했을 때
+        mapViewModel.currentPlaceType.observe(viewLifecycleOwner, Observer {
+            googleMap.clear()
+
+            if(it == "Bike") {
+                mapViewModel.clearAddedStations()
+                val bound = googleMap.projection.visibleRegion.latLngBounds
+                markerController.updateBikeStationMarkers(viewLifecycleOwner, googleMap, bound)
+            }
+            else if(it == "Park") {
+                mapViewModel.clearAddedParks()
+                val bound = googleMap.projection.visibleRegion.latLngBounds
+                markerController.updateParkMarkers(viewLifecycleOwner, googleMap, bound)
+            }
+        })
+
+        if(!mapViewModel.focusOnMap.value!!) {
+            binding.mapPlaceFab.hide()
         }
     }
-    if (checkLocationPermission()) {
-        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
-            lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener
-            )
+
+    private fun setCardViewVisibility() {
+        mapViewModel.markerClicked.observe(this, Observer {
+
+            // 목적지 검색 결과가 없는 경우
+            if(it && mapViewModel.searchedPlace.value == null) {
+                val placeType = mapViewModel.currentPlaceType.value
+                if(placeType == "Bike") {
+                    binding.stationCardView.root.visibility = View.VISIBLE
+                }
+                else if(placeType == "Park") {
+                    binding.parkCardView.root.visibility = View.VISIBLE
+                }
+            }
+            else if(it && mapViewModel.searchedPlace.value != null) {
+                // 목적지 검색 결과가 있고 해당 마커를 클릭한 경우
+                if(mapViewModel.clickedStation.value == null && mapViewModel.clickedPark.value == null) {
+                    binding.searchCardView.root.visibility = View.VISIBLE
+                }
+                else if(mapViewModel.clickedStation.value != null) {
+                    binding.stationCardView.root.visibility = View.VISIBLE
+                    binding.searchCardView.root.visibility = View.GONE
+                }
+                else if(mapViewModel.clickedPark.value != null) {
+                    binding.parkCardView.root.visibility = View.VISIBLE
+                    binding.searchCardView.root.visibility = View.GONE
+                }
+            }
+            else if(!it){
+                binding.stationCardView.root.visibility = View.GONE
+                binding.parkCardView.root.visibility = View.GONE
+                binding.searchCardView.root.visibility = View.GONE
+            }
+        })
+    }
+
+    private fun setUpRefreshFab() {
+
+        binding.setFabClickListener {
+            // 네트워크 연결 있을 때만 정류소 실시간 정보 요청
+            if(NetworkUtils.isNetworkAvailable(requireContext())) {
+                mapViewModel.clearAddedStations()
+                bsViewModel.refresh()
+            } else {
+                //show no network snack bar
+                bsViewModel.showSnackbarMessage("현재 네트워크 연결이 없습니다.")
+            }
+        }
+    }
+
+    private fun setUpMyLocationButton() {
+
+        // GoogleMap의 기본 내 위치 버튼 비활성화
+        googleMap.uiSettings.isMyLocationButtonEnabled = false
+
+        if(locationPermissionGranted) {
+            // my-location layer 활성화 (지도 상에서 내 위치에 파란 점으로 보여주는 layer)
+            googleMap.isMyLocationEnabled = true
+        }
+
+        binding.myLocationButton.setOnClickListener {
+            // GPS 권한 없으면 다시 요청
+            if(!locationPermissionGranted) {
+                requestLocationPermission()
+            }
+            else {
+                if(!GpsUtils.isDeviceGpsTurnOn(requireContext())) {
+
+                } else {
+                    val fusedLocationClient
+                            = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+                    // 사용자 위치에 대한 캐쉬가 있으면 사용자 위치로 이동
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener {
+                            if (it != null) {
+                                googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    private fun getUserLocationTask(): Task<Location>? {
+        if(locationPermissionGranted) {
+            if(GpsUtils.isDeviceGpsTurnOn(requireContext())) {
+                val fusedLocationClient
+                        = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+                return fusedLocationClient.lastLocation
+            }
+        }
+        return null
+    }
+
+    /**
+     * 카메라 위치 초기화
+     */
+    private fun initCameraPosition() {
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        // 기본 위치는 시청으로 설정
+        var posLatLng = DEFAULT_POS
+
+        // [BookmarkFragment]에서 클릭해서 넘어온 경우 해당 정류소 위치로 카메라를 이동
+        if(mapViewModel.markerClicked.value!! && mapViewModel.currentPlaceType.value == "Bike") {
+            val station = mapViewModel.clickedStation.value!!
+            posLatLng = LatLng(station.stationLatitude, station.stationLongitude)
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(posLatLng))
+        }
+        // 사용자 위치 정보가 있으면 사용자 위치로, 없으면 기본 위치로 카메라 이동
+        else {
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+                if (it != null) {
+                    posLatLng = LatLng(it.latitude, it.longitude)
+                }
+                googleMap.moveCamera(CameraUpdateFactory.newLatLng(posLatLng))
+            }
         }
     }
 
     private fun initAutocompleteFragment() {
         val context = context ?: return
+
         Places.initialize(context, resources.getString(R.string.google_maps_key))
         val placesClient = Places.createClient(context)
-        val placeFields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+
+        // 목적지 검색 결과를 서울로 한정
         val bounds = LatLngBounds(LatLng(37.413294, 126.734086), LatLng(37.715133, 127.269311))
         val rectBounds = RectangularBounds.newInstance(bounds)
 
-        //Places.initialize(context, resources.getString(R.string.google_maps_key))
         autoCompleteFragment =
             childFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment?
         autoCompleteFragment!!.setHint("목적지 검색")
-        autoCompleteFragment!!.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME))
+        autoCompleteFragment!!.setPlaceFields(placeFields)
         autoCompleteFragment!!.setLocationRestriction(rectBounds)
 
         autoCompleteFragment!!.setOnPlaceSelectedListener(object : PlaceSelectionListener {
             override fun onPlaceSelected(p0: Place) {
                 val request = FetchPlaceRequest.builder(p0.id.toString(), placeFields).build()
                 placesClient.fetchPlace(request).addOnSuccessListener {
-                    showSearchMarker(it.place)
+
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLng(it.place.latLng))
+
+                    val marker = markerController.addSearchedMarker(it.place, googleMap)
+                    mapViewModel.setSearchedPlace(marker, getUserLocationTask())
                 }
             }
 
@@ -241,221 +394,12 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
             }
 
         })
-
     }
 
-    override fun showMarkerOnCurrentMap(
-        markersToShow: MutableMap<String, Any>,
-        showKeyList: MutableList<String>,
-        removeKeyList: MutableList<String>
-    ) {
-        when (presenter.currentPlaceType) {
-            PlaceType.BIKE -> markerController.addBikeMarker(
-                markersToShow as MutableMap<String, Bike>,
-                showKeyList,
-                removeKeyList
-            )
-            PlaceType.TOILET -> markerController.addToiletMarker(
-                markersToShow as MutableMap<String, Toilet>,
-                showKeyList
-            )
-            PlaceType.PARK -> markerController.addParkMarker(
-                markersToShow as MutableMap<String, Park>,
-                showKeyList
-            )
-            else -> {
-            }
-        }
-    }
-
-    private fun showClickedMarkerCardView(marker: Marker) {
-        presenter.currentClickedMarker = marker
-        destCardView.visibility = View.GONE
-
-        if (marker.tag is Place)
-            presenter.currentClickedMarkerType = PlaceType.SEARCH
-        else
-            presenter.currentClickedMarkerType = presenter.currentPlaceType
-
-
-        if (presenter.currentClickedMarkerType == PlaceType.TOILET)
-            marker.showInfoWindow()
-
-        presenter.updateClickedMarkerCardView(marker)
-    }
-
-    override fun showBikeCardView(stationName: String, leftBikeNum: String, bookmarked: Boolean) {
-        refreshBtn.hide()
-        placeTypeBtn.hide()
-        bikeCardView.visibility = View.VISIBLE
-
-        with(requireActivity()) {
-            findViewById<TextView>(R.id.station_name_text).text = stationName
-            findViewById<TextView>(R.id.left_bike_num_text).text = leftBikeNum
-        }
-        if (bookmarked) {
-            bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_black_24dp))
-        } else {
-            bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_border_black_24dp))
-        }
-    }
-
-    override fun showParkCardView(name: String, dist: String) {
-        refreshBtn.hide()
-        placeTypeBtn.hide()
-        parkCardView.visibility = View.VISIBLE
-
-        with(requireActivity()) {
-            findViewById<TextView>(R.id.park_name_text).text = name
-            findViewById<TextView>(R.id.park_dist_text).text = dist
-        }
-    }
-
-    override fun showDestCardView(name: String?, dist: String) {
-        refreshBtn.hide()
-        placeTypeBtn.hide()
-        destCardView.visibility = View.VISIBLE
-
-        with(requireActivity()) {
-            findViewById<TextView>(R.id.dest_name_text).text = name
-            findViewById<TextView>(R.id.dest_dist_text).text = dist
-        }
-    }
-
-    override fun findMarkerWithStationId(id: String, bike: Bike) {
-        presenter.currentClickedMarker = markerController.findBikeMarker(id, bike)
-    }
-
-    override fun showUpdatedBikeMarker() {
-        val bounds = googleMap.projection.visibleRegion.latLngBounds
-        val zoomLevel = googleMap.cameraPosition.zoom
-        googleMap.clear()
-        markerController.visibleMarkers.clear()
-        if (isAdded)
-            presenter.updateMarkers(bounds, zoomLevel, true)
-    }
-
-    private fun showSearchMarker(place: Place) {
-        if (searchMarker != null) {
-            markerController.removeMarker(searchMarker!!.title)
-        }
-        searchMarker = markerController.addSearchMarker(place)
-        presenter.currentClickedMarker = searchMarker
-        presenter.currentClickedMarkerType = PlaceType.SEARCH
-        moveCamera(searchMarker!!.position, DEFAUT_ZOOM)
-
-        showClickedMarkerCardView(searchMarker!!)
-    }
-
-    private fun hideMarkerCardView() {
-        bikeCardView.visibility = View.GONE
-        parkCardView.visibility = View.GONE
-        destCardView.visibility = View.GONE
-
-        with(presenter) {
-            if (currentClickedMarker != null)
-                currentClickedMarker!!.hideInfoWindow()
-            if (currentClickedMarkerType != PlaceType.SEARCH)
-                currentClickedMarker = null
-        }
-
-        refreshBtn.show()
-        placeTypeBtn.show()
-    }
-
-    override fun changeBookmarkState(bookmarked: Int) {
-        if (bookmarked == 0) {
-            bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_border_black_24dp))
-        } else if (bookmarked == 1) {
-            bookmarkBtn.setImageDrawable(requireContext().getDrawable(R.drawable.ic_star_black_24dp))
-        }
-    }
-
-    override fun getUserLocation(callback: MapPresenter.GetUserLocationCallback) {
-        var location= Location("initLocation")
-        if (checkLocationPermission()) {
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (it != null) {
-                    location = it
-                    callback.onSuccess(location)
-                } else {
-                    setUpLocation(location,object :DataSource.LoadDataCallback{
-                        override fun onDataLoaded() {
-                            callback.onSuccess(location)
-                        }
-
-                        override fun onNetworkNotAvailable() {}
-                    })
-                }
-
-            }
-        }
-    }
-
-    override fun moveCameraToUser(init: Boolean) {
-
-        var location=Location("initLocation")
-
-        if (checkLocationPermission()) {
-            fusedLocationClient.lastLocation.addOnSuccessListener {
-                if (it != null) {
-                    location = it
-                    moveCamera(LatLng(location.latitude, location.longitude), DEFAUT_ZOOM)
-                }
-                else{
-                    moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
-                    setUpLocation(location, object :DataSource.LoadDataCallback{
-                        override fun onDataLoaded() {
-                            moveCamera(LatLng(location.latitude, location.longitude), DEFAUT_ZOOM)
-                        }
-                        override fun onNetworkNotAvailable() {}
-                    })
-                }
-
-
-            }
-        } else {
-            moveCamera(DEFAULT_POS, DEFAUT_ZOOM)
-            if (!init) {
-                showNoGpsPermissionDialog()
-            }
-        }
-    }
-
-    override fun moveCameraByPos(lat: Double, lng: Double) {
-        val pos = LatLng(lat, lng)
-        val zoomLevel = DEFAUT_ZOOM
-        moveCamera(pos, zoomLevel)
-    }
-
-    private fun moveCamera(pos: LatLng, zoomLevel: Float) {
-        if (zoomLevel == -1f) {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(pos))
-        } else {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, zoomLevel))
-        }
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem?): Boolean {
-
-        val bounds = googleMap.projection.visibleRegion.latLngBounds
-        val zoomLevel = googleMap.cameraPosition.zoom
-
-        when (menuItem!!.itemId) {
-            R.id.bike_stop_fab -> presenter.currentPlaceType = PlaceType.BIKE
-            R.id.toilet_fab -> presenter.currentPlaceType = PlaceType.TOILET
-            R.id.park_fab -> presenter.currentPlaceType = PlaceType.PARK
-        }
-        googleMap.clear()
-        markerController.visibleMarkers.clear()
-        presenter.updateMarkers(bounds, zoomLevel, true)
-
-        return false
-    }
-
-    override fun showPathInNaverMap(url: String) {
+    private fun showPathInNaverMap(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         intent.addCategory(Intent.CATEGORY_BROWSABLE)
+
         val list: MutableList<ResolveInfo> =
             activity!!.packageManager.queryIntentActivities(
                 intent,
@@ -471,113 +415,173 @@ class MapFragment() : Fragment(), MapContract.View, OnMapReadyCallback, FabSpeed
         }
     }
 
-    override fun showLoadingDataFailedDialog() {
-        Toast.makeText(requireContext(), "데이터를 불러오는데 실패하였습니다", Toast.LENGTH_SHORT).show()
-    }
+    private fun setUpPathButtonInNaverMap() {
 
-    override fun showNoGpsPermissionDialog() {
-        val context = context ?: return
-        val activity = activity ?: return
+        binding.stationCardView.setPathClickListener {
+            val currStation = mapViewModel.clickedStation.value!!
 
-        val builder = AlertDialog.Builder(context)
-        builder.setMessage("앱을 사용하는 동안\n해당 앱이 사용자의 위치에 접근하도록 허용하겠습니까?")
-            .setPositiveButton("확인") { dialog, which ->
-                (activity as AppCompatActivity).requestLocationPermission()
-            }
-            .setNegativeButton("취소") { _, _ -> }
-            .show()
-    }
+            showPathInNaverMap(NaverMapUtils.getUrlForBikeStation(currStation))
+        }
 
-    override fun showLoadingIndicator(active: Boolean) {
-        if (isAdded) {
-            if (active)
-                progress_circular.visibility = View.VISIBLE
-            else
-                progress_circular.visibility = View.GONE
+        binding.parkCardView.setPathClickListener {
+            val currPark = mapViewModel.clickedPark.value!!
+            val closetBikeStation = mapViewModel.findClosetBikeStation(currPark.latitude, currPark.longitude)
+
+            showPathInNaverMap(NaverMapUtils.getUrlForPark(currPark, closetBikeStation!!))
+        }
+
+        binding.searchCardView.setPathClickListener {
+            val searchedPlace = mapViewModel.searchedPlace.value!!.tag as Place
+            val closestBikeStation
+                    = mapViewModel.findClosetBikeStation(searchedPlace.latLng!!.latitude, searchedPlace.latLng!!.longitude)
+
+            showPathInNaverMap(NaverMapUtils.getUrlForPlace(searchedPlace, closestBikeStation!!))
         }
     }
 
+    override fun onMenuItemSelected(menuItem: MenuItem?): Boolean {
+
+        when (menuItem!!.itemId) {
+            R.id.bike_station_fab -> {
+                mapViewModel.setPlaceType("Bike")
+            }
+            R.id.park_fab -> {
+                mapViewModel.setPlaceType("Park")
+            }
+        }
+
+        return false
+    }
+
+    private fun setUpRentButton() {
+        binding.stationCardView.setRentClickListener {
+            val ddareungiHome =
+                Uri.parse("https://www.bikeseoul.com/app/station/moveStationRealtimeStatus.do")
+            val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
+            startActivity(webIntent)
+        }
+    }
+
+    override fun onPrepareMenu(p0: NavigationMenu?): Boolean { return true }
+
+    override fun onMenuClosed() { }
+
+    private fun setUpBookmarkButton() {
+        binding.stationCardView.setBookmarkClickListener {
+            mapViewModel.changeBookmarkState(bsViewModel)
+        }
+    }
+
+    private fun setClickedStation() {
+        val stationId = arguments?.getString(CLICKED_IN_BOOKMARK_FRAG_TAG)
+        if(stationId != null) {
+            mapViewModel.setClickedStationWithId(stationId)
+        }
+    }
+
+
+
+    private fun setupSnackbar() {
+        view?.setupSnackBar(this, bsViewModel.snackbarText, Snackbar.LENGTH_LONG)
+    }
+
     fun onBackPressed(): Boolean {
-        if (bikeCardView.visibility == View.VISIBLE || destCardView.visibility == View.VISIBLE || parkCardView.visibility == View.VISIBLE) {
-            bikeCardView.visibility = View.GONE
-            parkCardView.visibility = View.GONE
-            destCardView.visibility = View.GONE
-
-            refreshBtn.show()
-            placeTypeBtn.show()
+        // 클릭한 마커가 있어 보여지고 있는 CardView가 있는 경우, 지도를 클릭한 경우와 같은 효과
+        if(mapViewModel.markerClicked.value!!) {
+            mapViewModel.setClickedAsNull()
 
             return true
+        }
+        else {
+            // 검색 결과 마커를 지도에서 제거
+            if (mapViewModel.searchedPlace.value != null) {
+                mapViewModel.setSearchedPlaceAsNull()
 
-        } else if (searchMarker != null) {
-            markerController.removeMarker(searchMarker!!.title)
-            searchMarker = null
-
-            return true
-        } else
+                return true
+            }
             return false
+        }
+
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private fun checkLocationPermission(): Boolean {
+        return (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)
     }
 
-    private fun showDdareungiWebPage() {
-        val ddareungiHome =
-            Uri.parse("https://www.bikeseoul.com/app/station/moveStationRealtimeStatus.do?searchParameter=GU")
-        val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
-        startActivity(webIntent)
+    private fun requestLocationPermission() {
+        val requestPermission = (arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION))
+        val requestCode = MY_LOCATION_REQUEST_CODE
+
+        ActivityCompat.requestPermissions(requireActivity(), requestPermission, requestCode)
     }
-
-    override fun onMenuClosed() {}
-
-    override fun onPrepareMenu(navigationMenu: NavigationMenu?): Boolean {
-        return true
-    }
-
 
     override fun onStart() {
         super.onStart()
-        mapView.onStart()
+        binding.mapView.onStart()
     }
 
     override fun onResume() {
         super.onResume()
-        mapView.onResume()
-        (activity as AppCompatActivity).supportActionBar!!.hide()
-    }
+        binding.mapView.onResume()
 
+        // [MapFragment]에서는 상단의 액션바를 숨김
+        (activity as AppCompatActivity).supportActionBar!!.hide()
+
+        (activity as AppCompatActivity).bottom_nav_view.apply {
+            menu.findItem(R.id.map).isChecked = true
+        }
+
+        locationPermissionGranted = checkLocationPermission()
+    }
 
     override fun onPause() {
         super.onPause()
-        mapView.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mapView.onStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mapView.onDestroy()
-        (activity as AppCompatActivity).supportActionBar!!.show()
+        binding.mapView.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mapView.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
     }
 
+    override fun onStop() {
+        super.onStop()
+        binding.mapView.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.mapView.onDestroy()
+
+        // [MapFragment] 외에는 상단 액션바를 다시 보여줌
+        (activity as AppCompatActivity).supportActionBar!!.show()
+    }
 
     override fun onLowMemory() {
         super.onLowMemory()
-        mapView.onLowMemory()
+        binding.mapView.onLowMemory()
     }
 
     companion object {
-        const val DEFAUT_ZOOM = 15f
+        const val MY_LOCATION_REQUEST_CODE = 1
+        const val CLICKED_IN_BOOKMARK_FRAG_TAG = "clicked station in bookmark frag"
+        const val MIN_CAMERA_ZOOM = 14f
         val DEFAULT_POS = LatLng(37.566414, 126.977912)
-        val MIN_CAMERA_ZOOM = 14f
+
+        fun newInstance(stationId: String?): MapFragment {
+            return if(stationId == null) {
+                MapFragment()
+            } else {
+                val fragment = MapFragment()
+                val args = Bundle()
+                args.putString(CLICKED_IN_BOOKMARK_FRAG_TAG, stationId)
+                fragment.arguments = args
+
+                fragment
+            }
+        }
+
     }
 
 }

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <import type="android.view.View" />
+
+        <variable
+            name="timerBtnClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="timerVM"
+            type="com.example.ddareungi.viewmodel.TimerViewModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RadioGroup
+            android:id="@+id/timer_radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toTopOf="@id/timer_tv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <RadioButton
+                android:id="@+id/one_hour_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:buttonTint="@color/colorPrimaryLight"
+                android:checked="true"
+                android:textSize="20sp"
+                android:text="1시간 권" />
+
+            <RadioButton
+                android:id="@+id/two_hour_radio_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/colorPrimaryLight"
+                android:textSize="20sp"
+                android:text="2시간 권" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/timer_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:fontFamily="@font/spoqa_han_sans_regular"
+            android:textColor="@color/black"
+            android:textSize="64sp"
+            app:isRunning="@{timerVM.isRunning}"
+            app:countHour="@{timerVM.countHour}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="55:00" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/timer_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorPrimaryLight"
+            android:textAppearance="@style/TimerStartButtonText"
+            app:setText="@{timerVM.isRunning}"
+            tools:text="대여 시작"
+            android:layout_marginBottom="40dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:onClick="@{timerBtnClickListener}"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

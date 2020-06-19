@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="weatherVM"
+            type="com.example.ddareungi.viewmodel.WeatherViewModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+
+        android:id="@+id/weatherLL"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="48dp"
+        android:paddingStart="16dp"
+        android:visibility="@{weatherVM.loadSucceed ? View.VISIBLE : View.GONE}">
+
+        <TextView
+            android:id="@+id/neighborhood_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:fontFamily="@font/spoqa_han_sans_regular"
+            android:text="@{@string/neighborhoodFormat(weatherVM.neighborhood)}"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toTopOf="@+id/weather_text"
+            app:layout_constraintStart_toEndOf="@+id/weather_image"
+            tools:text="현재 자양1동은" />
+
+        <ImageView
+            android:id="@+id/weather_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:setWeatherImgRes="@{weatherVM.wfKor}"
+            tools:src="@drawable/ic_sunnny" />
+
+        <TextView
+            android:id="@+id/weather_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="26dp"
+            android:fontFamily="@font/spoqa_han_sans_bold"
+            android:text="@{@string/dustStateFormat(weatherVM.temp, weatherVM.wfKor)}"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/weather_image"
+            tools:text="21℃, 맑음" />
+
+        <TextView
+            android:id="@+id/plain_dust_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:fontFamily="@font/spoqa_han_sans_regular"
+            android:text="@string/plain_dust_start"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/weather_image" />
+
+        <TextView
+            android:id="@+id/dust_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/spoqa_han_sans_bold"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_marginStart="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/plain_dust_tv"
+            text="@{weatherVM.dust}"
+            tools:text="보통" />
+
+        <TextView
+            android:id="@+id/plain_dust_tv_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/spoqa_han_sans_regular"
+            android:text="@string/plain_dust_end"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:layout_marginStart="4dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/dust_text" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

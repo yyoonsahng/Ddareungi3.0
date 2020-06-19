@@ -7,114 +7,96 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.RingtoneManager
 import android.os.*
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.AppCompatButton
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import com.example.ddareungi.R
-import kotlinx.android.synthetic.main.fragment_timer.view.*
+import com.example.ddareungi.databinding.TimerFragBinding
+import com.example.ddareungi.utils.setupSnackBar
+import com.example.ddareungi.viewmodel.TimerViewModel
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.timer_frag.*
+import kotlinx.android.synthetic.main.toolbar_layout.*
 
 class TimerFragment : Fragment() {
 
-    var timerState = true//반납상태
-
-
-    lateinit var timer: CountDownTimer
-    lateinit var timerBtn: AppCompatButton
-    lateinit var timerTxt: TextView
-    lateinit var spinner: Spinner
-    var hour: Long = 0L
-    var secondsremaining: Long = 0
-    lateinit var oDialog: AlertDialog.Builder
-
-    lateinit var oneHourBtn: RadioButton
-    lateinit var twoHourBtn: RadioButton
-    lateinit var timerRadioGroup: ViewGroup
-    lateinit var timerTextView: TextView
     lateinit var uiUpdateReceiver: BroadcastReceiver
-    var countHour = 1
-    var isTimerRunning = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_timer, container, false)
+    lateinit var timerViewModel: TimerViewModel
 
-        with(root) {
-            timerTextView = findViewById(R.id.timer_text_view)
-            timerRadioGroup = (findViewById<RadioGroup>(R.id.timer_radio_group)).apply {
-                setOnCheckedChangeListener { _, checkedId ->
-                    if(!isTimerRunning) {
-                        if (checkedId == R.id.one_hour_radio_button) countHour = 1
-                        else if (checkedId == R.id.two_hour_radio_button) countHour = 2
-                        showLeftTime()
+    lateinit var binding: TimerFragBinding
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
+
+        timerViewModel = activity?.run {
+            ViewModelProviders.of(this)[TimerViewModel::class.java]
+        }?: throw Exception("Invalid Activity")
+
+        timerViewModel.setIsRunning(TimerService.getIsRunning())
+
+        binding = TimerFragBinding.inflate(inflater, container, false)
+            .apply {
+                timerVM = timerViewModel
+            }
+        binding.lifecycleOwner = this.viewLifecycleOwner
+
+        return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        setupSnackBar()
+        setTimerRGCheckedListener()
+        setTimerBtnClickListener()
+    }
+
+    private fun setTimerRGCheckedListener() {
+        binding.timerRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+            val countHour = timerViewModel.countHour.value
+
+            if(timerViewModel.isRunning.value!!) {
+                if((checkedId == R.id.one_hour_radio_button && countHour == 1) ||
+                    (checkedId == R.id.two_hour_radio_button && countHour == 2)) {
+
+                    timerViewModel.showSnackBarMessage("타이머가 이미 실행 중 입니다")
+                    if(countHour == 1) {
+                        one_hour_radio_button.isChecked = true
                     }
-                    else{
-                        if((checkedId==R.id.one_hour_radio_button && countHour==2)
-                            || (checkedId==R.id.two_hour_radio_button && countHour==1) )
-                            Toast.makeText(context,"타이머가 이미 실행중입니다.\n반납완료를 먼저 눌러주세요",Toast.LENGTH_SHORT).show()
-                        if(countHour==1) one_hour_radio_button.isChecked=true else two_hour_radio_button.isChecked=true
-
-
+                    else {
+                        two_hour_radio_button.isChecked = true
                     }
                 }
             }
-            timerBtn = (findViewById<AppCompatButton>(R.id.timer_button)).apply {
-                setOnClickListener {
-                    if (isTimerRunning) {
-                        stopTimer()
-                        text = "대여 시작"
-                    } else {
-                        startTimer()
-                        text = "반납 완료"
-                    }
+            else {
+                if (checkedId == R.id.one_hour_radio_button) {
+                    timerViewModel.setCountHour(1)
                 }
-                if (isTimerRunning)
-                    text = "반납 완료"
-                else
-                    text = "대여 시작"
-            }
-        }
-
-        return root
-    }
-
-    private fun showLeftTime() {
-        if (!isTimerRunning) {
-            if (countHour == 1) {
-                timerTextView.text = resources.getString(R.string.one_hour)
-            } else if (countHour == 2) {
-                timerTextView.text = resources.getString(R.string.two_hour)
+                else if (checkedId == R.id.two_hour_radio_button) {
+                    timerViewModel.setCountHour(2)
+                }
             }
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        isTimerRunning = TimerService.getIsRunning()
-
-        uiUpdateReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val time = intent!!.getStringExtra(TimerService.COUNTDOWN_ID)
-                updateCountDown(time)
+    private fun setTimerBtnClickListener() {
+        binding.setTimerBtnClickListener{
+            if(timerViewModel.isRunning.value!!) {
+                stopTimer()
             }
+            else {
+                startTimer()
+            }
+            timerViewModel.toggleIsRunning()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (isTimerRunning)
-            requireContext().registerReceiver(uiUpdateReceiver, IntentFilter(TimerService.TIMER_ACTION))
-        else
-            showLeftTime()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (isTimerRunning)
-            requireContext().unregisterReceiver(uiUpdateReceiver)
+    private fun setupSnackBar() {
+        view?.setupSnackBar(this, timerViewModel.snackbarText, Snackbar.LENGTH_LONG)
     }
 
     private fun stopTimer() {
@@ -122,30 +104,25 @@ class TimerFragment : Fragment() {
 
         context.unregisterReceiver(uiUpdateReceiver)
         context.stopService(Intent(context, TimerService::class.java))
-        isTimerRunning = false
-        showLeftTime()
     }
 
     private fun startTimer() {
         val context = context ?: return
 
         val intent = Intent(context, TimerService::class.java)
-        intent.putExtra(TIME, countHour)
+        intent.putExtra(TIME, timerViewModel.countHour.value)
         context.startService(intent)
-        isTimerRunning = true
         context.registerReceiver(uiUpdateReceiver, IntentFilter(TimerService.TIMER_ACTION))
     }
 
     private fun updateCountDown(time: String) {
         if (time != "done") {
-            timerTextView.text = time
+            binding.timerTv.text = time
         } else {
             alarm()
-            isTimerRunning = false
-            showLeftTime()
+            timerViewModel.toggleIsRunning()
         }
     }
-
 
     private fun alarm() {
         val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
@@ -160,9 +137,38 @@ class TimerFragment : Fragment() {
         }
     }
 
-    companion object {
-        const val TIME = "COUNT_DOWN_TIME"
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        TimerService.getIsRunning()
+
+        uiUpdateReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val time = intent!!.getStringExtra(TimerService.COUNTDOWN_ID)
+                updateCountDown(time!!)
+            }
+        }
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (timerViewModel.isRunning.value!!)
+            requireContext().registerReceiver(uiUpdateReceiver, IntentFilter(TimerService.TIMER_ACTION))
+
+        (activity as AppCompatActivity).supportActionBar!!.show()
+        (requireActivity()).appbar_title.text = "타이머"
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (timerViewModel.isRunning.value!!)
+            requireContext().unregisterReceiver(uiUpdateReceiver)
+    }
+
+    companion object {
+        const val TIME = "COUNT_DOWN_TIME"
+
+        fun newInstance() = TimerFragment()
+    }
 
 }

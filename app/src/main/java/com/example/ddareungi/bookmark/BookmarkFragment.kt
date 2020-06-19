@@ -1,333 +1,175 @@
 package com.example.ddareungi.bookmark
 
 
-import android.content.Context
 import android.location.Geocoder
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Bundle
-import android.support.design.widget.BottomNavigationView
-import android.support.design.widget.FloatingActionButton
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
 import android.util.Log
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.example.ddareungi.EventObserver
+import com.example.ddareungi.MainActivity
 import com.example.ddareungi.R
-import com.example.ddareungi.data.Bookmark
-import com.example.ddareungi.data.source.DataRepository
-import com.example.ddareungi.data.source.DataSource
+import com.example.ddareungi.databinding.BookmarkFragBinding
 import com.example.ddareungi.map.MapFragment
-import com.example.ddareungi.map.MapPresenter
-import com.example.ddareungi.util.RecyclerItemTouchHelper
-import com.example.ddareungi.util.checkLocationPermission
-import com.example.ddareungi.util.replaceFragmentInActivity
+import com.example.ddareungi.utils.NetworkUtils
+import com.example.ddareungi.utils.setupSnackBar
+import com.example.ddareungi.viewmodel.BikeStationViewModel
+import com.example.ddareungi.viewmodel.WeatherViewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.toolbar_layout.*
+import java.io.IOException
 import java.util.*
 
-class BookmarkFragment : Fragment(), BookmarkContract.View, RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
 
-    override lateinit var presenter: BookmarkContract.Presenter
+class BookmarkFragment : Fragment() {
 
-    lateinit var progressBar: ProgressBar
-    lateinit var bookmarkListView: RecyclerView
-    lateinit var weatherView: LinearLayout
-    lateinit var noNetworkView: LinearLayout
-    lateinit var noBookmarkView: LinearLayout
-    lateinit var networkRefreshBtn: TextView
-    lateinit var locationView: TextView
-    lateinit var refreshFab: FloatingActionButton
+    private lateinit var bsViewModel: BikeStationViewModel
 
-    private lateinit var bookmarkAdapter: BookmarkAdapter
+    private lateinit var weatherViewModel: WeatherViewModel
+
+    lateinit var binding: BookmarkFragBinding
+
+    lateinit var listAdapter: BookmarksAdapter
+
+    lateinit var itemTouchHelper: ItemTouchHelper
+
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
+
+        bsViewModel = activity?.run {
+            ViewModelProviders.of(this)[BikeStationViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
+
+        weatherViewModel = activity?.run {
+            ViewModelProviders.of(this)[WeatherViewModel::class.java]
+        } ?: throw Exception("Invalid Activity")
+
+         binding = BookmarkFragBinding.inflate(inflater, container, false)
+            .apply {
+                bikeStationVM = bsViewModel
+                weatherVM = weatherViewModel
+            }
+
+        return binding.root
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        binding.lifecycleOwner = this.viewLifecycleOwner
+
+        setupListAdapter()
+        setupRefreshFab()
+        setupSnackbar()
+
+        if(!weatherViewModel.loadSucceed.value!!) {
+            getLocationAndWeather()
+        }
+
+        bsViewModel.navigateToMapEvent.observe(this, EventObserver {
+            val args = Bundle()
+
+            // 클릭한 [stationId]를 인자로 [MapFragment]에 전달
+            args.putString(MapFragment.CLICKED_IN_BOOKMARK_FRAG_TAG, it)
+            (activity as MainActivity).setMapFragInstance(it)
+            val mapFrag = (activity as MainActivity).mapFrag
+            fragmentManager!!.beginTransaction().replace(R.id.frag_container, mapFrag!!).commit()
+        })
+
+    }
+
+    private fun setupListAdapter() {
+        val viewModel = binding.bikeStationVM
+        if(viewModel != null) {
+            listAdapter = BookmarksAdapter(viewModel)
+            itemTouchHelper = ItemTouchHelper(SwipeToDeleteCallback(viewModel, listAdapter, 0, ItemTouchHelper.LEFT))
+            binding.bookmarkRecyclerView.adapter = listAdapter
+            binding.bookmarkRecyclerView
+                .addItemDecoration(DividerItemDecoration(requireContext(), RecyclerView.VERTICAL))
+            itemTouchHelper.attachToRecyclerView(binding.bookmarkRecyclerView)
+        } else {
+            Log.v("adapter", "ViewModel not initialized when attempting to set up adapter.")
+        }
+    }
+
+    private fun setupRefreshFab() {
+        binding.setFabClickListener {
+            if(NetworkUtils.isNetworkAvailable(requireContext())) {
+                bsViewModel.refresh()
+                getLocationAndWeather()
+            } else {
+                //show no network snack bar
+                bsViewModel.showSnackbarMessage("현재 네트워크 연결이 없습니다.")
+            }
+        }
+    }
+
+    private fun getLocationAndWeather() {
+        val context = context ?: return
+        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+
+            // 기본 사용자 위치는 서울 시청으로 설정
+            var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
+
+            if(it != null) {
+                if(NetworkUtils.isNetworkAvailable(context)) {
+                    val geocoder = Geocoder(context, Locale.KOREA)
+
+
+                    try {
+                        // 사용자 위치에 대해 최대 5개의 주소 정보 요청
+                        val addrList = geocoder.getFromLocation(it.latitude, it.longitude, 5)
+
+                        for (addr in addrList) {
+                            val splitedAddr = addr.getAddressLine(0).split(" ")
+
+                            // 나라, 도시, 구, 동 형태로 파싱된 주소 사용
+                            if (splitedAddr[2].endsWith("구") && splitedAddr[3].endsWith("동")) {
+                                address = splitedAddr
+                                break
+                            }
+                        }
+                        weatherViewModel.loadWeather(address[2], address[3])
+
+                    } catch(e: IOException) {
+                        // grpc 에러 나는 경우 그냥 패스
+                        e.printStackTrace()
+                        weatherViewModel.loadWeather(address[2], address[3])
+                        Log.i("BookmarkFrag", "failed at getting user's location, " + weatherViewModel.loadSucceed.value)
+                    }
+                }
+            }
+            else {
+                weatherViewModel.loadWeather(address[2], address[3])
+                Log.i("BookmarkFrag", "failed at getting user's location, " + weatherViewModel.loadSucceed.value)
+            }
+        }
+    }
+
+    private fun setupSnackbar() {
+        view?.setupSnackBar(this, bsViewModel.snackbarText, Snackbar.LENGTH_LONG)
+    }
 
     override fun onResume() {
         super.onResume()
-        presenter.start()
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.bookmark_frag, container, false)
-        with(root) {
-            locationView=findViewById(R.id.neighborhood_text)
-            progressBar = findViewById(R.id.progress_circular)
-            weatherView = findViewById(R.id.weatherLL)
-            bookmarkListView = findViewById(R.id.bookmark)
-            noNetworkView = findViewById(R.id.no_network)
-            noBookmarkView = findViewById(R.id.no_bookmark)
-
-            bookmarkAdapter = BookmarkAdapter(ArrayList())
-            val layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
-            bookmarkListView.layoutManager = layoutManager
-            bookmarkListView.adapter = bookmarkAdapter
-            val dividerItemDecoration1 = DividerItemDecoration(requireContext(), layoutManager.orientation)
-            bookmarkListView.addItemDecoration(dividerItemDecoration1)
-
-            bookmarkAdapter.itemClickListener = object : BookmarkAdapter.OnItemClickListener {
-                override fun onItemClick(holder: BookmarkAdapter.ViewHolder, view: View, data: Bookmark, position: Int) {
-                    presenter.openMapFrag(data.rentalOffice)
-                }
-
-            }
-
-            RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this@BookmarkFragment).also {
-                ItemTouchHelper(it).attachToRecyclerView(bookmarkListView)
-            }
-
-            networkRefreshBtn = (findViewById<TextView>(R.id.network_refresh_button)).also {
-                it.setOnClickListener {
-                    presenter.loadData() }
-            }
-
-            refreshFab = (findViewById<FloatingActionButton>(R.id.bookmark_refresh_fab)).also {
-                it.setOnClickListener {
-                    presenter.loadData() }
-            }
-        }
-        return root
-    }
-
-    override fun showWeatherView(neighborhoodText: String, dustText: String, imageId: Int) {
-
-        if(isAdded) {
-            with(requireActivity()) {
-                findViewById<TextView>(R.id.neighborhood_text).text = neighborhoodText
-                findViewById<TextView>(R.id.dust_text).text = dustText
-                findViewById<ImageView>(R.id.weather_image).setImageResource(imageId)
-
-            }
-        }
-    }
-
-    override fun showBookmarkedList(bookmarks: ArrayList<Bookmark>) {
-        bookmarkAdapter.items = bookmarks
-        bookmarkAdapter.notifyDataSetChanged()
-        showViews(true, true, false, false, true)
-    }
-
-    override fun showNoBookmark(bookmarks: ArrayList<Bookmark>) {
-        bookmarkAdapter.items = bookmarks
-        bookmarkAdapter.notifyDataSetChanged()
-        showViews(false, true, false, true, true)
-    }
-
-    override fun showCheckNetwork() {
-        showViews(false, false, true, false, false)
-    }
-
-    override fun showLoadingByBikeStatus(active: Boolean, hideBike: Boolean) {
-        if(hideBike)
-            showViews(false, true, false, true, true)
-        else
-            showViews(true, true, false, false, true)
-
-        if(active)
-            progressBar.visibility = View.VISIBLE
-        else
-            progressBar.visibility = View.GONE
-    }
-
-    override fun showLoadingIndicator(active: Boolean, hideAll: Boolean) {
-        if(hideAll)
-            showViews(false, false, false, false, false)
-        else
-            showViews(true, true, false, false, true)
-
-        if(active)
-            progressBar.visibility = View.VISIBLE
-        else
-            progressBar.visibility = View.GONE
+        (activity as AppCompatActivity).supportActionBar!!.show()
+        (requireActivity()).appbar_title.text = resources.getText(R.string.title_bookmark_frag)
     }
 
 
-    private fun showViews(showBikeList: Boolean, showWeatherView: Boolean, showNetworkView: Boolean, showNoBookmarkView: Boolean,
-                          showRefreshFab: Boolean) {
-        bookmarkListView.visibility = if(showBikeList) View.VISIBLE else View.GONE
-        weatherView.visibility = if(showWeatherView) View.VISIBLE else View.GONE
-        locationView.visibility = if(showWeatherView) View.VISIBLE else View.GONE
-        noNetworkView.visibility = if(showNetworkView) View.VISIBLE else View.GONE
-        noBookmarkView.visibility = if(showNoBookmarkView) View.VISIBLE else View.GONE
-        if(showRefreshFab) refreshFab.show() else refreshFab.hide()
-    }
-
-    override fun showLoadDataError() {
-        if(context!=null)
-             Toast.makeText(context, "데이터를 불러오는데 실패하였습니다", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int, position: Int) {
-        val deletedBookmarkPosition = viewHolder.adapterPosition
-
-        bookmarkAdapter.removeItem(deletedBookmarkPosition)
-        presenter.deleteBookmark(deletedBookmarkPosition)
-    }
-
-    override fun showClickedBookmarkInMapFrag(dataRepository: DataRepository, clickedRentalOffice: String) {
-        requireActivity().findViewById<BottomNavigationView>(R.id.bottom_nav_view).apply {
-            menu.findItem(R.id.map).isChecked = true
-        }
-        val mapFragment = MapFragment().also {
-            (requireActivity() as AppCompatActivity).replaceFragmentInActivity(it, R.id.fragment_container, "")
-        }
-        val mapPresenter = MapPresenter(dataRepository, mapFragment, true, clickedRentalOffice)
-    }
-
-    private fun setUpLocation(mLocation:Location?,callback: DataSource.LoadDataCallback) {
-        val lm =
-            context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        val locationListener = object : LocationListener {
-            var isGpsProvider = false
-            var isNetworkProvider = false
-            var isLoaded = false
-
-            var isGpsProviderEnabled = true
-            var isNetworkProviderEnabled = true
-
-            override fun onLocationChanged(location: Location) {
-                if (location.provider == LocationManager.GPS_PROVIDER) isGpsProvider = true
-                if (location.provider == LocationManager.NETWORK_PROVIDER) isNetworkProvider =
-                    true
-                if ((!(isGpsProvider && isNetworkProvider)) && (!isLoaded)) {
-                    isLoaded = true
-                    mLocation!!.latitude = location.latitude
-                    mLocation!!.longitude = location.longitude
-                    lm.removeUpdates(this)
-                    callback.onDataLoaded()
-                }
-            }
-
-            override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
-
-            override fun onProviderEnabled(provider: String) {}
-
-            override fun onProviderDisabled(provider: String) {
-                if (provider == LocationManager.GPS_PROVIDER) isGpsProviderEnabled = false
-                if (provider == LocationManager.NETWORK_PROVIDER) isNetworkProviderEnabled =
-                    false
-                if (!isGpsProviderEnabled && !isNetworkProviderEnabled) {
-                    lm.removeUpdates(this)
-                    callback.onNetworkNotAvailable()
-                }
-
-            }
-
-
-        }
-        if (checkLocationPermission()) {
-            lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000L, 10f, locationListener)
-            lm.requestLocationUpdates(
-                LocationManager.NETWORK_PROVIDER, 60000L, 10f, locationListener
-            )
-        }
-
-    }
-    override fun initLocation(dataRepository: DataRepository) {
-        var mLocation = Location("initLocation")
-        val res = requireContext().resources
-        mLocation.latitude = 37.566414
-        mLocation.longitude = 126.977912
-
-        if(checkLocationPermission()) {
-            val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
-
-                fusedLocationProviderClient.lastLocation.addOnSuccessListener {
-                    if(it != null) {
-                        mLocation = it
-                        try{
-                            val geocoder = Geocoder(context, Locale.KOREA)
-                            val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
-                            var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
-                            for(addr in addrList) {
-                                val splitedArr = addr.getAddressLine(0).split(" ")
-                                if(splitedArr[2].endsWith("구") ){
-                                    address = splitedArr
-                                    break
-                                }
-                            }
-                            presenter.processLocation(address[2], address[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
-                        }
-                        catch (e:Exception){
-                        }
-                        dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
-                            override fun onDataLoaded() {
-                                presenter.setIsWeather()
-                                if(presenter.getIsAll()&&presenter.getIsWeather()&&presenter.getIsBike()) {
-                                    showLoadingIndicator(false, false)
-                                    presenter.setWeatherViews()
-                                    presenter.loadBookmarks()
-                                    dataRepository.networkState=true
-                                }
-                            }
-
-                            override fun onNetworkNotAvailable() {
-                                dataRepository.networkState=false
-                                showLoadingIndicator(false, false)
-                                showCheckNetwork()
-                                showLoadDataError()
-                            }
-                        } )
-                    }
-                    else
-                        setUpLocation(mLocation,object:DataSource.LoadDataCallback{
-                            override fun onDataLoaded() {
-                                try{
-                                    val geocoder = Geocoder(context, Locale.KOREA)
-                                    val addrList = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 5)
-                                    var address: List<String> = listOf("대한민국", "서울특별시", "중구", "명동")
-                                    for(addr in addrList) {
-                                       val splitedArr = addr.getAddressLine(0).split(" ")
-                                        if(splitedArr[2].endsWith("구")){
-                                            address = splitedArr
-                                            break
-                                        }
-                                    }
-                                    presenter.processLocation(address[2], address[3], Scanner(res.openRawResource(R.raw.weather)), Scanner(res.openRawResource(R.raw.dust)))
-                                }
-                                catch (e:Exception){ }
-
-
-                                dataRepository.refreshWeather(object: DataSource.LoadDataCallback{
-                                    override fun onDataLoaded() {
-                                        presenter.setIsWeather()
-                                        if(presenter.getIsAll()&&presenter.getIsWeather()&&presenter.getIsBike()) {
-                                            showLoadingIndicator(false, false)
-                                            presenter.setWeatherViews()
-                                            presenter.loadBookmarks()
-                                            dataRepository.networkState=true
-                                        }
-                                    }
-
-                                    override fun onNetworkNotAvailable() {
-                                        showLoadingIndicator(false, false)
-                                        showCheckNetwork()
-                                        showLoadDataError()
-                                        dataRepository.networkState=false
-                                    }
-                                } )
-                            }
-                            override fun onNetworkNotAvailable() {
-                                showLoadingIndicator(false, false)
-                                showCheckNetwork()
-                                showLoadDataError()
-                                dataRepository.networkState=false
-                            }
-                        })
-
-            }
-
-
-        }
-
-    }
 
     companion object {
         fun newInstance() = BookmarkFragment()
-        }
+    }
 }

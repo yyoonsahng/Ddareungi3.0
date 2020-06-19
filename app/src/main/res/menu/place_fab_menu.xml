@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/park_fab"
+        android:icon="@drawable/ic_park_button"
+        android:title="공원"/>
 
     <item
-            android:id="@+id/toilet_fab"
-            android:icon="@drawable/ic_toilet_button"
-            android:title="@string/toilet_fab_text"/>
+        android:id="@+id/bike_station_fab"
+        android:icon="@drawable/ic_star_border"
+        android:title="따릉이 대여소"/>
 
-    <item
-            android:id="@+id/park_fab"
-            android:icon="@drawable/ic_park_button"
-            android:title="@string/park_fab_text"/>
-
-    <item
-            android:id="@+id/bike_stop_fab"
-            android:icon="@drawable/ic_bike_button"
-            android:title="@string/bike_stop_fab_text"/>
 </menu>

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             android:id="@+id/bike_marker">
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/bike_marker">
 
     <TextView android:id="@+id/amu_text"
-              android:layout_width="59dp"
-              android:layout_height="wrap_content"
-              android:fontFamily="@font/spoqahansansbold"
-              android:textSize="18sp"
-              android:text="10"
-              android:gravity="center"
-              android:layout_marginTop="8dp"
-              android:textColor="@color/white"/>
+        android:layout_width="59dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/spoqa_han_sans_bold"
+        android:textSize="18sp"
+        tools:text="10"
+        tools:background="@drawable/ic_simple_marker_low"
+        android:gravity="center"
+        android:layout_marginTop="8.5dp"
+        android:textColor="@color/white"/>
 
 </FrameLayout>

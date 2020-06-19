@@ -3,5 +3,5 @@
     <font
       app:fontStyle="normal"
       app:fontWeight="400"
-      app:font="@font/spoqahansansregular"/>
+      app:font="@font/spoqa_han_sans_regular"/>
 </font-family>

@@ -1,114 +1,123 @@
 package com.example.ddareungi
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProviders
 import com.example.ddareungi.bookmark.BookmarkFragment
-import com.example.ddareungi.bookmark.BookmarkPresenter
-import com.example.ddareungi.data.DataRepositoryHolder
-import com.example.ddareungi.data.source.DataRepository
 import com.example.ddareungi.map.MapFragment
-import com.example.ddareungi.map.MapPresenter
+import com.example.ddareungi.map.MapViewModel
 import com.example.ddareungi.timer.TimerFragment
-import com.example.ddareungi.util.replaceFragmentInActivity
-import com.example.ddareungi.util.setupActionBar
-import com.google.android.gms.maps.SupportMapFragment
+import com.example.ddareungi.utils.setupActionBar
+import com.example.ddareungi.viewmodel.BikeStationViewModel
+import com.example.ddareungi.viewmodel.TimerViewModel
+import com.example.ddareungi.viewmodel.WeatherViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
 
+class MainActivity : AppCompatActivity() {
 
-class MainActivity : AppCompatActivity(){
+    private val mBookmarkFrag: BookmarkFragment = BookmarkFragment.newInstance()
 
-    var locationPermissionGranted: Boolean = false
-    //lateinit var dataRepository: DataRepository
-    lateinit var bookmarkPresenter: BookmarkPresenter
+    private val mTimerFrag: TimerFragment = TimerFragment.newInstance()
+
+    private var mMapFrag: MapFragment? = null
+    val mapFrag: MapFragment?
+        get() = mMapFrag
+
+    private val fm: FragmentManager = supportFragmentManager
+
+    private lateinit var bikeStationViewModel: BikeStationViewModel
+
+    private lateinit var mapViewModel: MapViewModel
+
+    private lateinit var weatherViewModel: WeatherViewModel
+
+    private lateinit var timerViewModel: TimerViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //툴바 설정
         setupActionBar(R.id.toolbar) {
             setDisplayShowTitleEnabled(false)
         }
 
-        //따릉이 웹 홈페이지 버튼 클릭 리스너 설정
-        ddraeungi_home_button.setOnClickListener {
-            val ddareungiHome = Uri.parse("https://www.bikeseoul.com")
-            val webIntent = Intent(Intent.ACTION_VIEW, ddareungiHome)
-            startActivity(webIntent)
-        }
-
-        val dummyMapInitializer = SupportMapFragment.newInstance()
-        supportFragmentManager.beginTransaction().attach(dummyMapInitializer).commit()
-        dummyMapInitializer.getMapAsync {  }
-
-        //로딩 해온 데이터 및 위치 권한 받음
-        val holderId = intent.getStringExtra(DATA_REPOSITORY_ID)
-        dataRepository = DataRepositoryHolder.popDataRepository(holderId)
-        locationPermissionGranted = intent.getBooleanExtra(LOCATION_PERMISSION_ID, false)
-
         setUpBottomNav()
 
-        //기본 fragment로 bookmarkFragment 생성
-        val bookmarkFragment = BookmarkFragment.newInstance().also { fragment ->
-            replaceFragmentInActivity(fragment, R.id.fragment_container, "즐겨찾기")
+        // 정류소 viewModel 객체 생성
+        bikeStationViewModel = ViewModelProviders
+            .of(this, BikeStationViewModel.Companion.Factory(application))
+            .get(BikeStationViewModel::class.java)
+
+        mapViewModel = ViewModelProviders
+            .of(this, MapViewModel.Companion.Factory(application))
+            .get(MapViewModel::class.java)
+
+        weatherViewModel = ViewModelProviders
+            .of(this, WeatherViewModel.Companion.Factory(application))
+            .get(WeatherViewModel::class.java)
+
+        timerViewModel = ViewModelProviders
+            .of(this, TimerViewModel.Companion.Factory(application))
+            .get(TimerViewModel::class.java)
+
+
+        // 첫 화면으로 [BookmarkFragment] 설정
+        if(fm.findFragmentById(R.id.frag_container) == null) {
+            fm.beginTransaction().add(R.id.frag_container, mBookmarkFrag).commit()
         }
-        bookmarkPresenter = BookmarkPresenter(dataRepository, bookmarkFragment, locationPermissionGranted)
 
     }
 
     private fun setUpBottomNav() {
         bottom_nav_view.setOnNavigationItemSelectedListener {
-            val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-            when (it.itemId) {
+            when(it.itemId) {
                 R.id.bookmark -> {
-                    if(fragment !is BookmarkFragment) {
-                        val bookmarkFragment = BookmarkFragment.newInstance().also {
-                            replaceFragmentInActivity(it, R.id.fragment_container, "즐겨찾기")
-                        }
-                        bookmarkPresenter = BookmarkPresenter(dataRepository, bookmarkFragment, locationPermissionGranted)
-                    }
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.frag_container, mBookmarkFrag).commit()
                 }
                 R.id.map -> {
-                    if(fragment !is MapFragment) {
-                        val mapFragment = MapFragment().also {
-                            replaceFragmentInActivity(it, R.id.fragment_container, "")
-                        }
-                        val mapPresenter = MapPresenter(dataRepository, mapFragment, false ,"")
-                    }
+                    setMapFragInstance(null)
+                    fm.beginTransaction().replace(R.id.frag_container, mMapFrag!!).commit()
                 }
                 R.id.timer -> {
-                    val timerFragment = TimerFragment().also {
-                        replaceFragmentInActivity(it, R.id.fragment_container, "타이머")
-                    }
-                }
-                R.id.course -> {
-                    val courseFragment = CourseFragment().also {
-                        replaceFragmentInActivity(it, R.id.fragment_container, "추천 관광지")
-                    }
-
-
+                    fm.beginTransaction().replace(R.id.frag_container, mTimerFrag).commit()
                 }
             }
             true
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        // 현재 Fragment Id 저장
+        fm.putFragment(outState, CURRENT_FRAGMENT_TAG, fm.findFragmentById(R.id.frag_container)!!)
+    }
+
     override fun onBackPressed() {
-        val frag = supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if(frag is MapFragment) {
-            if(!frag.onBackPressed())
+        val activeFrag = supportFragmentManager.findFragmentById(R.id.frag_container)
+        if(activeFrag is MapFragment) {
+            if(!activeFrag.onBackPressed()) {
                 super.onBackPressed()
-        } else
+            }
+        } else {
             super.onBackPressed()
+        }
+    }
+
+    fun setMapFragInstance(stationId: String?) {
+        if(mMapFrag == null) {
+            mMapFrag = MapFragment.newInstance(stationId)
+        } else {
+            val args = Bundle()
+            args.putString(MapFragment.CLICKED_IN_BOOKMARK_FRAG_TAG, stationId)
+            mMapFrag!!.arguments = args
+        }
     }
 
     companion object {
-        lateinit var dataRepository: DataRepository
-
-        const val DATA_REPOSITORY_ID = "DATA_REPOSITORY_ID"
-        const val LOCATION_PERMISSION_ID = "LOCATION_PERMISSION_ID"
+        const val CURRENT_FRAGMENT_TAG = "current_fragment"
     }
 }
