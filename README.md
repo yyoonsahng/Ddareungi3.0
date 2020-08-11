@@ -1,5 +1,5 @@
 # 따릉아 같이가
- 공식 따릉이 어플리케이션의 UI/UX, 속도 개선, 편의성을 증대시킬 부가적인 정보를 제공해주는 어플리케이션 입니다.
+ 공식 따릉이 어플리케이션의 UI/UX, 속도 개선, 편의성을 증대시킬 부가적인 정보를 제공해주는 어플리케이션 입니다.  
  [2019년 스마트 서울 모바일 앱 공모전 장려상](https://www.seoulappcontest.org/web/info/currentWinnerView.do?idx=104&year=2019&type=win)
 
 ## Introduction
